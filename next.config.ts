@@ -3,4 +3,7 @@ import "./src/env";
 import type { NextConfig } from "next";
 import { withWorkflow } from "workflow/next";
 
-export default withWorkflow({} satisfies NextConfig);
+export default withWorkflow({
+  typedRoutes: true,
+  reactCompiler: true,
+} satisfies NextConfig);
