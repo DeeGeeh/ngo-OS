@@ -20,6 +20,7 @@ await test("assistant uses the shared workspace mutations and validates its stre
   process.env.OPENROUTER_API_KEY = "";
   const { createWorkspaceAssistant, workspaceTools, streamAssistant } =
     await import("@/server/assistant/facade");
+  const { addSource, getDashboard, getDataLibrary } = await import("@/server/data/facade");
   const { getWorkspace } = await import("@/server/workspace/facade");
   const options = { toolCallId: "integration-call", messages: [], context: {} };
   try {
@@ -178,10 +179,107 @@ await test("assistant uses the shared workspace mutations and validates its stre
     );
 
     await t.test(
+      "an SDK streamed dashboard tool call persists a durable dashboard link",
+      async () => {
+        const source = await addSource({
+          kind: "csv-upload",
+          file: new File(["Project,Amount\nWater,3000\nFood,2000\n"], "grants.csv", {
+            type: "text/csv",
+          }),
+        });
+        const model = new MockLanguageModelV4({
+          doStream: [
+            {
+              stream: simulateReadableStream({
+                chunkDelayInMs: null,
+                chunks: [
+                  {
+                    type: "tool-call",
+                    toolCallId: "save-grants-dashboard",
+                    toolName: "saveDashboard",
+                    input: JSON.stringify({
+                      title: "Grant overview",
+                      nodes: [
+                        {
+                          $type: "Metric",
+                          id: "total-amount",
+                          title: "Total grants",
+                          query: {
+                            kind: "aggregate",
+                            sourceId: source.id,
+                            measure: { operation: "sum", column: "Amount" },
+                          },
+                        },
+                      ],
+                    }),
+                  },
+                  {
+                    type: "finish",
+                    finishReason: { unified: "tool-calls", raw: undefined },
+                    usage,
+                  },
+                ],
+              }),
+            },
+            {
+              stream: simulateReadableStream({
+                chunkDelayInMs: null,
+                chunks: [
+                  { type: "text-start", id: "dashboard-reply" },
+                  {
+                    type: "text-delta",
+                    id: "dashboard-reply",
+                    delta: "Saved the grant overview dashboard.",
+                  },
+                  { type: "text-end", id: "dashboard-reply" },
+                  { type: "finish", finishReason: { unified: "stop", raw: undefined }, usage },
+                ],
+              }),
+            },
+          ],
+        });
+        const response = await createAgentUIStreamResponse({
+          agent: createWorkspaceAssistant(model),
+          uiMessages: [
+            {
+              id: "dashboard-request",
+              role: "user",
+              parts: [{ type: "text", text: "Save a dashboard for the imported grants." }],
+            },
+          ],
+        });
+        assert.equal(response.status, 200);
+        const stream = await response.text();
+        assert.match(stream, /\/dashboard\/data\/dashboard-[a-f0-9]{24}/);
+        assert.match(stream, /Saved the grant overview dashboard\./);
+        const library = await getDataLibrary();
+        const dashboard = library.dashboards.find((entry) => entry.title === "Grant overview");
+        assert.ok(dashboard);
+        const view = await getDashboard(dashboard.id);
+        assert.equal(view.results["total-amount"]?.kind, "metric");
+        assert.equal(
+          view.results["total-amount"]?.kind === "metric"
+            ? view.results["total-amount"].value
+            : null,
+          5000,
+        );
+      },
+    );
+
+    await t.test(
       "malformed messages and tool arguments never reach a provider or mutate data",
       async () => {
         const before = await getWorkspace();
         const invalidBodies = [
+          JSON.stringify({
+            messages: [
+              {
+                id: "bad-source",
+                role: "user",
+                parts: [{ type: "data-source", data: { id: 12 } }],
+              },
+            ],
+          }),
           "{",
           JSON.stringify({ messages: [] }),
           JSON.stringify({
@@ -224,7 +322,16 @@ await test("assistant uses the shared workspace mutations and validates its stre
           new Request("http://workspace.test/api/assistant", {
             method: "POST",
             body: JSON.stringify({
-              messages: [{ id: "request", role: "user", parts: [{ type: "text", text: "Hello" }] }],
+              messages: [
+                {
+                  id: "request",
+                  role: "user",
+                  parts: [
+                    { type: "text", text: "Hello" },
+                    { type: "data-source", data: (await getDataLibrary()).sources[0] },
+                  ],
+                },
+              ],
             }),
           }),
         );

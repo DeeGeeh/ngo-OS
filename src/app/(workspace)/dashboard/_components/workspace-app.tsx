@@ -13,6 +13,7 @@ import {
   Moon,
   PanelRight,
   Settings,
+  Sparkles,
   Sun,
   Ticket,
   UserRound,
@@ -40,6 +41,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { AssistantThread } from "@/lib/assistant";
+import { dataLibraryQueryKey, dataLibrarySchema, type DataLibrary } from "@/lib/data";
 import { lumaCalendarItems, type CalendarItem } from "@/lib/calendar";
 import { lumaQueryKey, type LumaCalendar } from "@/lib/luma";
 import { defaultOrganizationId, product } from "@/lib/organizations";
@@ -47,7 +50,9 @@ import { cn } from "@/lib/utils";
 import { workspaceQueryKey, type Member, type Workspace, type WorkStatus } from "@/lib/workspace";
 
 import { getLumaCalendarAction, getWorkspaceAction } from "../actions";
-import { AssistantPanel, AssistantProvider } from "./assistant-panel";
+import { AssistantPanel } from "./assistant-panel";
+import { AssistantProvider } from "./assistant-runtime";
+import { AgentPage } from "./agent-page";
 import { CalendarScreen } from "./calendar-screen";
 import { EventsScreen } from "./events-screen";
 import { OrgSwitcher } from "./org-switcher";
@@ -67,7 +72,8 @@ type View =
   | { kind: "people" }
   | { kind: "calendar" }
   | { kind: "events" }
-  | { kind: "settings" };
+  | { kind: "settings" }
+  | { kind: "agent" };
 const screenTitles = {
   board: "Board",
   chat: "Chat",
@@ -75,6 +81,7 @@ const screenTitles = {
   calendar: "Calendar",
   events: "Events",
   settings: "Settings",
+  agent: "Agent",
 } as const;
 const screenSubtitles = {
   board: "Projects and tasks across the organization",
@@ -83,6 +90,7 @@ const screenSubtitles = {
   calendar: "Everything scheduled, in one place",
   events: "Public events and registrations",
   settings: "Workspace preferences",
+  agent: "Saved conversations and workspace assistance",
 } as const;
 type Creation = { kind: "task" | "project"; status: WorkStatus; projectId?: string };
 type Screen = keyof typeof screenTitles;
@@ -97,6 +105,7 @@ const navItems = [
   { id: "events", label: "Events", icon: Ticket },
   { id: "people", label: "People", icon: Users },
   { id: "settings", label: "Settings", icon: Settings },
+  { id: "agent", label: "Agent", icon: Sparkles },
 ] satisfies NavItem[];
 
 function NavButton({
@@ -214,10 +223,14 @@ function UserMenu({ member, onSettings }: { member?: Member; onSettings: () => v
 
 export function WorkspaceApp({
   initialWorkspace,
+  initialThreads,
+  initialDataLibrary,
   googleEvents,
   initialLuma,
 }: {
   initialWorkspace: Workspace;
+  initialThreads: AssistantThread[];
+  initialDataLibrary: DataLibrary;
   googleEvents: CalendarItem[];
   initialLuma: LumaCalendar;
 }) {
@@ -232,7 +245,22 @@ export function WorkspaceApp({
     initialData: initialLuma,
   });
   const lumaItems = useMemo(() => lumaCalendarItems(luma.events), [luma.events]);
-  const [view, setView] = useState<View>(initialView);
+  const { data: dataLibrary } = useQuery({
+    queryKey: dataLibraryQueryKey,
+    queryFn: async (): Promise<DataLibrary> => {
+      const response = await fetch("/api/data/sources");
+      if (!response.ok) throw new Error(await response.text());
+      return dataLibrarySchema.parse(await response.json());
+    },
+    initialData: initialDataLibrary,
+  });
+  const [workspaceView, setView] = useState<View>(initialView);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const screenName = searchParams.get("view");
+  const selectedScreen = navItems.find((item) => item.id === screenName)?.id;
+  const view =
+    selectedScreen && selectedScreen !== "board" ? { kind: selectedScreen } : workspaceView;
   const [taskId, setTaskId] = useState<string | null>(null);
   const [creation, setCreation] = useState<Creation | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -254,6 +282,7 @@ export function WorkspaceApp({
       events: luma.events.length,
       people: workspace.members.length,
       settings: undefined,
+      agent: undefined,
     }),
     [workspace.tasks, workspace.members.length, luma.events.length],
   );
@@ -275,8 +304,16 @@ export function WorkspaceApp({
   const creationOpenChanged = useCallback((open: boolean) => {
     if (!open) setCreation(null);
   }, []);
-  const switchScreen = useCallback((value: Screen) => setView({ kind: value }), []);
-  const openSettings = useCallback(() => setView({ kind: "settings" }), []);
+  const switchScreen = useCallback(
+    (value: Screen) => {
+      setView(initialView);
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("view", value);
+      window.history.pushState(null, "", `${pathname}?${params.toString()}`);
+    },
+    [pathname, searchParams],
+  );
+  const openSettings = useCallback(() => switchScreen("settings"), [switchScreen]);
   const switchCreationKind = useCallback(
     (values: string[]) => {
       const value = values[0];
@@ -318,6 +355,20 @@ export function WorkspaceApp({
                     />
                   ))}
                 </nav>
+                {dataLibrary.dashboards.length > 0 && (
+                  <div className="flex flex-col gap-2 px-2">
+                    <p className="text-xs font-medium text-muted-foreground">Dashboards</p>
+                    {dataLibrary.dashboards.map((dashboard) => (
+                      <Link
+                        key={dashboard.id}
+                        href={`/dashboard/data/${encodeURIComponent(dashboard.id)}`}
+                        className="truncate text-sm text-muted-foreground hover:text-foreground"
+                      >
+                        {dashboard.title}
+                      </Link>
+                    ))}
+                  </div>
+                )}
                 <div className="mt-auto flex flex-col gap-2">
                   <UserMenu member={currentMember} onSettings={openSettings} />
                   <ProductMark />
@@ -400,6 +451,7 @@ export function WorkspaceApp({
                     />
                   )}
                   {view.kind === "chat" && <WorkspaceChat workspace={workspace} />}
+                  {view.kind === "agent" && <AgentPage />}
                   {view.kind === "calendar" && (
                     <CalendarScreen
                       workspace={workspace}
