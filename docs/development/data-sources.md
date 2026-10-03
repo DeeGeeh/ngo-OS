@@ -8,14 +8,14 @@ The data library stores imported source metadata, accepted snapshots, and saved 
 
 - CSV uploads use the file name as the source name. Re-uploading with the same attachment ID replaces the snapshot and keeps the source ID.
 - Public Google Sheets use the official CSV export endpoint. The source keeps the original URL and the selected `gid` tab.
-- Private Google Sheets use the official Google Sheets SDK with a service account.
-- Google Drive CSV files use the official Google Drive SDK with a service account.
+- Private Google Sheets use the official Google Sheets SDK with a connected Google account or a service account.
+- Google Drive CSV files use the official Google Drive SDK with a connected Google account or a service account.
 
 The source parser accepts quoted CSV fields and UTF-8 byte order marks. It keeps a column as text when any non-empty value is text, so identifiers such as `0012` keep their leading zeroes.
 
 ## Configure private Google access
 
-Set `GOOGLE_SERVICE_ACCOUNT_JSON` to the service account JSON object. Share each private Sheet or Drive CSV file with the service account email in `client_email`. The service account needs read access to the file. Personal Google OAuth is not configured.
+Set `GOOGLE_SERVICE_ACCOUNT_JSON` to the service account JSON object. Share each private Sheet or Drive CSV file with the service account email in `client_email`. The service account needs read access to the file. For personal access, connect Google Drive & Sheets at `/dashboard/integrations` and import a file link there. Clerk stores and refreshes Google credentials. Imported snapshots become shared workspace data; refreshes require the Clerk user who imported the source.
 
 Public Sheets do not need credentials. A private Sheet or Drive CSV returns a clear configuration error when the variable is missing or invalid.
 

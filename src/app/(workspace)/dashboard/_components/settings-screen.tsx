@@ -11,6 +11,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { organizations, product } from "@/lib/organizations";
 import type { Workspace } from "@/lib/workspace";
 
+import { UserSettingsForm } from "./user-settings";
+
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 py-2.5">
@@ -56,6 +58,7 @@ export function SettingsScreen({
 }) {
   const { theme, setTheme } = useTheme();
   const organization = organizations.find((item) => item.id === organizationId);
+  const currentMember = workspace.members.find((member) => member.id === workspace.currentMemberId);
   const selectedTheme = useMemo(() => [theme ?? "light"], [theme]);
   const changeTheme = useCallback(
     (values: string[]) => {
@@ -73,6 +76,15 @@ export function SettingsScreen({
           Workspace preferences for this organization.
         </p>
       </div>
+
+      {currentMember?.settings && (
+        <SettingsCard title="Profile" description="Your details and AI connections." icon={Users}>
+          <UserSettingsForm
+            key={JSON.stringify(currentMember.settings)}
+            settings={currentMember.settings}
+          />
+        </SettingsCard>
+      )}
 
       <SettingsCard
         title="Organization"

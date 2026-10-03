@@ -104,8 +104,8 @@ const navItems = [
   { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "events", label: "Events", icon: Ticket },
   { id: "people", label: "People", icon: Users },
-  { id: "settings", label: "Settings", icon: Settings },
   { id: "agent", label: "Agent", icon: Sparkles },
+  { id: "settings", label: "Settings", icon: Settings },
 ] satisfies NavItem[];
 
 function NavButton({
@@ -200,7 +200,7 @@ function UserMenu({ member, onSettings }: { member?: Member; onSettings: () => v
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={onSettings}>
             <UserRound />
             Profile
           </DropdownMenuItem>
@@ -399,15 +399,17 @@ export function WorkspaceApp({
                 >
                   <Settings />
                 </Button>
-                <Button
-                  variant={assistantOpen ? "secondary" : "ghost"}
-                  size="icon"
-                  aria-label={assistantOpen ? "Hide assistant" : "Show assistant"}
-                  aria-pressed={assistantOpen}
-                  onClick={toggleAssistant}
-                >
-                  <PanelRight />
-                </Button>
+                {screen !== "agent" && (
+                  <Button
+                    variant={assistantOpen ? "secondary" : "ghost"}
+                    size="icon"
+                    aria-label={assistantOpen ? "Hide assistant" : "Show assistant"}
+                    aria-pressed={assistantOpen}
+                    onClick={toggleAssistant}
+                  >
+                    <PanelRight />
+                  </Button>
+                )}
                 <div className="ml-1">
                   <CreateWorkMenu
                     onCreate={create}

@@ -1,6 +1,6 @@
 import { getDashboard } from "@/server/data/facade";
 
-export async function GET(request: Request, context: RouteContext<"/api/data/dashboards/[id]">) {
+export async function GET(request: Request, context: { params: Promise<{ id: string }> }) {
   const { id } = await context.params;
   const refresh = new URL(request.url).searchParams.get("refresh");
   try {
