@@ -5,9 +5,7 @@ import { getDashboard } from "@/server/data/facade";
 
 import { DataDashboard } from "../../_components/data-dashboard";
 
-const loading = (
-  <main className="flex min-h-svh items-center justify-center">Loading dashboard</main>
-);
+const loading = <div className="flex h-full items-center justify-center">Loading dashboard</div>;
 
 async function DashboardContent({ id }: { id: string }) {
   await connection();

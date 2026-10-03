@@ -7,7 +7,6 @@ import {
 } from "@assistant-ui/react-generative-ui";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, RefreshCw } from "lucide-react";
-import Link from "next/link";
 import { useCallback, useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { z } from "zod";
@@ -262,14 +261,11 @@ export function DataDashboard({ initialData }: { initialData: DashboardView }) {
   );
 
   return (
-    <main className="min-h-svh bg-background p-5 md:p-8">
+    <div className="min-h-full bg-background p-5 md:p-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
-              ← Workspace
-            </Link>
-            <h1 className="mt-2 text-3xl font-semibold tracking-tight">{view.definition.title}</h1>
+            <h2 className="text-3xl font-semibold tracking-tight">{view.definition.title}</h2>
           </div>
           <Button variant="outline" onClick={refresh} disabled={query.isFetching}>
             <RefreshCw data-icon="inline-start" />
@@ -330,6 +326,6 @@ export function DataDashboard({ initialData }: { initialData: DashboardView }) {
           </section>
         )}
       </div>
-    </main>
+    </div>
   );
 }

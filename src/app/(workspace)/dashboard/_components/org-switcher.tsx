@@ -99,8 +99,8 @@ export function OrgSwitcher({
         <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-64">
-        <DropdownMenuLabel>Organizations</DropdownMenuLabel>
         <DropdownMenuGroup>
+          <DropdownMenuLabel>Organizations</DropdownMenuLabel>
           {organizations.map((organization) => (
             <OrgOption
               key={organization.id}
