@@ -1,7 +1,6 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Settings } from "lucide-react";
 import Image from "next/image";
 import { useCallback, useState, type FormEvent } from "react";
 
@@ -15,28 +14,35 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
-import { userSettingsSchema, workspaceQueryKey, type UserSettings } from "@/lib/workspace";
+import {
+  userSettingsSchema,
+  workspaceQueryKey,
+  type UserSettings,
+  type Workspace,
+} from "@/lib/workspace";
 
 import { updateUserSettingsAction } from "../actions";
 
-const settingsTrigger = <Button variant="ghost" size="icon-sm" aria-label="User settings" />;
 const cancelButton = <Button type="button" variant="outline" />;
 
-export function UserSettingsDialog({ settings }: { settings: UserSettings }) {
-  const [open, setOpen] = useState(false);
-  const close = useCallback(() => setOpen(false), []);
+export function UserSettingsDialog({
+  settings,
+  open,
+  onOpenChange,
+}: {
+  settings: UserSettings;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const close = useCallback(() => onOpenChange(false), [onOpenChange]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={settingsTrigger}>
-        <Settings />
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>User settings</DialogTitle>
@@ -86,8 +92,17 @@ function UserSettingsForm({ settings, onSaved }: { settings: UserSettings; onSav
   const save = useMutation({
     mutationFn: (form: FormData) =>
       updateUserSettingsAction(userSettingsSchema.parse(Object.fromEntries(form))),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: workspaceQueryKey });
+    onSuccess: (savedMember) => {
+      queryClient.setQueryData<Workspace>(
+        workspaceQueryKey,
+        (workspace) =>
+          workspace && {
+            ...workspace,
+            members: workspace.members.map((member) =>
+              member.id === savedMember.id ? savedMember : member,
+            ),
+          },
+      );
       onSaved();
     },
   });

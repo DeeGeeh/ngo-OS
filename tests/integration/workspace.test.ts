@@ -244,11 +244,11 @@ await test("workspace facade persists valid edits in an isolated local database"
         telegramHandle: "@diar_example",
       };
       const updated = await workspace.updateUserSettings(settings);
-      assert.equal(updated.firstName, "Diar");
+      assert.equal(updated.settings?.firstName, "Diar");
       const saved = await workspace.getWorkspace();
       const currentMember = saved.members.find((member) => member.id === saved.currentMemberId);
       assert.equal(currentMember?.name, "Diar Example");
-      assert.deepEqual(currentMember?.settings, updated);
+      assert.deepEqual(currentMember?.settings, updated.settings);
       assert.deepEqual(saved.tasks, before.tasks);
       assert.deepEqual(
         saved.members.filter((member) => member.id !== saved.currentMemberId),

@@ -163,6 +163,6 @@ export async function updateUserSettings(input: UserSettings) {
     if (!member) throw new Error("Current member does not exist.");
     member.settings = settings;
     member.name = [settings.firstName, settings.lastName].filter(Boolean).join(" ");
-    return settings;
+    return member;
   });
 }
