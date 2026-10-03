@@ -1,0 +1,132 @@
+import "server-only";
+
+import { randomUUID } from "node:crypto";
+
+import {
+  createProjectSchema,
+  createTaskSchema,
+  sendMessageSchema,
+  updateProjectSchema,
+  updateTaskSchema,
+  type CreateProject,
+  type CreateTask,
+  type Message,
+  type Project,
+  type SendMessage,
+  type Task,
+  type UpdateProject,
+  type UpdateTask,
+  type Workspace,
+} from "@/lib/workspace";
+
+import { withWorkspace } from "./store";
+
+function validateAssignees(workspace: Workspace, assigneeIds: string[]) {
+  if (new Set(assigneeIds).size !== assigneeIds.length) {
+    throw new Error("Choose each member only once.");
+  }
+  if (assigneeIds.some((id) => !workspace.members.some((member) => member.id === id))) {
+    throw new Error("A selected member does not exist.");
+  }
+}
+
+function validateProject(workspace: Workspace, projectId: string | null) {
+  if (projectId !== null && !workspace.projects.some((project) => project.id === projectId)) {
+    throw new Error("Project does not exist.");
+  }
+}
+
+export async function getWorkspace(): Promise<Workspace> {
+  return withWorkspace((workspace) => workspace, false);
+}
+
+export async function createTask(input: CreateTask): Promise<Task> {
+  const data = createTaskSchema.parse(input);
+  return withWorkspace((workspace) => {
+    validateAssignees(workspace, data.assigneeIds);
+    validateProject(workspace, data.projectId);
+    const task = { ...data, id: randomUUID() };
+    workspace.tasks.push(task);
+    return task;
+  });
+}
+
+export async function updateTask(input: UpdateTask): Promise<Task> {
+  const { id, ...changes } = updateTaskSchema.parse(input);
+  return withWorkspace((workspace) => {
+    const task = workspace.tasks.find((item) => item.id === id);
+    if (!task) throw new Error("Task does not exist.");
+    const updated = {
+      ...task,
+      title: changes.title ?? task.title,
+      description: changes.description ?? task.description,
+      status: changes.status ?? task.status,
+      projectId: changes.projectId === undefined ? task.projectId : changes.projectId,
+      assigneeIds: changes.assigneeIds ?? task.assigneeIds,
+      dueDate: changes.dueDate === undefined ? task.dueDate : changes.dueDate,
+    };
+    validateAssignees(workspace, updated.assigneeIds);
+    validateProject(workspace, updated.projectId);
+    Object.assign(task, updated);
+    return task;
+  });
+}
+
+export async function createProject(input: CreateProject): Promise<Project> {
+  const data = createProjectSchema.parse(input);
+  return withWorkspace((workspace) => {
+    validateAssignees(workspace, data.assigneeIds);
+    const project = { ...data, id: randomUUID() };
+    workspace.projects.push(project);
+    workspace.channels.push({
+      id: randomUUID(),
+      name: project.title,
+      kind: "project",
+      projectId: project.id,
+    });
+    return project;
+  });
+}
+
+export async function updateProject(input: UpdateProject): Promise<Project> {
+  const { id, ...changes } = updateProjectSchema.parse(input);
+  return withWorkspace((workspace) => {
+    const project = workspace.projects.find((item) => item.id === id);
+    if (!project) throw new Error("Project does not exist.");
+    const updated = {
+      ...project,
+      title: changes.title ?? project.title,
+      description: changes.description ?? project.description,
+      status: changes.status ?? project.status,
+      assigneeIds: changes.assigneeIds ?? project.assigneeIds,
+      dueDate: changes.dueDate === undefined ? project.dueDate : changes.dueDate,
+      location: changes.location ?? project.location,
+    };
+    validateAssignees(workspace, updated.assigneeIds);
+    Object.assign(project, updated);
+    const channel = workspace.channels.find(
+      (item) => item.kind === "project" && item.projectId === id,
+    );
+    if (!channel) throw new Error("Project channel does not exist.");
+    channel.name = project.title;
+    return project;
+  });
+}
+
+export async function sendMessage(input: SendMessage): Promise<Message> {
+  const data = sendMessageSchema.parse(input);
+  return withWorkspace((workspace) => {
+    const targets = data.conversation.kind === "channel" ? workspace.channels : workspace.tasks;
+    if (!targets.some((target) => target.id === data.conversation.id)) {
+      throw new Error("Conversation does not exist.");
+    }
+    const message = {
+      ...data,
+      id: randomUUID(),
+      authorId: workspace.currentMemberId,
+      createdAt: new Date().toISOString(),
+    };
+    workspace.messages.push(message);
+    return message;
+  });
+}

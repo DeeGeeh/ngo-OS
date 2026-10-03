@@ -7,7 +7,7 @@ The main flow: create an event, find suitable volunteers, invite them through Te
 MVP scope:
 
 - Project/Event management with Luma integration (MOCKED AS ITS NOT FREE SO IT WILL BE MOCKED IT NEEDS A FULL 1:1 MOCK FOR THE HACKATHON DEMO SO WE CAN WIN THIS AND GET ALOT OF MONEY TO PAY RENT). Naming standard; Project, never use event. 
-- Volunteer management with short profiles, skills, interests, Telegram handles, and LinkedIn links. Jev suggests suitable volunteers for event roles.
+- Volunteer management with short profiles, skills, interests, Telegram handles, and LinkedIn links. The workspace assistant suggests suitable volunteers for project roles. Jev is only used to classify Telegram messages as relevant or not relevant.
 - Telegram bot for event outreach and coordination. Jev classifies messages for organizational relevance; useful messages enter shared context, while chatter and stickers stay out.
 - Google Drive integration to bring existing documents into shared context.
 - Gmail/email integration for correspondence and contact context. Start with demo data; connect live email if time permits.
