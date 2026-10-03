@@ -64,6 +64,8 @@ export async function updateTask(input: UpdateTask): Promise<Task> {
       projectId: changes.projectId === undefined ? task.projectId : changes.projectId,
       assigneeIds: changes.assigneeIds ?? task.assigneeIds,
       dueDate: changes.dueDate === undefined ? task.dueDate : changes.dueDate,
+      priority: changes.priority ?? task.priority,
+      tags: changes.tags ?? task.tags,
     };
     validateAssignees(workspace, updated.assigneeIds);
     validateProject(workspace, updated.projectId);
@@ -101,6 +103,8 @@ export async function updateProject(input: UpdateProject): Promise<Project> {
       assigneeIds: changes.assigneeIds ?? project.assigneeIds,
       dueDate: changes.dueDate === undefined ? project.dueDate : changes.dueDate,
       location: changes.location ?? project.location,
+      capacity: changes.capacity === undefined ? project.capacity : changes.capacity,
+      format: changes.format ?? project.format,
     };
     validateAssignees(workspace, updated.assigneeIds);
     Object.assign(project, updated);
@@ -113,11 +117,22 @@ export async function updateProject(input: UpdateProject): Promise<Project> {
   });
 }
 
+function conversationExists(workspace: Workspace, conversation: SendMessage["conversation"]) {
+  if (conversation.kind === "channel") {
+    return workspace.channels.some((channel) => channel.id === conversation.id);
+  }
+  if (conversation.kind === "task") {
+    return workspace.tasks.some((task) => task.id === conversation.id);
+  }
+  return workspace.members.some(
+    (member) => member.id === conversation.id && member.id !== workspace.currentMemberId,
+  );
+}
+
 export async function sendMessage(input: SendMessage): Promise<Message> {
   const data = sendMessageSchema.parse(input);
   return withWorkspace((workspace) => {
-    const targets = data.conversation.kind === "channel" ? workspace.channels : workspace.tasks;
-    if (!targets.some((target) => target.id === data.conversation.id)) {
+    if (!conversationExists(workspace, data.conversation)) {
       throw new Error("Conversation does not exist.");
     }
     const message = {

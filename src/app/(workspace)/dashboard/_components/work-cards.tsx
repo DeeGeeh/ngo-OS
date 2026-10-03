@@ -1,16 +1,43 @@
-import { CalendarDays, Folder, MessageSquare } from "lucide-react";
+import { CalendarDays, FolderOpen, Flag } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarGroup } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarGroup, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { type Project, type Task, type Workspace } from "@/lib/workspace";
+import {
+  memberPortrait,
+  priorities,
+  type Member,
+  type Project,
+  type Task,
+  type Workspace,
+} from "@/lib/workspace";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   month: "short",
   day: "numeric",
   timeZone: "UTC",
 });
+
+export function MemberAvatar({
+  member,
+  size = "sm",
+}: {
+  member: Member;
+  size?: "sm" | "default" | "lg";
+}) {
+  const portrait = memberPortrait(member);
+  return (
+    <Avatar size={size} title={member.name}>
+      {portrait && <AvatarImage src={portrait} alt={member.name} />}
+      <AvatarFallback>
+        {member.name
+          .split(" ")
+          .map((part) => part[0])
+          .join("")}
+      </AvatarFallback>
+    </Avatar>
+  );
+}
 
 export function AssigneeAvatars({
   workspace,
@@ -24,14 +51,7 @@ export function AssigneeAvatars({
       {workspace.members
         .filter((member) => assigneeIds.includes(member.id))
         .map((member) => (
-          <Avatar key={member.id} size="sm" title={member.name}>
-            <AvatarFallback>
-              {member.name
-                .split(" ")
-                .map((part) => part[0])
-                .join("")}
-            </AvatarFallback>
-          </Avatar>
+          <MemberAvatar key={member.id} member={member} />
         ))}
     </AvatarGroup>
   );
@@ -39,38 +59,34 @@ export function AssigneeAvatars({
 
 export function TaskCard({ task, workspace }: { task: Task; workspace: Workspace }) {
   const project = workspace.projects.find((item) => item.id === task.projectId);
-  const messageCount = workspace.messages.filter(
-    (message) => message.conversation.kind === "task" && message.conversation.id === task.id,
-  ).length;
+  const priority = priorities.find((item) => item.id === task.priority);
   return (
     <>
       <CardHeader>
         <CardTitle>{task.title}</CardTitle>
       </CardHeader>
-      {project && (
+      {(project || (priority && task.priority !== "normal") || task.tags[0]) && (
         <CardContent>
-          <Badge variant="secondary">
-            <Folder data-icon="inline-start" />
-            {project.title}
-          </Badge>
+          <div className="flex flex-wrap gap-2">
+            {project && <Badge variant="secondary">{project.title}</Badge>}
+            {priority && task.priority !== "normal" && (
+              <Badge variant={task.priority === "urgent" ? "destructive" : "outline"}>
+                <Flag data-icon="inline-start" />
+                {priority.label}
+              </Badge>
+            )}
+            {task.tags[0] && <Badge variant="outline">{task.tags[0]}</Badge>}
+          </div>
         </CardContent>
       )}
       <CardFooter className="justify-between">
         <AssigneeAvatars workspace={workspace} assigneeIds={task.assigneeIds} />
-        <div className="flex items-center gap-3 text-muted-foreground">
-          {task.dueDate && (
-            <span className="flex items-center gap-1">
-              <CalendarDays className="size-3.5" />
-              {dateFormat.format(new Date(`${task.dueDate}T12:00:00Z`))}
-            </span>
-          )}
-          {messageCount > 0 && (
-            <span className="flex items-center gap-1">
-              <MessageSquare className="size-3.5" />
-              {messageCount}
-            </span>
-          )}
-        </div>
+        {task.dueDate && (
+          <span className="flex items-center gap-1 text-muted-foreground">
+            <CalendarDays className="size-3.5" />
+            {dateFormat.format(new Date(`${task.dueDate}T12:00:00Z`))}
+          </span>
+        )}
       </CardFooter>
     </>
   );
@@ -78,38 +94,27 @@ export function TaskCard({ task, workspace }: { task: Task; workspace: Workspace
 
 export function ProjectCard({ project, workspace }: { project: Project; workspace: Workspace }) {
   const tasks = workspace.tasks.filter((task) => task.projectId === project.id);
-  const completed = tasks.filter((task) => task.status === "done").length;
   return (
-    <>
-      <CardHeader>
-        <Badge variant="outline" className="w-fit">
-          <Folder data-icon="inline-start" />
-          Project
-        </Badge>
-        <CardTitle>{project.title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-2">
+    <div className="relative pt-3">
+      <div
+        aria-hidden="true"
+        className="absolute top-1 right-3 left-8 h-4 rounded-t-md bg-muted ring-1 ring-foreground/10"
+      />
+      <div className="relative">
+        <div className="absolute -top-3 left-2 z-10 flex items-center gap-1 rounded-t-lg bg-secondary px-2.5 py-1 text-xs font-medium">
+          <FolderOpen className="size-3.5" />
+          Folder
+        </div>
+        <div className="relative z-10 flex flex-col gap-2 rounded-xl rounded-tl-sm bg-secondary px-3 py-3 ring-1 ring-foreground/10">
+          <p className="font-medium leading-snug">{project.title}</p>
+          <div className="flex items-center justify-between gap-2 text-muted-foreground">
             <span>
-              {completed}/{tasks.length} tasks
+              {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
             </span>
             <AssigneeAvatars workspace={workspace} assigneeIds={project.assigneeIds} />
           </div>
-          <Progress
-            value={tasks.length ? (completed / tasks.length) * 100 : 0}
-            aria-label={`${project.title} progress`}
-          />
         </div>
-      </CardContent>
-      {project.dueDate && (
-        <CardFooter>
-          <div className="flex items-center gap-2">
-            <CalendarDays className="size-4" />
-            {dateFormat.format(new Date(`${project.dueDate}T12:00:00Z`))}
-          </div>
-        </CardFooter>
-      )}
-    </>
+      </div>
+    </div>
   );
 }

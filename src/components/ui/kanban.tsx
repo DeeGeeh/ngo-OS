@@ -44,6 +44,7 @@ export type ColumnProps = {
   setDragState: Dispatch<SetStateAction<DragState>>;
   onCardClick: (card: CardData) => void;
   onAddCard?: (columnId: ColumnStatus) => void;
+  renderAdd?: (columnId: ColumnStatus) => ReactNode;
   renderCard?: (card: CardData) => ReactNode;
   disabled?: boolean;
 };
@@ -113,11 +114,8 @@ function WorkCard({
     <div draggable={!disabled} onDragStart={startDrag} onDragEnd={endDrag}>
       <motion.button
         type="button"
-        className={cn(
-          "relative block w-full cursor-grab rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default active:cursor-grabbing",
-          card.kind === "project" && "pt-3",
-        )}
-        aria-label={card.title}
+        className="relative block w-full cursor-grab rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing disabled:cursor-default"
+        aria-label={card.kind === "project" ? `Open project ${card.title}` : card.title}
         disabled={disabled}
         initial={reducedMotion ? false : "initial"}
         animate="animate"
@@ -129,15 +127,15 @@ function WorkCard({
         whileTap={reducedMotion ? undefined : cardPress}
         onClick={openCard}
       >
-        {card.kind === "project" && (
-          <span
-            aria-hidden="true"
-            className="absolute top-0 left-0 h-5 w-2/5 rounded-t-xl border bg-card"
-          />
+        {renderCard ? (
+          card.kind === "project" ? (
+            renderCard(card)
+          ) : (
+            <Card>{renderCard(card)}</Card>
+          )
+        ) : (
+          <CardBody card={card} />
         )}
-        <div className="relative">
-          {renderCard ? <Card>{renderCard(card)}</Card> : <CardBody card={card} />}
-        </div>
       </motion.button>
     </div>
   );
@@ -150,6 +148,7 @@ export function Column({
   setDragState,
   onCardClick,
   onAddCard,
+  renderAdd,
   renderCard,
   disabled,
 }: ColumnProps) {
@@ -187,16 +186,18 @@ export function Column({
         <Icon className="size-4" />
         <h2 className="font-medium">{column.title}</h2>
         <span className="ml-auto tabular-nums">{column.cards.length}</span>
-        {onAddCard && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={`Add to ${column.title}`}
-            onClick={addCard}
-          >
-            <Plus />
-          </Button>
-        )}
+        {renderAdd
+          ? renderAdd(column.id)
+          : onAddCard && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={`Add to ${column.title}`}
+                onClick={addCard}
+              >
+                <Plus />
+              </Button>
+            )}
       </header>
       <div
         className={cn(

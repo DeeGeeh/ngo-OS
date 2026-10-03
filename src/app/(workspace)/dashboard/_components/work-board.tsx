@@ -1,10 +1,17 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { Folder, LayoutDashboard, Plus, Search } from "lucide-react";
 import { useCallback, useMemo, useState, type ChangeEvent } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import {
   Column,
@@ -29,11 +36,56 @@ const columnStatuses = { todo: "todo", "in-progress": "doing", done: "done" } sa
   WorkStatus
 >;
 
+type CreateWork = (status: WorkStatus, kind: "task" | "project") => void;
+
+export function CreateWorkMenu({
+  status = "todo",
+  onCreate,
+  appearance = "icon",
+  label,
+}: {
+  status?: WorkStatus;
+  onCreate: CreateWork;
+  appearance?: "icon" | "labeled";
+  label: string;
+}) {
+  const addTask = useCallback(() => onCreate(status, "task"), [onCreate, status]);
+  const addProject = useCallback(() => onCreate(status, "project"), [onCreate, status]);
+  const trigger =
+    appearance === "labeled" ? (
+      <DropdownMenuTrigger variant="default" aria-label={label}>
+        <Plus data-icon="inline-start" />
+        <span className="hidden sm:inline">New</span>
+      </DropdownMenuTrigger>
+    ) : (
+      <DropdownMenuTrigger variant="ghost" size="icon" aria-label={label}>
+        <Plus />
+      </DropdownMenuTrigger>
+    );
+  return (
+    <DropdownMenu>
+      {trigger}
+      <DropdownMenuContent align="end" className="min-w-40">
+        <DropdownMenuGroup>
+          <DropdownMenuItem onClick={addTask}>
+            <LayoutDashboard />
+            Task
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={addProject}>
+            <Folder />
+            Project
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
 type WorkBoardProps = {
   workspace: Workspace;
   onTask: (id: string) => void;
   onProject: (id: string) => void;
-  onCreate: (status?: WorkStatus) => void;
+  onCreate: CreateWork;
 };
 
 export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardProps) {
@@ -126,10 +178,14 @@ export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardP
     [items, workspace],
   );
 
-  const addCard = useCallback(
-    (columnId: ColumnStatus) => {
-      onCreate(columnStatuses[columnId]);
-    },
+  const renderAdd = useCallback(
+    (columnId: ColumnStatus) => (
+      <CreateWorkMenu
+        status={columnStatuses[columnId]}
+        onCreate={onCreate}
+        label={`Add to ${boardColumns.find((column) => column.id === columnId)?.title ?? "column"}`}
+      />
+    ),
     [onCreate],
   );
   const selectedFilter = useMemo(() => [filter], [filter]);
@@ -176,7 +232,7 @@ export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardP
               setDragState={setDragState}
               onCardClick={openCard}
               renderCard={renderCard}
-              onAddCard={addCard}
+              renderAdd={renderAdd}
               disabled={move.isPending}
             />
           ))}

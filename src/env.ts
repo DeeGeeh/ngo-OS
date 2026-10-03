@@ -19,6 +19,7 @@ export const env = createEnv({
     TYPESAFE_API_KEY: z.string().min(1).optional(),
     RESEND_API_KEY: z.string().min(1).optional(),
     RESEND_FROM_EMAIL: z.email().optional(),
+    GOOGLE_CALENDAR_ICS_URL: z.url().optional(),
   },
   client: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1).optional(),
@@ -37,6 +38,7 @@ export const env = createEnv({
     TYPESAFE_API_KEY: process.env.TYPESAFE_API_KEY,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
+    GOOGLE_CALENDAR_ICS_URL: process.env.GOOGLE_CALENDAR_ICS_URL,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   },
   emptyStringAsUndefined: true,

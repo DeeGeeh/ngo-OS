@@ -105,6 +105,11 @@ function ConversationThread({
     },
   });
   const renderMessage = useCallback(() => <TeamMessage workspace={workspace} />, [workspace]);
+  const recipient =
+    conversation.kind === "direct"
+      ? workspace.members.find((member) => member.id === conversation.id)?.name
+      : undefined;
+  const placeholder = recipient ? `Message ${recipient}...` : "Message the team...";
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <ThreadPrimitive.Root className="flex h-full min-h-0 flex-col">
@@ -126,8 +131,8 @@ function ConversationThread({
           <ComposerPrimitive.Root className="rounded-xl border bg-background p-3">
             <ComposerPrimitive.Input
               className="max-h-40 min-h-16 w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              placeholder="Message the team..."
-              aria-label="Message the team"
+              placeholder={placeholder}
+              aria-label={placeholder}
               maxLength={4000}
             />
             <div className="flex justify-end">

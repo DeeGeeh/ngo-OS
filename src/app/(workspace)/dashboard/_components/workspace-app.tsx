@@ -1,13 +1,15 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import {
+  CalendarDays,
   Folder,
   LayoutDashboard,
   MessageSquare,
   Moon,
   PanelRight,
-  Plus,
+  Ticket,
   Users,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -15,7 +17,6 @@ import { useTheme } from "next-themes";
 import { useCallback, useMemo, useState } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,13 +26,19 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { lumaCalendarItems, type CalendarItem } from "@/lib/calendar";
+import { lumaQueryKey, type LumaCalendar } from "@/lib/luma";
+import { cn } from "@/lib/utils";
 import { workspaceQueryKey, type Workspace, type WorkStatus } from "@/lib/workspace";
 
-import { getWorkspaceAction } from "../actions";
+import { getLumaCalendarAction, getWorkspaceAction } from "../actions";
 import { AssistantPanel, AssistantProvider } from "./assistant-panel";
-import { Conversation } from "./conversation";
+import { CalendarScreen } from "./calendar-screen";
+import { EventsScreen } from "./events-screen";
 import { ProjectDetail } from "./project-detail";
-import { WorkBoard } from "./work-board";
+import { CreateWorkMenu, WorkBoard } from "./work-board";
+import { TaskDetail } from "./task-detail";
+import { MemberAvatar } from "./work-cards";
 import { WorkEditor } from "./work-editor";
 import { WorkspaceChat } from "./workspace-chat";
 
@@ -39,18 +46,41 @@ type View =
   | { kind: "board" }
   | { kind: "project"; id: string }
   | { kind: "chat" }
-  | { kind: "people" };
+  | { kind: "people" }
+  | { kind: "calendar" }
+  | { kind: "events" };
+const screenTitles = {
+  board: "Workspace",
+  chat: "Chat",
+  people: "People",
+  calendar: "Calendar",
+  events: "Events",
+} as const;
 type Creation = { kind: "task" | "project"; status: WorkStatus; projectId?: string };
 const initialView: View = { kind: "board" };
 const enter = { opacity: 0 };
 const visible = { opacity: 1 };
 
-export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace }) {
+export function WorkspaceApp({
+  initialWorkspace,
+  googleEvents,
+  initialLuma,
+}: {
+  initialWorkspace: Workspace;
+  googleEvents: CalendarItem[];
+  initialLuma: LumaCalendar;
+}) {
   const { data: workspace, error } = useQuery({
     queryKey: workspaceQueryKey,
     queryFn: getWorkspaceAction,
     initialData: initialWorkspace,
   });
+  const { data: luma } = useQuery({
+    queryKey: lumaQueryKey,
+    queryFn: getLumaCalendarAction,
+    initialData: initialLuma,
+  });
+  const lumaItems = useMemo(() => lumaCalendarItems(luma.events), [luma.events]);
   const [view, setView] = useState<View>(initialView);
   const [taskId, setTaskId] = useState<string | null>(null);
   const [creation, setCreation] = useState<Creation | null>(null);
@@ -62,25 +92,19 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
     view.kind === "project" ? workspace.projects.find((item) => item.id === view.id) : undefined;
   const currentMember = workspace.members.find((member) => member.id === workspace.currentMemberId);
   const screen = view.kind === "project" ? "board" : view.kind;
-  const title = screen === "board" ? "Workspace" : screen === "chat" ? "Chat" : "People";
-  const conversation = useMemo(
-    () => (task ? { kind: "task" as const, id: task.id } : undefined),
-    [task],
-  );
+  const title = screenTitles[screen];
 
   const openTask = useCallback((id: string) => setTaskId(id), []);
   const openProject = useCallback((id: string) => setView({ kind: "project", id }), []);
-  const create = useCallback(
-    (status: WorkStatus = "todo") => setCreation({ kind: "task", status }),
-    [],
-  );
+  const create = useCallback((status: WorkStatus, kind: "task" | "project") => {
+    setCreation({ kind, status });
+  }, []);
   const createProjectTask = useCallback(
     (id: string) => setCreation({ kind: "task", status: "todo", projectId: id }),
     [],
   );
   const closeCreation = useCallback(() => setCreation(null), []);
   const returnToBoard = useCallback(() => setView(initialView), []);
-  const closeTask = useCallback(() => setTaskId(null), []);
   const taskOpenChanged = useCallback((open: boolean) => {
     if (!open) setTaskId(null);
   }, []);
@@ -89,7 +113,15 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
   }, []);
   const switchScreen = useCallback((values: string[]) => {
     const value = values[0];
-    if (value === "board" || value === "chat" || value === "people") setView({ kind: value });
+    if (
+      value === "board" ||
+      value === "chat" ||
+      value === "people" ||
+      value === "calendar" ||
+      value === "events"
+    ) {
+      setView({ kind: value });
+    }
   }, []);
   const switchCreationKind = useCallback(
     (values: string[]) => {
@@ -104,7 +136,6 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
     [resolvedTheme, setTheme],
   );
   const toggleAssistant = useCallback(() => setAssistantOpen((open) => !open), []);
-  const createNew = useCallback(() => create(), [create]);
   const selectedScreen = useMemo(() => [screen], [screen]);
   const selectedKind = useMemo(() => (creation ? [creation.kind] : []), [creation]);
 
@@ -115,8 +146,26 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
           <div className="shrink-0 md:border-r">
             <SidebarBody className="md:w-48!">
               <div className="flex h-full flex-col gap-8">
-                <div className="px-2 pt-3 text-3xl font-bold tracking-tighter">
-                  TRES<span className="text-primary">.</span>
+                <div className="flex items-center gap-2 px-2 pt-3">
+                  <Image
+                    src="/brand/svg/nest-mark-blue.svg"
+                    alt=""
+                    width={512}
+                    height={355}
+                    unoptimized
+                    className="h-8 w-auto dark:hidden"
+                  />
+                  <Image
+                    src="/brand/svg/nest-mark-white.svg"
+                    alt=""
+                    width={512}
+                    height={355}
+                    unoptimized
+                    className="hidden h-8 w-auto dark:block"
+                  />
+                  <div className="text-2xl font-bold tracking-tighter">
+                    TRES<span className="text-primary">.</span>
+                  </div>
                 </div>
                 <nav aria-label="Main navigation">
                   <ToggleGroup
@@ -137,12 +186,18 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
                       <Users data-icon="inline-start" />
                       People
                     </ToggleGroupItem>
+                    <ToggleGroupItem value="calendar" className="justify-start">
+                      <CalendarDays data-icon="inline-start" />
+                      Calendar
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="events" className="justify-start">
+                      <Ticket data-icon="inline-start" />
+                      Events
+                    </ToggleGroupItem>
                   </ToggleGroup>
                 </nav>
                 <div className="mt-auto flex items-center gap-3 px-2 pb-3">
-                  <Avatar>
-                    <AvatarFallback>{currentMember?.name.slice(0, 1) ?? "T"}</AvatarFallback>
-                  </Avatar>
+                  {currentMember && <MemberAvatar member={currentMember} size="default" />}
                   <span className="truncate text-sm font-medium">
                     {currentMember?.name ?? "TRES"}
                   </span>
@@ -171,10 +226,11 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
                 >
                   <PanelRight />
                 </Button>
-                <Button onClick={createNew} aria-label="New task or project">
-                  <Plus data-icon="inline-start" />
-                  <span className="hidden sm:inline">New</span>
-                </Button>
+                <CreateWorkMenu
+                  onCreate={create}
+                  appearance="labeled"
+                  label="New task or project"
+                />
               </div>
             </header>
             {error && (
@@ -188,7 +244,10 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
                   key={view.kind === "project" ? view.id : view.kind}
                   initial={enter}
                   animate={visible}
-                  className="h-full overflow-auto"
+                  className={cn(
+                    "h-full",
+                    view.kind === "calendar" ? "overflow-hidden" : "overflow-auto",
+                  )}
                 >
                   {view.kind === "board" && (
                     <WorkBoard
@@ -208,20 +267,21 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
                     />
                   )}
                   {view.kind === "chat" && <WorkspaceChat workspace={workspace} />}
+                  {view.kind === "calendar" && (
+                    <CalendarScreen
+                      workspace={workspace}
+                      googleEvents={googleEvents}
+                      lumaEvents={lumaItems}
+                    />
+                  )}
+                  {view.kind === "events" && <EventsScreen calendar={luma} />}
                   {view.kind === "people" && (
                     <div className="grid gap-5 p-6 sm:grid-cols-2 lg:p-8 xl:grid-cols-3">
                       {workspace.members.map((member) => (
                         <Card key={member.id}>
                           <CardHeader>
                             <div className="mb-2">
-                              <Avatar size="lg">
-                                <AvatarFallback>
-                                  {member.name
-                                    .split(" ")
-                                    .map((part) => part[0])
-                                    .join("")}
-                                </AvatarFallback>
-                              </Avatar>
+                              <MemberAvatar member={member} size="lg" />
                             </div>
                             <CardTitle>{member.name}</CardTitle>
                             <CardDescription>{member.role}</CardDescription>
@@ -275,32 +335,22 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
           </SheetContent>
         </Sheet>
         <Dialog open={Boolean(task)} onOpenChange={taskOpenChanged}>
-          <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-4xl">
-            <DialogHeader>
-              <DialogTitle>{task?.title ?? "Task"}</DialogTitle>
-            </DialogHeader>
-            {task && conversation && (
-              <div className="grid gap-8 md:grid-cols-2">
-                <WorkEditor
-                  key={task.id}
-                  kind="task"
-                  task={task}
-                  workspace={workspace}
-                  onSaved={closeTask}
-                />
-                <section className="flex min-h-96 flex-col gap-4" aria-label="Task discussion">
-                  <h2 className="flex items-center gap-2 font-semibold">
-                    <MessageSquare className="size-4" />
-                    Discussion
-                  </h2>
-                  <Conversation workspace={workspace} conversation={conversation} />
-                </section>
-              </div>
-            )}
+          <DialogContent className="max-h-dvh overflow-hidden sm:max-w-5xl">
+            <div className="sr-only">
+              <DialogHeader>
+                <DialogTitle>{task?.title ?? "Task"}</DialogTitle>
+              </DialogHeader>
+            </div>
+            {task && <TaskDetail key={task.id} task={task} workspace={workspace} />}
           </DialogContent>
         </Dialog>
         <Dialog open={Boolean(creation)} onOpenChange={creationOpenChanged}>
-          <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-lg">
+          <DialogContent
+            className={cn(
+              "max-h-dvh overflow-y-auto",
+              creation?.kind === "project" ? "sm:max-w-3xl" : "sm:max-w-lg",
+            )}
+          >
             <DialogHeader>
               <DialogTitle>New {creation?.kind === "project" ? "project" : "task"}</DialogTitle>
             </DialogHeader>

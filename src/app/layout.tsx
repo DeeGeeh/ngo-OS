@@ -13,7 +13,11 @@ import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-export const metadata: Metadata = { title: "NGO OS" };
+export const metadata: Metadata = {
+  title: "TR3S",
+  description: "The operating workspace for Tampere Entrepreneurship Society.",
+  applicationName: "TR3S",
+};
 
 const clerkAppearance = { theme: shadcn };
 

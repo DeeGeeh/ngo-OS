@@ -3,16 +3,41 @@ import type { Workspace } from "@/lib/workspace";
 export const demoWorkspace = {
   currentMemberId: "diar",
   members: [
-    { id: "diar", name: "Diar", role: "Board member", skills: ["Product", "Technology"] },
-    { id: "aino", name: "Aino Laine", role: "Community lead", skills: ["Community", "Outreach"] },
+    {
+      id: "diar",
+      name: "Diar",
+      role: "Board member",
+      skills: ["Product", "Technology"],
+      avatar: "/avatars/diar.svg",
+    },
+    {
+      id: "aino",
+      name: "Aino Laine",
+      role: "Community lead",
+      skills: ["Community", "Outreach"],
+      avatar: "/avatars/aino.svg",
+    },
     {
       id: "elias",
       name: "Elias Koski",
       role: "Project lead",
       skills: ["Operations", "Partnerships"],
+      avatar: "/avatars/elias.svg",
     },
-    { id: "noora", name: "Noora Niemi", role: "Communications", skills: ["Design", "Marketing"] },
-    { id: "leo", name: "Leo Virtanen", role: "Volunteer", skills: ["Photography", "Technology"] },
+    {
+      id: "noora",
+      name: "Noora Niemi",
+      role: "Communications",
+      skills: ["Design", "Marketing"],
+      avatar: "/avatars/noora.svg",
+    },
+    {
+      id: "leo",
+      name: "Leo Virtanen",
+      role: "Volunteer",
+      skills: ["Photography", "Technology"],
+      avatar: "/avatars/leo.svg",
+    },
   ],
   projects: [
     {
@@ -24,6 +49,8 @@ export const demoWorkspace = {
       assigneeIds: ["elias", "aino", "noora"],
       dueDate: "2026-10-22",
       location: "Platform6, Tampere",
+      capacity: 80,
+      format: "in-person",
     },
     {
       id: "campus-builders",
@@ -34,6 +61,8 @@ export const demoWorkspace = {
       assigneeIds: ["diar", "leo"],
       dueDate: "2026-11-05",
       location: "Tampere University, City Centre Campus",
+      capacity: 40,
+      format: "in-person",
     },
   ],
   tasks: [
@@ -45,6 +74,8 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["elias"],
       dueDate: "2026-10-08",
+      priority: "high",
+      tags: ["Speakers"],
     },
     {
       id: "book-venue",
@@ -63,6 +94,8 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["noora"],
       dueDate: "2026-10-09",
+      priority: "normal",
+      tags: ["Design"],
     },
     {
       id: "welcome-team",
@@ -72,6 +105,8 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["aino"],
       dueDate: "2026-10-12",
+      priority: "high",
+      tags: ["Volunteers", "Outreach"],
     },
     {
       id: "photography",
@@ -250,6 +285,20 @@ export const demoWorkspace = {
       authorId: "leo",
       text: "Happy to help teams with their first prototype. We can keep the introductions to 20 minutes.",
       createdAt: "2026-10-03T11:25:00.000Z",
+    },
+    {
+      id: "dm-aino",
+      conversation: { kind: "direct", id: "aino" },
+      authorId: "aino",
+      text: "Can you look at the welcome team list before Tuesday?",
+      createdAt: "2026-10-03T11:40:00.000Z",
+    },
+    {
+      id: "dm-leo",
+      conversation: { kind: "direct", id: "leo" },
+      authorId: "leo",
+      text: "I'll send the photo plan once the run sheet is ready.",
+      createdAt: "2026-10-03T11:48:00.000Z",
     },
   ],
 } satisfies Workspace;

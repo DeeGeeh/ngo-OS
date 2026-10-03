@@ -141,6 +141,12 @@ await test("workspace facade persists valid edits in an isolated local database"
           text: "I can help.",
         });
         assert.equal(taskMessage.text, "I can help.");
+        const directMessage = await workspace.sendMessage({
+          conversation: { kind: "direct", id: "aino" },
+          text: "See you at the board meeting.",
+        });
+        assert.equal(directMessage.authorId, "diar");
+        assert.deepEqual(directMessage.conversation, { kind: "direct", id: "aino" });
         const saved = await workspace.getWorkspace();
         assert.deepEqual(
           saved.messages.find((message) => message.id === channelMessage.id),
@@ -149,6 +155,10 @@ await test("workspace facade persists valid edits in an isolated local database"
         assert.deepEqual(
           saved.messages.find((message) => message.id === taskMessage.id),
           taskMessage,
+        );
+        assert.deepEqual(
+          saved.messages.find((message) => message.id === directMessage.id),
+          directMessage,
         );
         await assert.rejects(
           workspace.sendMessage({
@@ -166,6 +176,17 @@ await test("workspace facade persists valid edits in an isolated local database"
         );
         await assert.rejects(
           workspace.sendMessage({ conversation: { kind: "task", id: "missing" }, text: "Missing" }),
+          /Conversation does not exist/,
+        );
+        await assert.rejects(
+          workspace.sendMessage({ conversation: { kind: "direct", id: "diar" }, text: "Myself" }),
+          /Conversation does not exist/,
+        );
+        await assert.rejects(
+          workspace.sendMessage({
+            conversation: { kind: "direct", id: "missing" },
+            text: "Missing",
+          }),
           /Conversation does not exist/,
         );
         await assert.rejects(
