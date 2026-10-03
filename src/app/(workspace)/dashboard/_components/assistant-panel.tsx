@@ -4,10 +4,13 @@ import { AssistantChatTransport, useAISDKError, useChatRuntime } from "@assistan
 import {
   ActionBarPrimitive,
   AssistantRuntimeProvider,
+  AuiConfig,
   AuiIf,
   BranchPickerPrimitive,
   ComposerPrimitive,
   MessagePrimitive,
+  SuggestionPrimitive,
+  Suggestions,
   ThreadListPrimitive,
   ThreadPrimitive,
   type AssistantState,
@@ -37,6 +40,13 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { workspaceQueryKey } from "@/lib/workspace";
 
 const transport = new AssistantChatTransport({ api: "/api/assistant" });
+const assistantSuggestions = Suggestions([
+  "Understand the workspace",
+  "Plan this week",
+  "Find task owners",
+  "Spot project risks",
+]);
+const assistantConfig = AuiConfig({ suggestions: assistantSuggestions });
 const toolLabels: Record<string, string> = {
   readWorkspace: "Read workspace",
   createTask: "Create task",
@@ -197,21 +207,16 @@ function AssistantThread({ onClose }: { onClose?: () => void }) {
         <AuiIf condition={isEmpty}>
           <div className="flex min-h-52 flex-col justify-center gap-4">
             <h3 className="text-xl font-semibold tracking-tight">What needs doing?</h3>
-            <div className="flex flex-col items-start gap-2">
-              <ThreadPrimitive.Suggestion
-                prompt="What should we focus on this week?"
-                send
-                className={buttonVariants({ variant: "outline" })}
-              >
-                Plan this week
-              </ThreadPrimitive.Suggestion>
-              <ThreadPrimitive.Suggestion
-                prompt="Review the workspace and suggest who should own the unassigned tasks."
-                send
-                className={buttonVariants({ variant: "outline" })}
-              >
-                Find task owners
-              </ThreadPrimitive.Suggestion>
+            <div className="grid gap-2">
+              <ThreadPrimitive.Suggestions>
+                {() => (
+                  <SuggestionPrimitive.Trigger send asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                      <SuggestionPrimitive.Title />
+                    </Button>
+                  </SuggestionPrimitive.Trigger>
+                )}
+              </ThreadPrimitive.Suggestions>
             </div>
           </div>
         </AuiIf>
@@ -274,7 +279,11 @@ export function AssistantProvider({ children }: { children: ReactNode }) {
       void queryClient.invalidateQueries({ queryKey: workspaceQueryKey });
     },
   });
-  return <AssistantRuntimeProvider runtime={runtime}>{children}</AssistantRuntimeProvider>;
+  return (
+    <AssistantRuntimeProvider runtime={runtime} config={assistantConfig}>
+      {children}
+    </AssistantRuntimeProvider>
+  );
 }
 
 export function AssistantPanel({ onClose }: { onClose?: () => void } = {}) {
