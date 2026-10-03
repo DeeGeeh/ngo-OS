@@ -3,8 +3,6 @@ import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
 
-const signInHref = { pathname: "/sign-in" };
-
 const links = [
   { label: "Product", href: "#features" },
   { label: "Integrations", href: "#integrations" },
@@ -14,36 +12,31 @@ const links = [
 
 export function SiteNav() {
   return (
-    <header className="sticky top-4 z-30 mx-auto w-full max-w-6xl px-4">
-      <nav className="flex items-center justify-between rounded-full border border-primary-foreground/40 bg-background/50 py-2 pr-2 pl-5 shadow-lg backdrop-blur-xl">
+    <header className="mx-auto w-full max-w-7xl px-4 md:px-8">
+      <nav className="flex items-center justify-between py-4">
         <Link href="/" aria-label="nest home">
           <Image
-            src="/brand/svg/nest-horizontal-blue.svg"
+            src="/brand/svg/nest-horizontal-white.svg"
             alt="nest"
-            width={96}
-            height={28}
+            width={104}
+            height={25}
             priority
           />
         </Link>
-        <div className="hidden items-center gap-8 text-sm font-medium text-foreground/80 md:flex">
+        <div className="hidden items-center gap-8 text-sm font-medium text-primary-foreground/90 drop-shadow-sm md:flex">
           {links.map((link) => (
             <a
               key={link.label}
               href={link.href}
-              className="transition-colors hover:text-foreground"
+              className="transition-colors hover:text-primary-foreground"
             >
               {link.label}
             </a>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <Link href={signInHref} className={buttonVariants({ variant: "ghost" })}>
-            Sign in
-          </Link>
-          <Link href="/dashboard" className={buttonVariants()}>
-            Open nest
-          </Link>
-        </div>
+        <Link href="/dashboard" className={buttonVariants()}>
+          Open nest
+        </Link>
       </nav>
     </header>
   );

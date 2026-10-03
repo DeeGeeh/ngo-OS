@@ -12,7 +12,7 @@ export default function HomePage() {
   return (
     <div className="relative min-h-svh w-full overflow-x-clip bg-primary">
       <CloudShader className="fixed inset-0" />
-      <div className="relative z-10 pt-4">
+      <div className="relative z-10">
         <SiteNav />
         <main>
           <Hero />
