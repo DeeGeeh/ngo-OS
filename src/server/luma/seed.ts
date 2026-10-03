@@ -26,6 +26,8 @@ function guests(
 ): LumaGuest[] {
   const registeredMs = Date.parse(registeredStart);
   const checkInMs = checkInStart ? Date.parse(checkInStart) : null;
+  const step = Math.min(18_000_000, Math.floor((14 * 86_400_000) / Math.max(rows.length, 1)));
+  const checkInStep = Math.min(240_000, Math.floor(7_200_000 / Math.max(rows.length, 1)));
   return rows.map((row, index) => {
     const [name, approvalStatus, ticketName, checked] = row;
     return {
@@ -34,10 +36,10 @@ function guests(
       email: emailFrom(name),
       approvalStatus,
       ticketName,
-      registeredAt: new Date(registeredMs + index * 18_000_000).toISOString(),
+      registeredAt: new Date(registeredMs + index * step).toISOString(),
       checkedInAt:
         checked && checkInMs !== null && approvalStatus === "approved"
-          ? new Date(checkInMs + index * 240_000).toISOString()
+          ? new Date(checkInMs + index * checkInStep).toISOString()
           : null,
     };
   });
@@ -70,6 +72,74 @@ const generalQuestions = [
   "Anything we should know about food?",
 ];
 
+const firstNames = [
+  "Aino",
+  "Eetu",
+  "Venla",
+  "Lauri",
+  "Ella",
+  "Niko",
+  "Sanni",
+  "Juho",
+  "Kerttu",
+  "Ville",
+  "Emma",
+  "Antti",
+  "Lotta",
+  "Henri",
+  "Iida",
+  "Otto",
+  "Nella",
+  "Ilmari",
+  "Pihla",
+  "Samuel",
+  "Ronja",
+  "Valtteri",
+  "Siiri",
+  "Arttu",
+  "Minea",
+  "Topias",
+  "Alisa",
+  "Jesse",
+  "Kaisla",
+  "Miro",
+];
+const lastNames = [
+  "Mattila",
+  "Heinonen",
+  "Karjalainen",
+  "Hiltunen",
+  "Lindholm",
+  "Salo",
+  "Kinnunen",
+  "Tuominen",
+  "Rinne",
+  "Laitinen",
+  "Seppälä",
+  "Honkanen",
+  "Vainio",
+  "Hämäläinen",
+  "Koivisto",
+  "Lahtinen",
+  "Jokinen",
+  "Ahola",
+  "Manninen",
+  "Nurmi",
+  "Ojala",
+  "Kivelä",
+  "Peltola",
+  "Räsänen",
+];
+
+function crowd(count: number, offset: number, ticketName: string, checkedEvery = 0): GuestRow[] {
+  return Array.from({ length: count }, (_, index) => {
+    const position = offset + index;
+    const name = `${firstNames[position % firstNames.length]} ${lastNames[(position * 7) % lastNames.length]}`;
+    const checked = checkedEvery > 0 && index % checkedEvery !== 0;
+    return [name, "approved", ticketName, checked] as const;
+  });
+}
+
 const h4hGuests = guests(
   "gst-h4h",
   [
@@ -89,6 +159,7 @@ const h4hGuests = guests(
     ["Nea Korhonen", "declined", "General Admission", false],
     ["Viljami Lehtonen", "approved", "General Admission", true],
     ["Aava Saarinen", "approved", "General Admission", false],
+    ...crowd(104, 0, "General Admission", 3),
   ],
   "2026-09-12T08:00:00.000Z",
   "2026-10-03T06:12:00.000Z",
@@ -103,6 +174,7 @@ const talkGuests = guests(
     ["Eino Laine", "waitlist", "General Admission"],
     ["Olivia Berg", "approved", "General Admission"],
     ["Matias Virtanen", "invited", "General Admission"],
+    ...crowd(68, 300, "General Admission"),
   ],
   "2026-10-01T10:00:00.000Z",
   null,
@@ -119,6 +191,7 @@ const lovableGuests = guests(
     ["Oliver Berg", "approved", "General Admission", true],
     ["Sofia Chen", "approved", "General Admission", true],
     ["Mikko Rantanen", "declined", "General Admission", false],
+    ...crowd(143, 600, "General Admission", 4),
   ],
   "2026-03-02T09:00:00.000Z",
   "2026-03-28T08:05:00.000Z",
@@ -214,7 +287,7 @@ const pohinaTalk: LumaEvent = {
       priceCents: 0,
       currency: "EUR",
       sold: 0,
-      capacity: 60,
+      capacity: 80,
     },
   ],
   hosts: [
@@ -256,7 +329,7 @@ const lovable: LumaEvent = {
       priceCents: 0,
       currency: "EUR",
       sold: 0,
-      capacity: 120,
+      capacity: 160,
     },
   ],
   hosts: [{ apiId: "host-lovable-tres", name: "TRES", role: "creator" }],

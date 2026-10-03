@@ -2,9 +2,11 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  ArrowLeft,
   CalendarDays,
+  ChevronRight,
+  CircleCheck,
   Folder,
+  ListChecks,
   MapPin,
   MessageSquare,
   Pencil,
@@ -34,7 +36,9 @@ import {
 } from "@/lib/workspace";
 
 import { updateTaskAction } from "../actions";
-import { AssigneeAvatars } from "./work-cards";
+import { cn } from "@/lib/utils";
+
+import { AssigneeAvatars, PriorityFlag } from "./work-cards";
 import { WorkEditor } from "./work-editor";
 import { Conversation } from "./conversation";
 
@@ -71,18 +75,11 @@ function SetupCard({
 type ProjectDetailProps = {
   project: Project;
   workspace: Workspace;
-  onBack: () => void;
   onTask: (id: string) => void;
   onNewTask: (projectId: string) => void;
 };
 
-export function ProjectDetail({
-  project,
-  workspace,
-  onBack,
-  onTask,
-  onNewTask,
-}: ProjectDetailProps) {
+export function ProjectDetail({ project, workspace, onTask, onNewTask }: ProjectDetailProps) {
   const [editing, setEditing] = useState(false);
   const [registered, setRegistered] = useState(false);
   const queryClient = useQueryClient();
@@ -106,23 +103,19 @@ export function ProjectDetail({
   const formatLabel = projectFormats.find((item) => item.id === project.format)?.label;
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-8">
-      <div className="flex items-center justify-between gap-4">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft data-icon="inline-start" />
-          Board
-        </Button>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center justify-between gap-4 pr-10">
+        <span className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Folder className="size-4" />
+          Project
+        </span>
         <Button variant="outline" onClick={openEditor}>
           <Pencil data-icon="inline-start" />
           Edit project
         </Button>
       </div>
       <div className="flex flex-col">
-        <div className="z-10 flex w-fit items-center gap-2 rounded-t-xl border border-b-0 border-foreground/10 bg-muted px-4 py-2 text-sm font-medium">
-          <Folder className="size-4" />
-          Project
-        </div>
-        <div className="-mt-px flex flex-col gap-8 rounded-xl rounded-tl-none border border-foreground/10 bg-muted p-6 lg:p-8">
+        <div className="flex flex-col gap-8 rounded-xl border border-foreground/10 bg-muted p-6 lg:p-8">
           <header className="flex flex-col gap-4">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <h1 className="text-3xl font-semibold tracking-tight">{project.title}</h1>
@@ -169,7 +162,7 @@ export function ProjectDetail({
                   <AlertTitle>{updateTask.error.message}</AlertTitle>
                 </Alert>
               )}
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5">
                 {tasks.map((task) => (
                   <ProjectTaskRow
                     key={task.id}
@@ -281,22 +274,48 @@ function ProjectTaskRow({
     [onToggle, task.id],
   );
   const open = useCallback(() => onTask(task.id), [onTask, task.id]);
+  const done = task.status === "done";
+  const finished = task.subtasks.filter((subtask) => subtask.done).length;
   return (
-    <div className="flex items-center gap-3">
+    <div className="group flex items-center gap-3 rounded-xl border border-border bg-card py-2.5 pr-2 pl-3.5 shadow-xs transition-all hover:-translate-y-px hover:border-primary/40 hover:shadow-md">
       <Checkbox
-        aria-label={`Mark ${task.title} ${task.status === "done" ? "to do" : "done"}`}
-        checked={task.status === "done"}
+        aria-label={`Mark ${task.title} ${done ? "to do" : "done"}`}
+        checked={done}
         disabled={pending}
         onCheckedChange={toggle}
       />
-      <Button
-        variant="ghost"
+      <button
+        type="button"
         onClick={open}
-        className="h-auto flex-1 justify-start text-left whitespace-normal"
+        className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        {task.title}
-      </Button>
-      <AssigneeAvatars workspace={workspace} assigneeIds={task.assigneeIds} />
+        <span className="flex min-w-0 flex-1 flex-col gap-1">
+          <span
+            className={cn(
+              "truncate text-sm font-medium",
+              done && "text-muted-foreground line-through",
+            )}
+          >
+            {task.title}
+          </span>
+          <span className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+            <span>{workStatuses.find((status) => status.id === task.status)?.label}</span>
+            {task.subtasks.length > 0 && (
+              <span className="flex items-center gap-1">
+                {finished === task.subtasks.length ? (
+                  <CircleCheck className="size-3.5 text-primary" />
+                ) : (
+                  <ListChecks className="size-3.5" />
+                )}
+                {finished}/{task.subtasks.length} subtasks
+              </span>
+            )}
+            {task.priority !== "normal" && <PriorityFlag priority={task.priority} />}
+          </span>
+        </span>
+        <AssigneeAvatars workspace={workspace} assigneeIds={task.assigneeIds} />
+        <ChevronRight className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" />
+      </button>
     </div>
   );
 }

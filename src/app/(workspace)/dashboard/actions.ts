@@ -1,5 +1,6 @@
 "use server";
 
+import type { AddLumaGuest, CreateLumaEvent, SendLumaBlast, UpdateLumaGuest } from "@/lib/luma";
 import type { AssistantBranch, AssistantMessageWrite, AssistantThreadPatch } from "@/lib/assistant";
 import {
   deleteAssistantThread,
@@ -90,4 +91,24 @@ export async function updateAssistantThreadAction(id: string, input: AssistantTh
 
 export async function deleteAssistantThreadAction(id: string) {
   return deleteAssistantThread(id);
+}
+
+export async function getLumaCalendarAction() {
+  return getLumaCalendar();
+}
+
+export async function createLumaEventAction(input: CreateLumaEvent) {
+  return saved(() => createLumaEvent(input));
+}
+
+export async function addLumaGuestAction(input: AddLumaGuest) {
+  return saved(() => addLumaGuest(input));
+}
+
+export async function updateLumaGuestAction(input: UpdateLumaGuest) {
+  return saved(() => updateLumaGuest(input));
+}
+
+export async function sendLumaBlastAction(input: SendLumaBlast) {
+  return saved(() => sendLumaBlast(input));
 }

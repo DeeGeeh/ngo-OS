@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, Folder, Hash, MessageSquare } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -41,11 +41,13 @@ function ChannelItem({
   selected,
   onSelect,
   nested = false,
+  unread = 0,
 }: {
   channel: Channel;
   selected: boolean;
   onSelect: (id: string) => void;
   nested?: boolean;
+  unread?: number;
 }) {
   const select = useCallback(() => onSelect(channel.id), [channel.id, onSelect]);
   return (
@@ -57,7 +59,21 @@ function ChannelItem({
       aria-pressed={selected}
     >
       {nested ? <Folder data-icon="inline-start" /> : <Hash data-icon="inline-start" />}
-      <span className="truncate">{channel.name}</span>
+      <span
+        className={
+          unread > 0 ? "flex-1 truncate text-left font-semibold" : "flex-1 truncate text-left"
+        }
+      >
+        {channel.name}
+      </span>
+      {unread > 0 && (
+        <span
+          className="rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground tabular-nums"
+          aria-label={`${unread} unread`}
+        >
+          {unread}
+        </span>
+      )}
     </Button>
   );
 }
@@ -103,14 +119,23 @@ function SectionLabel({
   );
 }
 
+const noUnread: Record<string, number> = {};
+
 export function WorkspaceChat({
   workspace,
   projectId,
+  initialChannelId,
+  unread = noUnread,
+  onRead,
 }: {
   workspace: Workspace;
   projectId?: string;
+  initialChannelId?: string;
+  unread?: Record<string, number>;
+  onRead?: (channelId: string) => void;
 }) {
   const [selection, setSelection] = useState<ChatSelection | undefined>(() => {
+    if (initialChannelId) return { kind: "channel", id: initialChannelId };
     const projectChannel = workspace.channels.find(
       (channel) => channel.kind === "project" && channel.projectId === projectId,
     );
@@ -121,6 +146,11 @@ export function WorkspaceChat({
   const selectChannel = useCallback((id: string) => {
     setSelection({ kind: "channel", id });
   }, []);
+  const openChannelId = selection?.kind === "channel" ? selection.id : undefined;
+  const openChannelUnread = openChannelId ? (unread[openChannelId] ?? 0) : 0;
+  useEffect(() => {
+    if (openChannelId && openChannelUnread > 0) onRead?.(openChannelId);
+  }, [openChannelId, openChannelUnread, onRead]);
   const selectDirect = useCallback((id: string) => {
     setSelection({ kind: "direct", id });
   }, []);
@@ -161,6 +191,7 @@ export function WorkspaceChat({
                 channel={channel}
                 selected={selection?.kind === "channel" && selection.id === channel.id}
                 onSelect={selectChannel}
+                unread={unread[channel.id]}
               />
             ))}
             <div className="mt-3">

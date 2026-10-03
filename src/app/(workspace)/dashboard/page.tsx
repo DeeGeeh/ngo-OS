@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Suspense, ViewTransition } from "react";
 
-import { listAssistantThreads } from "@/server/assistant/facade";
 import { Loader } from "@/components/ui/loader";
+import { listAssistantThreads } from "@/server/assistant/facade";
+import { getGoogleCalendarEvents } from "@/server/calendar/facade";
+import { getLumaCalendar } from "@/server/luma/facade";
 import { getWorkspace } from "@/server/workspace/facade";
 
 import { WorkspaceProviders } from "./_components/providers";
@@ -24,8 +26,20 @@ const loading = (
 
 async function WorkspaceContent() {
   await connection();
-  const [workspace, initialThreads] = await Promise.all([getWorkspace(), listAssistantThreads()]);
-  return <WorkspaceApp initialWorkspace={workspace} initialThreads={initialThreads} />;
+  const [workspace, initialThreads, googleEvents, luma] = await Promise.all([
+    getWorkspace(),
+    listAssistantThreads(),
+    getGoogleCalendarEvents(),
+    getLumaCalendar(),
+  ]);
+  return (
+    <WorkspaceApp
+      initialWorkspace={workspace}
+      initialThreads={initialThreads}
+      googleEvents={googleEvents}
+      initialLuma={luma}
+    />
+  );
 }
 
 export default function DashboardPage() {

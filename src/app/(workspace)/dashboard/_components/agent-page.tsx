@@ -4,11 +4,13 @@ import {
   AuiIf,
   ThreadListItemPrimitive,
   ThreadListPrimitive,
+  useAui,
   useAuiEvent,
+  useAuiState,
   type AssistantState,
 } from "@assistant-ui/react";
 import { List, MessageSquare, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Empty, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
@@ -66,11 +68,39 @@ function SavedThreads() {
   );
 }
 
-export function AgentPage() {
+const isReady = (state: AssistantState) => state.thread.isEmpty && !state.thread.isLoading;
+
+function PromptHandoff({ prompt, onSent }: { prompt: string; onSent: () => void }) {
+  const aui = useAui();
+  const ready = useAuiState(isReady);
+  const switched = useRef(false);
+  const sent = useRef(false);
+  useEffect(() => {
+    if (switched.current) return;
+    switched.current = true;
+    if (!aui.thread().getState().isEmpty) aui.threads().switchToNewThread();
+  }, [aui]);
+  useEffect(() => {
+    if (!switched.current || !ready || sent.current) return;
+    sent.current = true;
+    aui.thread().append(prompt);
+    onSent();
+  }, [aui, ready, prompt, onSent]);
+  return null;
+}
+
+export function AgentPage({
+  prompt,
+  onPromptSent,
+}: {
+  prompt?: string | null;
+  onPromptSent?: () => void;
+}) {
   const [open, setOpen] = useState(false);
   useAuiEvent("threads.selectionChanged", () => setOpen(false));
   return (
     <div className="flex h-full min-h-0 flex-col md:flex-row">
+      {prompt && onPromptSent && <PromptHandoff prompt={prompt} onSent={onPromptSent} />}
       <aside className="hidden w-64 shrink-0 border-r md:block" aria-label="Saved conversations">
         <SavedThreads />
       </aside>

@@ -155,33 +155,53 @@ export function ProjectCard({ project, workspace }: { project: Project; workspac
   const tasks = workspace.tasks.filter((task) => task.projectId === project.id);
   const complete = tasks.filter((task) => task.status === "done").length;
   const percent = tasks.length === 0 ? 0 : Math.round((complete / tasks.length) * 100);
+  const preview = tasks
+    .filter((task) => task.status !== "done")
+    .toSorted((left, right) => priorityMeta[left.priority].rank - priorityMeta[right.priority].rank)
+    .slice(0, 3);
   return (
-    <div className="flex flex-col">
-      <div className="flex w-fit items-center gap-1.5 rounded-t-lg border border-b-0 border-foreground/10 bg-secondary px-2.5 py-1 text-xs font-medium">
-        <FolderOpen className="size-3.5" />
-        Project
+    <div className="flex flex-col gap-3 rounded-xl border border-foreground/10 bg-secondary px-3.5 py-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+          <FolderOpen className="size-3.5" />
+          Project
+        </span>
+        {project.dueDate && <DueDate dueDate={project.dueDate} done={project.status === "done"} />}
       </div>
-      <div className="-mt-px flex flex-col gap-3 rounded-xl rounded-tl-none border border-foreground/10 bg-secondary px-3.5 py-3">
-        <p className="text-sm leading-snug font-semibold">{project.title}</p>
-        {tasks.length > 0 && (
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between text-xs text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <ListChecks className="size-3.5" />
-                {complete} of {tasks.length} done
-              </span>
-              <span className="tabular-nums">{percent}%</span>
-            </div>
-            <Progress value={percent} />
+      <p className="text-sm leading-snug font-semibold">{project.title}</p>
+      {tasks.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <ListChecks className="size-3.5" />
+              {complete} of {tasks.length} done
+            </span>
+            <span className="tabular-nums">{percent}%</span>
           </div>
-        )}
-        <div className="flex items-center justify-between gap-2">
-          <AssigneeAvatars workspace={workspace} assigneeIds={project.assigneeIds} />
-          {project.dueDate && (
-            <DueDate dueDate={project.dueDate} done={project.status === "done"} />
-          )}
+          <Progress value={percent} />
         </div>
-      </div>
+      )}
+      {preview.length > 0 && (
+        <ul className="flex flex-col gap-1 border-t border-foreground/10 pt-2.5">
+          {preview.map((task) => (
+            <li key={task.id} className="flex items-center gap-2 text-xs">
+              <span
+                className={cn(
+                  "size-1.5 shrink-0 rounded-full",
+                  task.status === "doing" ? "bg-chart-2" : "bg-muted-foreground/40",
+                )}
+              />
+              <span className="truncate text-foreground/80">{task.title}</span>
+            </li>
+          ))}
+          {tasks.length - complete > preview.length && (
+            <li className="pl-3.5 text-xs text-muted-foreground">
+              +{tasks.length - complete - preview.length} more
+            </li>
+          )}
+        </ul>
+      )}
+      <AssigneeAvatars workspace={workspace} assigneeIds={project.assigneeIds} />
     </div>
   );
 }

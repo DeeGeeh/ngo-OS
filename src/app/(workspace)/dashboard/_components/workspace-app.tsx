@@ -7,12 +7,16 @@ import {
   CalendarDays,
   ChevronsUpDown,
   Folder,
+  HandCoins,
+  Handshake,
+  House,
   LayoutDashboard,
   LogOut,
   MessageSquare,
   Moon,
   PanelRight,
   Settings,
+  Sparkles,
   Sun,
   Ticket,
   UserRound,
@@ -21,7 +25,6 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTheme } from "next-themes";
-import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
@@ -41,63 +44,72 @@ import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { lumaCalendarItems, type CalendarItem } from "@/lib/calendar";
+import type { AssistantThread } from "@/lib/assistant";
 import { lumaQueryKey, type LumaCalendar } from "@/lib/luma";
-import { defaultOrganizationId, product } from "@/lib/organizations";
+import { defaultOrganizationId, organizations, product } from "@/lib/organizations";
 import { cn } from "@/lib/utils";
 import { workspaceQueryKey, type Member, type Workspace, type WorkStatus } from "@/lib/workspace";
 
 import { getLumaCalendarAction, getWorkspaceAction } from "../actions";
-import { AssistantPanel, AssistantProvider } from "./assistant-panel";
+import { AgentPage } from "./agent-page";
+import { AssistantPanel } from "./assistant-panel";
+import { AssistantProvider } from "./assistant-runtime";
 import { CalendarScreen } from "./calendar-screen";
+import { DonationsScreen } from "./donations-screen";
 import { EventsScreen } from "./events-screen";
+import { HomeScreen } from "./home-screen";
 import { OrgSwitcher } from "./org-switcher";
 import { PeopleScreen } from "./people-screen";
 import { ProjectDetail } from "./project-detail";
 import { SettingsScreen } from "./settings-screen";
+import { SponsorsScreen } from "./sponsors-screen";
 import { CreateWorkMenu, WorkBoard } from "./work-board";
 import { TaskDetail } from "./task-detail";
 import { MemberAvatar } from "./work-cards";
 import { WorkEditor } from "./work-editor";
 import { WorkspaceChat } from "./workspace-chat";
 
-type View =
-  | { kind: "board" }
-  | { kind: "project"; id: string }
-  | { kind: "chat" }
-  | { kind: "people" }
-  | { kind: "calendar" }
-  | { kind: "events" }
-  | { kind: "settings" };
 const screenTitles = {
+  home: "Dashboard",
   board: "Board",
+  agent: "Ask the agent",
   chat: "Chat",
+  sponsors: "Sponsors",
   people: "People",
   calendar: "Calendar",
   events: "Events",
+  donations: "Donations",
   settings: "Settings",
 } as const;
 const screenSubtitles = {
+  home: "What is happening across the organization today",
   board: "Projects and tasks across the organization",
+  agent: "Saved conversations with the workspace assistant",
   chat: "Channels, project threads, and direct messages",
+  sponsors: "Sponsor pipeline, contacts, and follow-ups",
   people: "Members, roles, and what they are working on",
   calendar: "Everything scheduled, in one place",
   events: "Public events and registrations",
+  donations: "Donation links and what they have raised",
   settings: "Workspace preferences",
 } as const;
 type Creation = { kind: "task" | "project"; status: WorkStatus; projectId?: string };
 type Screen = keyof typeof screenTitles;
 type NavItem = { id: Screen; label: string; icon: LucideIcon };
-const initialView: View = { kind: "board" };
 const enter = { opacity: 0 };
 const visible = { opacity: 1 };
 const navItems = [
+  { id: "home", label: "Dashboard", icon: House },
   { id: "board", label: "Board", icon: LayoutDashboard },
+  { id: "agent", label: "Ask the agent", icon: Sparkles },
   { id: "chat", label: "Chat", icon: MessageSquare },
+  { id: "sponsors", label: "Sponsors", icon: Handshake },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "events", label: "Events", icon: Ticket },
   { id: "people", label: "People", icon: Users },
   { id: "settings", label: "Settings", icon: Settings },
 ] satisfies NavItem[];
+const initialUnread: Record<string, number> = { ideas: 1 };
 
 function NavButton({
   item,
@@ -127,10 +139,39 @@ function NavButton({
       <Icon className={cn("size-4 shrink-0", active && "text-sidebar-primary")} />
       <span className="flex-1 text-left">{item.label}</span>
       {count !== undefined && count > 0 && (
-        <span className="rounded-full bg-sidebar-accent px-1.5 py-0.5 text-xs font-medium tabular-nums">
+        <span
+          className={cn(
+            "rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums",
+            item.id === "chat"
+              ? "bg-sidebar-primary text-sidebar-primary-foreground"
+              : "bg-sidebar-accent",
+          )}
+        >
           {count}
         </span>
       )}
+    </button>
+  );
+}
+
+function DonationsShortcut({ active, onOpen }: { active: boolean; onOpen: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "flex flex-col gap-1 rounded-xl border p-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        active
+          ? "border-sidebar-primary/40 bg-sidebar-accent"
+          : "border-sidebar-border bg-sidebar hover:bg-sidebar-accent/50",
+      )}
+    >
+      <span className="flex items-center gap-2 text-sm font-medium">
+        <HandCoins className="size-4 text-sidebar-primary" />
+        Donations
+      </span>
+      <span className="text-xs text-muted-foreground">Create a link people can give through.</span>
     </button>
   );
 }
@@ -214,10 +255,12 @@ function UserMenu({ member, onSettings }: { member?: Member; onSettings: () => v
 
 export function WorkspaceApp({
   initialWorkspace,
+  initialThreads,
   googleEvents,
   initialLuma,
 }: {
   initialWorkspace: Workspace;
+  initialThreads: AssistantThread[];
   googleEvents: CalendarItem[];
   initialLuma: LumaCalendar;
 }) {
@@ -232,34 +275,56 @@ export function WorkspaceApp({
     initialData: initialLuma,
   });
   const lumaItems = useMemo(() => lumaCalendarItems(luma.events), [luma.events]);
-  const [view, setView] = useState<View>(initialView);
+  const [screen, setScreen] = useState<Screen>("home");
+  const [projectId, setProjectId] = useState<string | null>(null);
   const [taskId, setTaskId] = useState<string | null>(null);
+  const [unread, setUnread] = useState(initialUnread);
+  const [chatChannel, setChatChannel] = useState<string | undefined>(undefined);
+  const [pendingPrompt, setPendingPrompt] = useState<string | null>(null);
   const [creation, setCreation] = useState<Creation | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
   const [organizationId, setOrganizationId] = useState(defaultOrganizationId);
   const isMobile = useIsMobile();
   const { resolvedTheme, setTheme } = useTheme();
   const task = workspace.tasks.find((item) => item.id === taskId);
-  const project =
-    view.kind === "project" ? workspace.projects.find((item) => item.id === view.id) : undefined;
+  const project = workspace.projects.find((item) => item.id === projectId);
   const currentMember = workspace.members.find((member) => member.id === workspace.currentMemberId);
-  const screen = view.kind === "project" ? "board" : view.kind;
+  const organization = organizations.find((item) => item.id === organizationId) ?? organizations[0];
+  const unreadTotal = Object.values(unread).reduce((sum, count) => sum + count, 0);
   const title = screenTitles[screen];
   const subtitle = screenSubtitles[screen];
   const navCounts = useMemo(
-    () => ({
+    (): Partial<Record<Screen, number>> => ({
       board: workspace.tasks.filter((item) => item.status !== "done").length,
-      chat: undefined,
-      calendar: undefined,
+      chat: unreadTotal,
       events: luma.events.length,
-      people: workspace.members.length,
-      settings: undefined,
     }),
-    [workspace.tasks, workspace.members.length, luma.events.length],
+    [workspace.tasks, unreadTotal, luma.events.length],
   );
 
   const openTask = useCallback((id: string) => setTaskId(id), []);
-  const openProject = useCallback((id: string) => setView({ kind: "project", id }), []);
+  const openProject = useCallback((id: string) => setProjectId(id), []);
+  const projectOpenChanged = useCallback((open: boolean) => {
+    if (!open) setProjectId(null);
+  }, []);
+  const markRead = useCallback((channelId: string) => {
+    setUnread((current) => {
+      if (!current[channelId]) return current;
+      const next = { ...current };
+      delete next[channelId];
+      return next;
+    });
+  }, []);
+  const openChannel = useCallback((channelId: string) => {
+    setChatChannel(channelId);
+    setScreen("chat");
+  }, []);
+  const ask = useCallback((prompt: string) => {
+    setPendingPrompt(prompt);
+    setScreen("agent");
+  }, []);
+  const promptSent = useCallback(() => setPendingPrompt(null), []);
+  const openDonations = useCallback(() => setScreen("donations"), []);
   const create = useCallback((status: WorkStatus, kind: "task" | "project") => {
     setCreation({ kind, status });
   }, []);
@@ -268,15 +333,17 @@ export function WorkspaceApp({
     [],
   );
   const closeCreation = useCallback(() => setCreation(null), []);
-  const returnToBoard = useCallback(() => setView(initialView), []);
   const taskOpenChanged = useCallback((open: boolean) => {
     if (!open) setTaskId(null);
   }, []);
   const creationOpenChanged = useCallback((open: boolean) => {
     if (!open) setCreation(null);
   }, []);
-  const switchScreen = useCallback((value: Screen) => setView({ kind: value }), []);
-  const openSettings = useCallback(() => setView({ kind: "settings" }), []);
+  const switchScreen = useCallback((value: Screen) => {
+    setChatChannel(undefined);
+    setScreen(value);
+  }, []);
+  const openSettings = useCallback(() => setScreen("settings"), []);
   const switchCreationKind = useCallback(
     (values: string[]) => {
       const value = values[0];
@@ -319,6 +386,7 @@ export function WorkspaceApp({
                   ))}
                 </nav>
                 <div className="mt-auto flex flex-col gap-2">
+                  <DonationsShortcut active={screen === "donations"} onOpen={openDonations} />
                   <UserMenu member={currentMember} onSettings={openSettings} />
                   <ProductMark />
                 </div>
@@ -341,7 +409,7 @@ export function WorkspaceApp({
                   {resolvedTheme === "dark" ? <Sun /> : <Moon />}
                 </Button>
                 <Button
-                  variant={view.kind === "settings" ? "secondary" : "ghost"}
+                  variant={screen === "settings" ? "secondary" : "ghost"}
                   size="icon"
                   aria-label="Settings"
                   onClick={openSettings}
@@ -374,15 +442,29 @@ export function WorkspaceApp({
             <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
               <ResizablePanel id="workspace" defaultSize="72%" minSize="35%">
                 <motion.main
-                  key={view.kind === "project" ? view.id : view.kind}
+                  key={screen}
                   initial={enter}
                   animate={visible}
                   className={cn(
                     "h-full",
-                    view.kind === "calendar" ? "overflow-hidden" : "overflow-auto",
+                    screen === "calendar" || screen === "agent"
+                      ? "overflow-hidden"
+                      : "overflow-auto",
                   )}
                 >
-                  {view.kind === "board" && (
+                  {screen === "home" && (
+                    <HomeScreen
+                      workspace={workspace}
+                      luma={luma}
+                      organizationName={organization?.name ?? "your team"}
+                      unread={unread}
+                      onAsk={ask}
+                      onOpenChannel={openChannel}
+                      onTask={openTask}
+                      onProject={openProject}
+                    />
+                  )}
+                  {screen === "board" && (
                     <WorkBoard
                       workspace={workspace}
                       onTask={openTask}
@@ -390,26 +472,33 @@ export function WorkspaceApp({
                       onCreate={create}
                     />
                   )}
-                  {project && (
-                    <ProjectDetail
-                      project={project}
-                      workspace={workspace}
-                      onBack={returnToBoard}
-                      onTask={openTask}
-                      onNewTask={createProjectTask}
-                    />
+                  {screen === "agent" && (
+                    <AgentPage prompt={pendingPrompt} onPromptSent={promptSent} />
                   )}
-                  {view.kind === "chat" && <WorkspaceChat workspace={workspace} />}
-                  {view.kind === "calendar" && (
+                  {screen === "chat" && (
+                    <div className="h-full p-4 lg:p-6">
+                      <WorkspaceChat
+                        workspace={workspace}
+                        initialChannelId={chatChannel}
+                        unread={unread}
+                        onRead={markRead}
+                      />
+                    </div>
+                  )}
+                  {screen === "sponsors" && <SponsorsScreen workspace={workspace} />}
+                  {screen === "donations" && (
+                    <DonationsScreen organizationName={organization?.name ?? "TRES"} />
+                  )}
+                  {screen === "calendar" && (
                     <CalendarScreen
                       workspace={workspace}
                       googleEvents={googleEvents}
                       lumaEvents={lumaItems}
                     />
                   )}
-                  {view.kind === "events" && <EventsScreen calendar={luma} />}
-                  {view.kind === "people" && <PeopleScreen workspace={workspace} />}
-                  {view.kind === "settings" && (
+                  {screen === "events" && <EventsScreen calendar={luma} />}
+                  {screen === "people" && <PeopleScreen workspace={workspace} />}
+                  {screen === "settings" && (
                     <SettingsScreen workspace={workspace} organizationId={organizationId} />
                   )}
                 </motion.main>
@@ -438,6 +527,24 @@ export function WorkspaceApp({
             <AssistantPanel onClose={toggleAssistant} />
           </SheetContent>
         </Sheet>
+        <Dialog open={Boolean(project)} onOpenChange={projectOpenChanged}>
+          <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-6xl">
+            <div className="sr-only">
+              <DialogHeader>
+                <DialogTitle>{project?.title ?? "Project"}</DialogTitle>
+              </DialogHeader>
+            </div>
+            {project && (
+              <ProjectDetail
+                key={project.id}
+                project={project}
+                workspace={workspace}
+                onTask={openTask}
+                onNewTask={createProjectTask}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
         <Dialog open={Boolean(task)} onOpenChange={taskOpenChanged}>
           <DialogContent className="max-h-dvh overflow-hidden sm:max-w-5xl">
             <div className="sr-only">
