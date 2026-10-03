@@ -102,7 +102,6 @@ const navItems = [
   { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "events", label: "Events", icon: Ticket },
   { id: "people", label: "People", icon: Users },
-  { id: "agent", label: "Agent", icon: Sparkles },
   { id: "settings", label: "Settings", icon: Settings },
 ] satisfies NavItem[];
 
@@ -138,6 +137,49 @@ function NavButton({
           {count}
         </span>
       )}
+    </button>
+  );
+}
+
+const sparkleMotion = { rotate: [0, 14, -8, 0], scale: [1, 1.15, 1] };
+const sparkleTransition = {
+  duration: 2.4,
+  repeat: Infinity,
+  repeatDelay: 2.6,
+  ease: "easeInOut",
+} as const;
+
+function AgentNavButton({ active, onSelect }: { active: boolean; onSelect: (id: Screen) => void }) {
+  const select = useCallback(() => onSelect("agent"), [onSelect]);
+  return (
+    <button
+      type="button"
+      onClick={select}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "group relative flex items-center gap-2.5 overflow-hidden rounded-lg border px-2.5 py-2 text-sm font-medium outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        active
+          ? "border-primary/40 bg-primary text-primary-foreground shadow-sm"
+          : "border-primary/20 bg-linear-to-r from-primary/10 via-chart-3/10 to-primary/5 text-sidebar-foreground hover:border-primary/40",
+      )}
+    >
+      <motion.span
+        aria-hidden="true"
+        animate={sparkleMotion}
+        transition={sparkleTransition}
+        className="flex"
+      >
+        <Sparkles className={cn("size-4", !active && "text-primary")} />
+      </motion.span>
+      <span className="flex-1 text-left">Ask the agent</span>
+      <span
+        className={cn(
+          "rounded-full px-1.5 py-0.5 text-xs",
+          active ? "bg-primary-foreground/20" : "bg-primary/10 text-primary",
+        )}
+      >
+        AI
+      </span>
     </button>
   );
 }
@@ -314,6 +356,7 @@ export function WorkspaceApp({
                   onSelect={setOrganizationId}
                   onSettings={openSettings}
                 />
+                <AgentNavButton active={screen === "agent"} onSelect={switchScreen} />
                 <nav aria-label="Main navigation" className="flex flex-col gap-1">
                   <p className="px-2 pt-1 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                     Workspace
