@@ -251,6 +251,9 @@ importers:
       ai:
         specifier: ^7.0.127
         version: 7.0.127(zod@4.6.5)
+      assistant-stream:
+        specifier: ^0.3.46
+        version: 0.3.46
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1

@@ -13,6 +13,12 @@ import { z } from "zod";
 
 import { env } from "@/env";
 import {
+  assistantBranchSchema,
+  assistantIdSchema,
+  assistantMessageWriteSchema,
+  assistantThreadPatchSchema,
+} from "@/lib/assistant";
+import {
   createProjectSchema,
   createTaskSchema,
   updateProjectSchema,
@@ -25,6 +31,57 @@ import {
   updateProject,
   updateTask,
 } from "@/server/workspace/facade";
+
+import {
+  deleteThread,
+  initializeThread,
+  listThreads,
+  readThread,
+  saveMessage,
+  selectBranch,
+  updateThread,
+} from "./store";
+
+export async function listAssistantThreads() {
+  return listThreads();
+}
+
+export async function initializeAssistantThread(id: unknown) {
+  return initializeThread(assistantIdSchema.parse(id));
+}
+
+export async function readAssistantThread(id: unknown) {
+  const history = await readThread(assistantIdSchema.parse(id));
+  if (history.messages.length === 0) return history;
+  const validated = await safeValidateUIMessages({
+    messages: history.messages.map((message) => ({ ...message.content, id: message.id })),
+    tools: workspaceTools,
+  });
+  if (!validated.success) throw new Error("The saved conversation contains invalid messages.");
+  return history;
+}
+
+export async function saveAssistantMessage(input: unknown) {
+  const parsed = assistantMessageWriteSchema.parse(input);
+  const validated = await safeValidateUIMessages({
+    messages: [{ ...parsed.message.content, id: parsed.message.id }],
+    tools: workspaceTools,
+  });
+  if (!validated.success) throw new Error("The conversation contains an invalid message.");
+  return saveMessage(parsed);
+}
+
+export async function selectAssistantBranch(input: unknown) {
+  return selectBranch(assistantBranchSchema.parse(input));
+}
+
+export async function updateAssistantThread(id: unknown, input: unknown) {
+  return updateThread(assistantIdSchema.parse(id), assistantThreadPatchSchema.parse(input));
+}
+
+export async function deleteAssistantThread(id: unknown) {
+  return deleteThread(assistantIdSchema.parse(id));
+}
 
 export const workspaceTools = {
   readWorkspace: tool({
