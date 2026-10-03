@@ -1,48 +1,122 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Nest — brand kit</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f4f6f9; color: #0f1b2d; padding: 32px 40px; }
-  h1 { margin: 0 0 4px; font-size: 28px; letter-spacing: -0.02em; }
-  .sub { margin: 0 0 24px; color: #64748b; }
-  .hero { width: 100%; border-radius: 16px; display: block; margin-bottom: 20px; }
-  .grid { display: grid; grid-template-columns: 180px repeat(3, 1fr); gap: 12px; align-items: stretch; }
-  .head { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #64748b; padding: 0 4px; }
-  .rowlabel { font-weight: 600; font-size: 14px; display: flex; flex-direction: column; justify-content: center; }
-  .rowlabel small { font-weight: 400; color: #64748b; font-size: 12px; margin-top: 2px; }
-  .cell { border-radius: 14px; height: 150px; display: grid; place-items: center; padding: 20px; }
-  .cell img { max-width: 70%; max-height: 104px; width: auto; height: auto; min-width: 0; min-height: 0; }
-  .light { background: #fff; border: 1px solid #e2e8f0; }
-  .dark { background: #0b1220; }
-  .sky { background: url("sky-wallpaper.png") center / cover; }
-</style>
-</head>
-<body>
-<h1>nest — brand kit</h1>
-<p class="sub">Exports in public/brand · SVG (outlined text, no font needed) + PNG @1x/@2x, white and blue</p>
-<img class="hero" src="../../public/brand/png/nest-hero-wallpaper-tagline.png" alt="">
-<div class="grid" id="grid">
-  <div></div><div class="head">Blue · light bg</div><div class="head">White · dark bg</div><div class="head">White · on sky</div>
-</div>
-<script>
-const rows = [
-  ['Logo only', 'nest-mark'],
-  ['Text only', 'nest-wordmark'],
-  ['Side by side', 'nest-horizontal'],
-  ['Stacked (hero)', 'nest-stacked'],
-];
-const grid = document.getElementById('grid');
-for (const [label, file] of rows) {
-  grid.insertAdjacentHTML('beforeend', `
+  <head>
+    <meta charset="utf-8" />
+    <title>Nest — brand kit</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #f4f6f9;
+        color: #0f1b2d;
+        padding: 32px 40px;
+      }
+      h1 {
+        margin: 0 0 4px;
+        font-size: 28px;
+        letter-spacing: -0.02em;
+      }
+      .sub {
+        margin: 0 0 24px;
+        color: #64748b;
+      }
+      .hero {
+        width: 100%;
+        border-radius: 16px;
+        display: block;
+        margin-bottom: 20px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 180px repeat(3, 1fr);
+        gap: 12px;
+        align-items: stretch;
+      }
+      .head {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #64748b;
+        padding: 0 4px;
+      }
+      .rowlabel {
+        font-weight: 600;
+        font-size: 14px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .rowlabel small {
+        font-weight: 400;
+        color: #64748b;
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      .cell {
+        border-radius: 14px;
+        height: 150px;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+      .cell img {
+        max-width: 70%;
+        max-height: 104px;
+        width: auto;
+        height: auto;
+        min-width: 0;
+        min-height: 0;
+      }
+      .light {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+      }
+      .dark {
+        background: #0b1220;
+      }
+      .sky {
+        background: url("sky-wallpaper.png") center / cover;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>nest — brand kit</h1>
+    <p class="sub">
+      Exports in public/brand · SVG (outlined text, no font needed) + PNG @1x/@2x, white and blue
+    </p>
+    <img class="hero" src="../../public/brand/png/nest-hero-wallpaper-tagline.png" alt="" />
+    <div class="grid" id="grid">
+      <div></div>
+      <div class="head">Blue · light bg</div>
+      <div class="head">White · dark bg</div>
+      <div class="head">White · on sky</div>
+    </div>
+    <script>
+      const rows = [
+        ["Logo only", "nest-mark"],
+        ["Text only", "nest-wordmark"],
+        ["Side by side", "nest-horizontal"],
+        ["Stacked (hero)", "nest-stacked"],
+      ];
+      const grid = document.getElementById("grid");
+      for (const [label, file] of rows) {
+        grid.insertAdjacentHTML(
+          "beforeend",
+          `
     <div class="rowlabel">${label}<small>${file}-*.svg / .png</small></div>
     <div class="cell light"><img src="../../public/brand/svg/${file}-blue.svg"></div>
     <div class="cell dark"><img src="../../public/brand/png/${file}-white@2x.png"></div>
-    <div class="cell sky"><img src="../../public/brand/svg/${file}-white.svg"></div>`);
-}
-</script>
-</body>
+    <div class="cell sky"><img src="../../public/brand/svg/${file}-white.svg"></div>`,
+        );
+      }
+    </script>
+  </body>
 </html>

@@ -1,107 +1,234 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Nest — Dot Nest, sky palette</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root { --deep: #3D7ABC; --mid: #649CD2; --light: #88BDE9; --mist: #D4E2EE; --cloud: #FFFFFC; }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f4f6f9; color: #0f1b2d; padding: 32px 40px 40px; }
-  h1 { margin: 0; font-size: 28px; letter-spacing: -0.02em; }
-  .sub { margin: 6px 0 24px; color: #64748b; }
-  .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 16px; }
-  .panel { border-radius: 20px; padding: 28px; display: flex; flex-direction: column; align-items: center; gap: 18px; }
-  .panel.light { background: #fff; border: 1px solid #e2e8f0; }
-  .panel.dark { background: #0b1220; color: #f8fafc; }
-  .panel.sky { background: linear-gradient(180deg, var(--deep), var(--mid) 55%, var(--light)); color: var(--cloud); }
-  .label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; opacity: .6; align-self: flex-start; }
-  .hero { width: 150px; height: 150px; }
-  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 34px; letter-spacing: -0.04em; }
-  .brand svg { width: 40px; height: 40px; }
-  .sizes { display: flex; align-items: end; gap: 18px; }
-  .tile { border-radius: 22%; display: grid; place-items: center; background: linear-gradient(180deg, var(--deep), var(--light)); }
-  .tile svg { width: 72%; height: 72%; }
-  .swatches { display: flex; gap: 12px; margin-top: 8px; }
-  .sw { width: 120px; }
-  .sw div { height: 56px; border-radius: 12px; border: 1px solid #e2e8f0; }
-  .sw p { margin: 6px 0 0; font-size: 12px; color: #475569; }
-  .sw b { display: block; color: #0f1b2d; }
-</style>
-</head>
-<body>
-<h1>nest — Dot Nest, sky palette</h1>
-<p class="sub">Colors sampled from the reference sky: deep blue at the top, light blue at the horizon, cloud white.</p>
+  <head>
+    <meta charset="utf-8" />
+    <title>Nest — Dot Nest, sky palette</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --deep: #3d7abc;
+        --mid: #649cd2;
+        --light: #88bde9;
+        --mist: #d4e2ee;
+        --cloud: #fffffc;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #f4f6f9;
+        color: #0f1b2d;
+        padding: 32px 40px 40px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: -0.02em;
+      }
+      .sub {
+        margin: 6px 0 24px;
+        color: #64748b;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 16px;
+      }
+      .panel {
+        border-radius: 20px;
+        padding: 28px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      }
+      .panel.light {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+      }
+      .panel.dark {
+        background: #0b1220;
+        color: #f8fafc;
+      }
+      .panel.sky {
+        background: linear-gradient(180deg, var(--deep), var(--mid) 55%, var(--light));
+        color: var(--cloud);
+      }
+      .label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        opacity: 0.6;
+        align-self: flex-start;
+      }
+      .hero {
+        width: 150px;
+        height: 150px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 34px;
+        letter-spacing: -0.04em;
+      }
+      .brand svg {
+        width: 40px;
+        height: 40px;
+      }
+      .sizes {
+        display: flex;
+        align-items: end;
+        gap: 18px;
+      }
+      .tile {
+        border-radius: 22%;
+        display: grid;
+        place-items: center;
+        background: linear-gradient(180deg, var(--deep), var(--light));
+      }
+      .tile svg {
+        width: 72%;
+        height: 72%;
+      }
+      .swatches {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+      }
+      .sw {
+        width: 120px;
+      }
+      .sw div {
+        height: 56px;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+      }
+      .sw p {
+        margin: 6px 0 0;
+        font-size: 12px;
+        color: #475569;
+      }
+      .sw b {
+        display: block;
+        color: #0f1b2d;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>nest — Dot Nest, sky palette</h1>
+    <p class="sub">
+      Colors sampled from the reference sky: deep blue at the top, light blue at the horizon, cloud
+      white.
+    </p>
 
-<div class="row">
-  <div class="panel light">
-    <span class="label">Light</span>
-    <svg class="hero" viewBox="0 0 100 100" data-theme="light"></svg>
-    <div class="brand"><svg viewBox="0 0 100 100" data-theme="light"></svg><span>nest</span></div>
-  </div>
-  <div class="panel dark">
-    <span class="label">Dark</span>
-    <svg class="hero" viewBox="0 0 100 100" data-theme="dark"></svg>
-    <div class="brand"><svg viewBox="0 0 100 100" data-theme="dark"></svg><span>nest</span></div>
-  </div>
-  <div class="panel sky">
-    <span class="label">On sky</span>
-    <svg class="hero" viewBox="0 0 100 100" data-theme="sky"></svg>
-    <div class="brand"><svg viewBox="0 0 100 100" data-theme="sky"></svg><span>nest</span></div>
-  </div>
-</div>
-
-<div class="row">
-  <div class="panel light">
-    <span class="label">App icon · 128 / 64 / 32 / 16</span>
-    <div class="sizes">
-      <div class="tile" style="width:128px;height:128px"><svg viewBox="0 0 100 100" data-theme="sky"></svg></div>
-      <div class="tile" style="width:64px;height:64px"><svg viewBox="0 0 100 100" data-theme="sky"></svg></div>
-      <div class="tile" style="width:32px;height:32px"><svg viewBox="0 0 100 100" data-theme="sky"></svg></div>
-      <div class="tile" style="width:16px;height:16px"><svg viewBox="0 0 100 100" data-theme="sky"></svg></div>
+    <div class="row">
+      <div class="panel light">
+        <span class="label">Light</span>
+        <svg class="hero" viewBox="0 0 100 100" data-theme="light"></svg>
+        <div class="brand">
+          <svg viewBox="0 0 100 100" data-theme="light"></svg><span>nest</span>
+        </div>
+      </div>
+      <div class="panel dark">
+        <span class="label">Dark</span>
+        <svg class="hero" viewBox="0 0 100 100" data-theme="dark"></svg>
+        <div class="brand">
+          <svg viewBox="0 0 100 100" data-theme="dark"></svg><span>nest</span>
+        </div>
+      </div>
+      <div class="panel sky">
+        <span class="label">On sky</span>
+        <svg class="hero" viewBox="0 0 100 100" data-theme="sky"></svg>
+        <div class="brand"><svg viewBox="0 0 100 100" data-theme="sky"></svg><span>nest</span></div>
+      </div>
     </div>
-  </div>
-  <div class="panel light">
-    <span class="label">Mark only · 64 / 32 / 16</span>
-    <div class="sizes">
-      <svg style="width:64px;height:64px" viewBox="0 0 100 100" data-theme="light"></svg>
-      <svg style="width:32px;height:32px" viewBox="0 0 100 100" data-theme="light"></svg>
-      <svg style="width:16px;height:16px" viewBox="0 0 100 100" data-theme="light"></svg>
-    </div>
-  </div>
-  <div class="panel dark">
-    <span class="label">Mark only · 64 / 32 / 16</span>
-    <div class="sizes">
-      <svg style="width:64px;height:64px" viewBox="0 0 100 100" data-theme="dark"></svg>
-      <svg style="width:32px;height:32px" viewBox="0 0 100 100" data-theme="dark"></svg>
-      <svg style="width:16px;height:16px" viewBox="0 0 100 100" data-theme="dark"></svg>
-    </div>
-  </div>
-</div>
 
-<div class="swatches">
-  <div class="sw"><div style="background:#3D7ABC"></div><p><b>Deep sky</b>#3D7ABC</p></div>
-  <div class="sw"><div style="background:#649CD2"></div><p><b>Mid sky</b>#649CD2</p></div>
-  <div class="sw"><div style="background:#88BDE9"></div><p><b>Horizon</b>#88BDE9</p></div>
-  <div class="sw"><div style="background:#D4E2EE"></div><p><b>Mist</b>#D4E2EE</p></div>
-  <div class="sw"><div style="background:#FFFFFC"></div><p><b>Cloud</b>#FFFFFC</p></div>
-</div>
+    <div class="row">
+      <div class="panel light">
+        <span class="label">App icon · 128 / 64 / 32 / 16</span>
+        <div class="sizes">
+          <div class="tile" style="width: 128px; height: 128px">
+            <svg viewBox="0 0 100 100" data-theme="sky"></svg>
+          </div>
+          <div class="tile" style="width: 64px; height: 64px">
+            <svg viewBox="0 0 100 100" data-theme="sky"></svg>
+          </div>
+          <div class="tile" style="width: 32px; height: 32px">
+            <svg viewBox="0 0 100 100" data-theme="sky"></svg>
+          </div>
+          <div class="tile" style="width: 16px; height: 16px">
+            <svg viewBox="0 0 100 100" data-theme="sky"></svg>
+          </div>
+        </div>
+      </div>
+      <div class="panel light">
+        <span class="label">Mark only · 64 / 32 / 16</span>
+        <div class="sizes">
+          <svg style="width: 64px; height: 64px" viewBox="0 0 100 100" data-theme="light"></svg>
+          <svg style="width: 32px; height: 32px" viewBox="0 0 100 100" data-theme="light"></svg>
+          <svg style="width: 16px; height: 16px" viewBox="0 0 100 100" data-theme="light"></svg>
+        </div>
+      </div>
+      <div class="panel dark">
+        <span class="label">Mark only · 64 / 32 / 16</span>
+        <div class="sizes">
+          <svg style="width: 64px; height: 64px" viewBox="0 0 100 100" data-theme="dark"></svg>
+          <svg style="width: 32px; height: 32px" viewBox="0 0 100 100" data-theme="dark"></svg>
+          <svg style="width: 16px; height: 16px" viewBox="0 0 100 100" data-theme="dark"></svg>
+        </div>
+      </div>
+    </div>
 
-<script>
-const themes = {
-  light: { outer: '#3D7ABC', inner: '#649CD2', egg: '#88BDE9' },
-  dark:  { outer: '#88BDE9', inner: '#649CD2', egg: '#FFFFFC' },
-  sky:   { outer: '#FFFFFC', inner: '#D4E2EE', egg: '#FFFFFC' },
-};
-const rad = d => d * Math.PI / 180;
-const pt = (r, deg, cx, cy) => [cx + r * Math.cos(rad(deg)), cy + r * Math.sin(rad(deg))];
-const dot = ([x, y], r, fill) => `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r}" fill="${fill}"/>`;
-const mark = ({ outer, inner, egg }) =>
-  Array.from({ length: 7 }, (_, i) => dot(pt(36, i * 30, 50, 44), 6.5, outer)).join('')
-  + Array.from({ length: 4 }, (_, i) => dot(pt(22, 22.5 + i * 45, 50, 44), 5, inner)).join('')
-  + `<ellipse cx="50" cy="40" rx="10" ry="12.5" fill="${egg}"/>`;
-document.querySelectorAll('svg[data-theme]').forEach(el => { el.innerHTML = mark(themes[el.dataset.theme]); });
-</script>
-</body>
+    <div class="swatches">
+      <div class="sw">
+        <div style="background: #3d7abc"></div>
+        <p><b>Deep sky</b>#3D7ABC</p>
+      </div>
+      <div class="sw">
+        <div style="background: #649cd2"></div>
+        <p><b>Mid sky</b>#649CD2</p>
+      </div>
+      <div class="sw">
+        <div style="background: #88bde9"></div>
+        <p><b>Horizon</b>#88BDE9</p>
+      </div>
+      <div class="sw">
+        <div style="background: #d4e2ee"></div>
+        <p><b>Mist</b>#D4E2EE</p>
+      </div>
+      <div class="sw">
+        <div style="background: #fffffc"></div>
+        <p><b>Cloud</b>#FFFFFC</p>
+      </div>
+    </div>
+
+    <script>
+      const themes = {
+        light: { outer: "#3D7ABC", inner: "#649CD2", egg: "#88BDE9" },
+        dark: { outer: "#88BDE9", inner: "#649CD2", egg: "#FFFFFC" },
+        sky: { outer: "#FFFFFC", inner: "#D4E2EE", egg: "#FFFFFC" },
+      };
+      const rad = (d) => (d * Math.PI) / 180;
+      const pt = (r, deg, cx, cy) => [cx + r * Math.cos(rad(deg)), cy + r * Math.sin(rad(deg))];
+      const dot = ([x, y], r, fill) =>
+        `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r}" fill="${fill}"/>`;
+      const mark = ({ outer, inner, egg }) =>
+        Array.from({ length: 7 }, (_, i) => dot(pt(36, i * 30, 50, 44), 6.5, outer)).join("") +
+        Array.from({ length: 4 }, (_, i) => dot(pt(22, 22.5 + i * 45, 50, 44), 5, inner)).join("") +
+        `<ellipse cx="50" cy="40" rx="10" ry="12.5" fill="${egg}"/>`;
+      document.querySelectorAll("svg[data-theme]").forEach((el) => {
+        el.innerHTML = mark(themes[el.dataset.theme]);
+      });
+    </script>
+  </body>
 </html>

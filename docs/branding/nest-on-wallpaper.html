@@ -1,55 +1,141 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Nest — logo on wallpaper</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #0b1220; padding: 24px 40px; display: grid; gap: 20px; }
-  .label { color: #94a3b8; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
-  .scene { position: relative; width: 1200px; aspect-ratio: 1389 / 571; border-radius: 16px; overflow: hidden;
-    background: url(sky-wallpaper.png) center / cover; color: #FFFFFC; }
-  .shadow { filter: drop-shadow(0 6px 18px rgba(29, 72, 128, .35)); }
-  .hero { position: absolute; left: 50%; top: 5%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  .hero svg { width: 118px; height: 118px; }
-  .hero span { font-weight: 700; font-size: 64px; letter-spacing: -0.05em; line-height: 1; }
-  .hero small { font-size: 18px; font-weight: 500; opacity: .95; margin-top: 8px; }
-  .nav { position: absolute; left: 32px; top: 26px; display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 30px; letter-spacing: -0.04em; }
-  .nav svg { width: 40px; height: 40px; }
-  .side { position: absolute; right: 8%; top: 45%; transform: translateY(-50%); display: flex; align-items: center; gap: 18px; }
-  .side svg { width: 96px; height: 96px; }
-  .side span { font-weight: 700; font-size: 72px; letter-spacing: -0.05em; }
-</style>
-</head>
-<body>
-<div>
-  <div class="label">A · Centered hero</div>
-  <div class="scene">
-    <div class="hero shadow"><svg viewBox="0 0 100 100"></svg><span>nest</span><small>Your team's home base.</small></div>
-  </div>
-</div>
-<div>
-  <div class="label">B · Nav lockup, top-left</div>
-  <div class="scene">
-    <div class="nav shadow"><svg viewBox="0 0 100 100"></svg><span>nest</span></div>
-  </div>
-</div>
-<div>
-  <div class="label">C · Horizontal, right side</div>
-  <div class="scene">
-    <div class="side shadow"><svg viewBox="0 0 100 100"></svg><span>nest</span></div>
-  </div>
-</div>
-<script>
-const rad = d => d * Math.PI / 180;
-const pt = (r, deg, cx, cy) => [cx + r * Math.cos(rad(deg)), cy + r * Math.sin(rad(deg))];
-const dot = ([x, y], r, fill) => `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r}" fill="${fill}"/>`;
-const mark = Array.from({ length: 7 }, (_, i) => dot(pt(36, i * 30, 50, 44), 6.5, '#FFFFFC')).join('')
-  + Array.from({ length: 4 }, (_, i) => dot(pt(22, 22.5 + i * 45, 50, 44), 5, '#D4E2EE')).join('')
-  + `<ellipse cx="50" cy="40" rx="10" ry="12.5" fill="#FFFFFC"/>`;
-document.querySelectorAll('svg').forEach(el => { el.innerHTML = mark; });
-</script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <title>Nest — logo on wallpaper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #0b1220;
+        padding: 24px 40px;
+        display: grid;
+        gap: 20px;
+      }
+      .label {
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 8px;
+      }
+      .scene {
+        position: relative;
+        width: 1200px;
+        aspect-ratio: 1389 / 571;
+        border-radius: 16px;
+        overflow: hidden;
+        background: url(sky-wallpaper.png) center / cover;
+        color: #fffffc;
+      }
+      .shadow {
+        filter: drop-shadow(0 6px 18px rgba(29, 72, 128, 0.35));
+      }
+      .hero {
+        position: absolute;
+        left: 50%;
+        top: 5%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+      .hero svg {
+        width: 118px;
+        height: 118px;
+      }
+      .hero span {
+        font-weight: 700;
+        font-size: 64px;
+        letter-spacing: -0.05em;
+        line-height: 1;
+      }
+      .hero small {
+        font-size: 18px;
+        font-weight: 500;
+        opacity: 0.95;
+        margin-top: 8px;
+      }
+      .nav {
+        position: absolute;
+        left: 32px;
+        top: 26px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 700;
+        font-size: 30px;
+        letter-spacing: -0.04em;
+      }
+      .nav svg {
+        width: 40px;
+        height: 40px;
+      }
+      .side {
+        position: absolute;
+        right: 8%;
+        top: 45%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .side svg {
+        width: 96px;
+        height: 96px;
+      }
+      .side span {
+        font-weight: 700;
+        font-size: 72px;
+        letter-spacing: -0.05em;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="label">A · Centered hero</div>
+      <div class="scene">
+        <div class="hero shadow">
+          <svg viewBox="0 0 100 100"></svg><span>nest</span><small>Your team's home base.</small>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="label">B · Nav lockup, top-left</div>
+      <div class="scene">
+        <div class="nav shadow"><svg viewBox="0 0 100 100"></svg><span>nest</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="label">C · Horizontal, right side</div>
+      <div class="scene">
+        <div class="side shadow"><svg viewBox="0 0 100 100"></svg><span>nest</span></div>
+      </div>
+    </div>
+    <script>
+      const rad = (d) => (d * Math.PI) / 180;
+      const pt = (r, deg, cx, cy) => [cx + r * Math.cos(rad(deg)), cy + r * Math.sin(rad(deg))];
+      const dot = ([x, y], r, fill) =>
+        `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r}" fill="${fill}"/>`;
+      const mark =
+        Array.from({ length: 7 }, (_, i) => dot(pt(36, i * 30, 50, 44), 6.5, "#FFFFFC")).join("") +
+        Array.from({ length: 4 }, (_, i) => dot(pt(22, 22.5 + i * 45, 50, 44), 5, "#D4E2EE")).join(
+          "",
+        ) +
+        `<ellipse cx="50" cy="40" rx="10" ry="12.5" fill="#FFFFFC"/>`;
+      document.querySelectorAll("svg").forEach((el) => {
+        el.innerHTML = mark;
+      });
+    </script>
+  </body>
 </html>
