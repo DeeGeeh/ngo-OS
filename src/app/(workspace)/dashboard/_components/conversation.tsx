@@ -17,11 +17,12 @@ import { ArrowUp, MessageSquare } from "lucide-react";
 import { useCallback, useMemo } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { buttonVariants } from "@/components/ui/button";
 import { useToday } from "@/hooks/use-today";
 import { cn } from "@/lib/utils";
 import {
+  memberPortrait,
   workspaceQueryKey,
   type Conversation as ConversationTarget,
   type Message,
@@ -122,6 +123,9 @@ function TeamMessage({ workspace, messages }: { workspace: Workspace; messages: 
           </span>
         ) : (
           <Avatar>
+            {author && memberPortrait(author) && (
+              <AvatarImage src={memberPortrait(author)} alt={author.name} />
+            )}
             <AvatarFallback>
               {author?.name
                 .split(" ")

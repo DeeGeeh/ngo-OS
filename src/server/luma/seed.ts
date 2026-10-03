@@ -158,11 +158,31 @@ const hackForHumanity: LumaEvent = {
     },
   ],
   hosts: [
-    { apiId: "host-miska", name: "Miska Lunnas", role: "creator" },
-    { apiId: "host-mikko", name: "Mikko Kuivalainen", role: "check-in" },
-    { apiId: "host-aj", name: "AJ Green", role: "manager" },
-    { apiId: "host-bambi", name: "Bambi Dang", role: "manager" },
-    { apiId: "host-michael", name: "Michael Vonlanthen", role: "manager" },
+    { apiId: "host-miska", name: "Miska Lunnas", role: "creator", avatar: "/avatars/miska.jpg" },
+    {
+      apiId: "host-mikko",
+      name: "Mikko Kuivalainen",
+      role: "check-in",
+      avatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    },
+    {
+      apiId: "host-aj",
+      name: "AJ Green",
+      role: "manager",
+      avatar: "https://randomuser.me/api/portraits/men/75.jpg",
+    },
+    {
+      apiId: "host-bambi",
+      name: "Bambi Dang",
+      role: "manager",
+      avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+    },
+    {
+      apiId: "host-michael",
+      name: "Michael Vonlanthen",
+      role: "manager",
+      avatar: "https://randomuser.me/api/portraits/men/46.jpg",
+    },
   ],
   guests: h4hGuests,
   insights: days("2026-09-20", [
@@ -218,8 +238,13 @@ const pohinaTalk: LumaEvent = {
     },
   ],
   hosts: [
-    { apiId: "host-talk-tres", name: "TRES", role: "creator" },
-    { apiId: "host-talk-miska", name: "Miska Lunnas", role: "manager" },
+    { apiId: "host-talk-tres", name: "TRES", role: "creator", avatar: "/brand/tres-mark.png" },
+    {
+      apiId: "host-talk-miska",
+      name: "Miska Lunnas",
+      role: "manager",
+      avatar: "/avatars/miska.jpg",
+    },
   ],
   guests: talkGuests,
   insights: days("2026-09-27", [
@@ -259,7 +284,9 @@ const lovable: LumaEvent = {
       capacity: 120,
     },
   ],
-  hosts: [{ apiId: "host-lovable-tres", name: "TRES", role: "creator" }],
+  hosts: [
+    { apiId: "host-lovable-tres", name: "TRES", role: "creator", avatar: "/brand/tres-mark.png" },
+  ],
   guests: lovableGuests,
   insights: days("2026-03-15", [
     [40, 3],
@@ -312,7 +339,9 @@ const hacknight: LumaEvent = {
       capacity: 40,
     },
   ],
-  hosts: [{ apiId: "host-hacknight-tres", name: "TRES", role: "creator" }],
+  hosts: [
+    { apiId: "host-hacknight-tres", name: "TRES", role: "creator", avatar: "/brand/tres-mark.png" },
+  ],
   guests: [],
   insights: days("2026-10-01", [
     [4, 0],

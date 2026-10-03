@@ -12,6 +12,7 @@ export type Organization = {
   location: string;
   initials: string;
   tone: string;
+  logo?: string;
 };
 
 export const organizations = [
@@ -22,6 +23,7 @@ export const organizations = [
     location: "Tampere, Finland",
     initials: "TR",
     tone: "bg-sky-600 text-white",
+    logo: "/brand/tres-mark.png",
   },
   {
     id: "aurora-aid",

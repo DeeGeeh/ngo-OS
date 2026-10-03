@@ -1,6 +1,7 @@
 "use client";
 
 import { Building2, Check, ChevronsUpDown, Plus, Settings } from "lucide-react";
+import Image from "next/image";
 import { useCallback } from "react";
 
 import {
@@ -24,6 +25,17 @@ const switcherButton = (
 );
 
 function OrgMark({ organization, className }: { organization: Organization; className?: string }) {
+  if (organization.logo) {
+    return (
+      <Image
+        src={organization.logo}
+        alt=""
+        width={256}
+        height={256}
+        className={cn("size-7 shrink-0 rounded-md", className)}
+      />
+    );
+  }
   return (
     <span
       aria-hidden="true"
@@ -77,7 +89,7 @@ export function OrgSwitcher({
         render={switcherButton}
         aria-label={`Organization: ${active.name}. Switch organization`}
       >
-        <OrgMark organization={active} />
+        <OrgMark organization={active} className="size-9 rounded-lg" />
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-sm leading-tight font-semibold">{active.name}</span>
           <span className="truncate text-xs leading-tight text-muted-foreground">

@@ -9,10 +9,20 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
-import { ExternalLink, Globe, Lock, MapPin, Plus, Ticket, type LucideIcon } from "lucide-react";
+import {
+  ExternalLink,
+  Globe,
+  Lock,
+  Mail,
+  MapPin,
+  Plus,
+  Ticket,
+  Users,
+  type LucideIcon,
+} from "lucide-react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -101,15 +111,18 @@ function DateChip({ iso, large = false }: { iso: string; large?: boolean }) {
     <span
       aria-hidden="true"
       className={cn(
-        "flex shrink-0 flex-col items-center justify-center rounded-lg border bg-card",
-        large ? "size-12" : "size-10",
+        "flex shrink-0 flex-col overflow-hidden rounded-lg border bg-card text-center shadow-xs",
+        large ? "w-12" : "w-11",
       )}
     >
-      <span className="text-xs leading-none font-medium text-muted-foreground">
+      <span className="bg-primary py-1 text-xs leading-none font-semibold tracking-wider text-primary-foreground uppercase">
         {formatLumaMonth(iso)}
       </span>
       <span
-        className={cn("leading-tight font-semibold tabular-nums", large ? "text-lg" : "text-sm")}
+        className={cn(
+          "leading-none font-semibold tabular-nums",
+          large ? "py-2 text-lg" : "py-1.5 text-base",
+        )}
       >
         {formatLumaDayNumber(iso)}
       </span>
@@ -130,7 +143,7 @@ function InfoRow({
     <div className="flex items-center gap-3">
       <span
         aria-hidden="true"
-        className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-card"
+        className="flex size-12 shrink-0 items-center justify-center rounded-lg border bg-card shadow-xs"
       >
         <Icon className="size-4 text-muted-foreground" />
       </span>
@@ -187,7 +200,8 @@ function EventHero({
           <div className="flex flex-col gap-2.5">
             {event.hosts.map((host) => (
               <div key={host.apiId} className="flex items-center gap-2.5">
-                <Avatar size="sm">
+                <Avatar>
+                  {host.avatar && <AvatarImage src={host.avatar} alt={host.name} />}
                   <AvatarFallback>
                     {host.name
                       .split(" ")
@@ -747,9 +761,17 @@ export function EventsScreen({ calendar }: { calendar: LumaCalendar }) {
           <div className="flex min-w-0 flex-col gap-8 lg:col-span-3">
             <EventHero event={selected} going={going} pending={pendingGuests} />
             <Tabs defaultValue="guests">
-              <TabsList>
-                <TabsTrigger value="guests">Guests</TabsTrigger>
-                <TabsTrigger value="messages">Messages</TabsTrigger>
+              <TabsList className="h-10!">
+                <TabsTrigger value="guests">
+                  <Users data-icon="inline-start" />
+                  Guests
+                  <Badge variant="secondary">{selected.guests.length}</Badge>
+                </TabsTrigger>
+                <TabsTrigger value="messages">
+                  <Mail data-icon="inline-start" />
+                  Messages
+                  <Badge variant="secondary">{selected.blasts.length}</Badge>
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="guests">
                 <div className="flex flex-col gap-5">

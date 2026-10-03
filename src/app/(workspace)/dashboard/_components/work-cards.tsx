@@ -157,11 +157,11 @@ export function ProjectCard({ project, workspace }: { project: Project; workspac
   const percent = tasks.length === 0 ? 0 : Math.round((complete / tasks.length) * 100);
   return (
     <div className="flex flex-col">
-      <div className="flex w-fit items-center gap-1.5 rounded-t-lg border border-b-0 border-foreground/10 bg-secondary px-2.5 py-1 text-xs font-medium">
+      <div className="relative z-10 -mb-px flex w-fit items-center gap-1.5 rounded-t-lg border border-b-0 border-foreground/10 bg-secondary px-2.5 pt-1 pb-1.5 text-xs font-medium">
         <FolderOpen className="size-3.5" />
         Project
       </div>
-      <div className="-mt-px flex flex-col gap-3 rounded-xl rounded-tl-none border border-foreground/10 bg-secondary px-3.5 py-3">
+      <div className="flex flex-col gap-3 rounded-xl rounded-tl-none border border-foreground/10 bg-secondary px-3.5 py-3">
         <p className="text-sm leading-snug font-semibold">{project.title}</p>
         {tasks.length > 0 && (
           <div className="flex flex-col gap-1.5">

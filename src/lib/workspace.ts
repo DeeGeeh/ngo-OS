@@ -47,6 +47,11 @@ const portraits: Record<string, string> = {
   elias: "/avatars/elias.jpg",
   noora: "/avatars/noora.jpg",
   leo: "/avatars/leo.jpg",
+  netta: "/avatars/netta.jpg",
+  jooel: "/avatars/jooel.jpg",
+  miska: "/avatars/miska.jpg",
+  siyar: "/avatars/siyar.jpg",
+  venla: "/avatars/venla.jpg",
 };
 
 const idSchema = z.string().min(1).max(100);
