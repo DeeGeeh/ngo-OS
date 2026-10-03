@@ -31,6 +31,7 @@ import { getWorkspaceAction } from "../actions";
 import { AssistantPanel, AssistantProvider } from "./assistant-panel";
 import { Conversation } from "./conversation";
 import { ProjectDetail } from "./project-detail";
+import { SettingsDialog } from "./settings-dialog";
 import { WorkBoard } from "./work-board";
 import { WorkEditor } from "./work-editor";
 import { WorkspaceChat } from "./workspace-chat";
@@ -139,13 +140,14 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
                     </ToggleGroupItem>
                   </ToggleGroup>
                 </nav>
-                <div className="mt-auto flex items-center gap-3 px-2 pb-3">
+                <div className="mt-auto flex items-center gap-2 px-2 pb-3">
                   <Avatar>
                     <AvatarFallback>{currentMember?.name.slice(0, 1) ?? "T"}</AvatarFallback>
                   </Avatar>
-                  <span className="truncate text-sm font-medium">
+                  <span className="min-w-0 flex-1 truncate text-sm font-medium">
                     {currentMember?.name ?? "TRES"}
                   </span>
+                  <SettingsDialog />
                 </div>
               </div>
             </SidebarBody>
