@@ -12,7 +12,7 @@ export function Integrations() {
           </h2>
           <p className="mt-3 text-muted-foreground">
             Sync projects from Luma, pull documents and email from Google, reach volunteers on
-            Telegram, and bring nest&apos;s context into Claude and Codex.
+            Telegram, and bring nest&apos;s context into Claude, Codex and ChatGPT.
           </p>
         </div>
         <div className="mt-10">
