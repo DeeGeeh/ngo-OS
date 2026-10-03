@@ -41,6 +41,7 @@ export const lumaHostSchema = z.object({
   apiId: z.string().min(1),
   name: z.string().min(1),
   role: lumaHostRoleSchema,
+  avatar: z.string().max(300).default(""),
 });
 
 export const lumaInsightSchema = z.object({

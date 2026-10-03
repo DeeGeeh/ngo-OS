@@ -20,10 +20,10 @@ export const demoCampaigns: DonationCampaign[] = [
     createdAt: "2026-09-14",
   },
   {
-    slug: "founder-night",
-    title: "Founder Night community fund",
+    slug: "startup-world",
+    title: "Startup World student tickets",
     description:
-      "Keep Founder Night free for every student. Your donation covers the venue, snacks and speaker travel.",
+      "Help us bring 50 students to Startup World Tampere. Your donation covers tickets, travel and food.",
     goal: 1500,
     raised: 640,
     donors: 23,

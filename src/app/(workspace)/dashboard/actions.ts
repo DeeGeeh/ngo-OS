@@ -1,6 +1,5 @@
 "use server";
 
-import type { AddLumaGuest, CreateLumaEvent, SendLumaBlast, UpdateLumaGuest } from "@/lib/luma";
 import type { AssistantBranch, AssistantMessageWrite, AssistantThreadPatch } from "@/lib/assistant";
 import {
   deleteAssistantThread,
@@ -11,12 +10,14 @@ import {
   selectAssistantBranch,
   updateAssistantThread,
 } from "@/server/assistant/facade";
+import type { AddLumaGuest, CreateLumaEvent, SendLumaBlast, UpdateLumaGuest } from "@/lib/luma";
 import type {
   CreateProject,
   CreateTask,
   SendMessage,
   UpdateProject,
   UpdateTask,
+  UserSettings,
 } from "@/lib/workspace";
 import {
   addLumaGuest,
@@ -32,6 +33,7 @@ import {
   sendMessage,
   updateProject,
   updateTask,
+  updateUserSettings,
 } from "@/server/workspace/facade";
 
 function saved<T>(work: () => Promise<T>) {
@@ -111,4 +113,8 @@ export async function updateLumaGuestAction(input: UpdateLumaGuest) {
 
 export async function sendLumaBlastAction(input: SendLumaBlast) {
   return saved(() => sendLumaBlast(input));
+}
+
+export async function updateUserSettingsAction(input: UserSettings) {
+  return updateUserSettings(input);
 }

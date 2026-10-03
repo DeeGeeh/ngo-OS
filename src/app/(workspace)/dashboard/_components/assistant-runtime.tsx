@@ -28,6 +28,7 @@ import {
   assistantTitle,
   type AssistantThread,
 } from "@/lib/assistant";
+import { dataLibraryQueryKey } from "@/lib/data";
 import { workspaceQueryKey } from "@/lib/workspace";
 
 import {
@@ -39,6 +40,8 @@ import {
   selectAssistantBranchAction,
   updateAssistantThreadAction,
 } from "../actions";
+
+import { csvAttachmentAdapter } from "./data-attachments";
 
 type RuntimeMessage = NonNullable<UseChatRuntimeOptions["messages"]>[number];
 type PersistenceOperation = <T>(operation: () => Promise<T>) => Promise<T>;
@@ -148,9 +151,10 @@ function SavedChatRuntime() {
   const [transport] = useState(() => new AssistantChatTransport({ api: "/api/assistant" }));
   const runtime: AssistantRuntime = useChatRuntime({
     transport,
-    adapters: { history },
+    adapters: { history, attachments: csvAttachmentAdapter },
     onFinish: () => {
       void queryClient.invalidateQueries({ queryKey: workspaceQueryKey });
+      void queryClient.invalidateQueries({ queryKey: dataLibraryQueryKey });
     },
     unstable_onBranchChange: ({ headId }) => {
       const message = runtime.thread.getState().messages.find((item) => item.id === headId);

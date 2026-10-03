@@ -1,5 +1,7 @@
 import "server-only";
 
+import { createHash } from "node:crypto";
+
 import { createClient } from "@libsql/client";
 import { z } from "zod";
 
@@ -10,15 +12,26 @@ import { demoWorkspace } from "./seed";
 
 const snapshotSchema = z.object({ data: z.string(), revision: z.number().int().nonnegative() });
 const maxWriteAttempts = 20;
+const seedData = JSON.stringify(demoWorkspace);
+const seedVersion = createHash("sha256").update(seedData).digest("hex");
 
 export async function withWorkspace<T>(operation: (workspace: Workspace) => T, write = true) {
   const client = createClient({ url: env.WORKSPACE_DATABASE_URL });
   try {
     await client.batch([
       "CREATE TABLE IF NOT EXISTS workspace (id INTEGER PRIMARY KEY CHECK (id = 1), data TEXT NOT NULL CHECK (json_valid(data)), revision INTEGER NOT NULL DEFAULT 0)",
+      "CREATE TABLE IF NOT EXISTS seed_versions (name TEXT PRIMARY KEY, version TEXT NOT NULL)",
       {
         sql: "INSERT OR IGNORE INTO workspace (id, data) VALUES (1, ?)",
-        args: [JSON.stringify(demoWorkspace)],
+        args: [seedData],
+      },
+      {
+        sql: "UPDATE workspace SET data = ?, revision = revision + 1 WHERE id = 1 AND NOT EXISTS (SELECT 1 FROM seed_versions WHERE name = 'workspace' AND version = ?)",
+        args: [seedData, seedVersion],
+      },
+      {
+        sql: "INSERT INTO seed_versions (name, version) VALUES ('workspace', ?) ON CONFLICT(name) DO UPDATE SET version = excluded.version",
+        args: [seedVersion],
       },
     ]);
     async function apply(attempt: number): Promise<T> {

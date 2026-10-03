@@ -7,7 +7,7 @@ import {
   FolderOpen,
   Hash,
   ListChecks,
-  Sparkles,
+  Bot,
   Ticket,
 } from "lucide-react";
 import {
@@ -37,8 +37,8 @@ import { MemberAvatar } from "./work-cards";
 
 const suggestions = [
   "What should we focus on this week?",
-  "Who could help at the Founder Night check-in?",
-  "Summarize what is blocking Campus Builders",
+  "Who could help at Startup World Tampere?",
+  "Summarize what is blocking the Hacknight Series",
 ];
 
 const shortDate = new Intl.DateTimeFormat("en-GB", {
@@ -107,7 +107,7 @@ function AskBox({
   return (
     <section className="flex flex-col items-center gap-5 text-center" aria-label="Ask the agent">
       <span className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-        <Sparkles className="size-5" />
+        <Bot className="size-5" />
       </span>
       <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
         How can I help you, {organizationName}?

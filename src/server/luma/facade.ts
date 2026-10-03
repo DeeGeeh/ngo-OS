@@ -86,7 +86,14 @@ export async function createLumaEvent(input: CreateLumaEvent): Promise<LumaCalen
           capacity: 80,
         },
       ],
-      hosts: [{ apiId: `host-${randomUUID()}`, name: "TRES", role: "creator" }],
+      hosts: [
+        {
+          apiId: `host-${randomUUID()}`,
+          name: "TRES",
+          role: "creator",
+          avatar: "/brand/tres-mark.png",
+        },
+      ],
       guests: [],
       insights: [],
       blasts: [],

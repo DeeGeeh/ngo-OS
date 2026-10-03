@@ -43,7 +43,7 @@ export const demoSponsors: Sponsor[] = [
     nextStep: "Send the invoice and logo guidelines",
     nextDate: "2026-10-06",
     lastTouch: "2026-10-02",
-    projects: ["Campus Builders"],
+    projects: ["Hacknight Series"],
     activity: [
       { date: "2026-10-02", text: "Signed the partnership agreement" },
       { date: "2026-09-24", text: "Call about prizes and API credits" },
@@ -64,7 +64,7 @@ export const demoSponsors: Sponsor[] = [
     nextStep: "Share the autumn event report",
     nextDate: "2026-10-20",
     lastTouch: "2026-09-29",
-    projects: ["Founder Night", "Campus Builders"],
+    projects: ["Startup World Tampere", "Hacknight Series"],
     activity: [
       { date: "2026-09-29", text: "Grant approved for the autumn season" },
       { date: "2026-09-10", text: "Application submitted" },
@@ -81,10 +81,10 @@ export const demoSponsors: Sponsor[] = [
     tier: "Main partner",
     stage: "negotiating",
     ownerId: "elias",
-    nextStep: "Agree the logo placement for Founder Night",
+    nextStep: "Agree the logo placement for Startup World",
     nextDate: "2026-10-08",
     lastTouch: "2026-10-01",
-    projects: ["Founder Night"],
+    projects: ["Startup World Tampere"],
     activity: [
       { date: "2026-10-01", text: "Sent the partnership deck" },
       { date: "2026-09-26", text: "Coffee meeting at Platform6" },
@@ -101,10 +101,10 @@ export const demoSponsors: Sponsor[] = [
     tier: "Partner",
     stage: "negotiating",
     ownerId: "aino",
-    nextStep: "Confirm two mentors for Campus Builders",
+    nextStep: "Confirm two mentors for the Hacknight Series",
     nextDate: "2026-10-12",
     lastTouch: "2026-09-30",
-    projects: ["Campus Builders"],
+    projects: ["Hacknight Series"],
     activity: [
       { date: "2026-09-30", text: "Interested in mentoring, not only money" },
       { date: "2026-09-18", text: "Intro from a TRES alumnus" },
@@ -158,7 +158,7 @@ export const demoSponsors: Sponsor[] = [
     nextStep: "Find a contact through LinkedIn",
     nextDate: "2026-10-01",
     lastTouch: "2026-09-20",
-    projects: ["Founder Night"],
+    projects: ["Startup World Tampere"],
     activity: [{ date: "2026-09-20", text: "Added to the pipeline" }],
   },
   {

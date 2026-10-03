@@ -241,7 +241,7 @@ export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardP
           <ToggleGroupItem value="all">All work</ToggleGroupItem>
           <ToggleGroupItem value="mine">Assigned to me</ToggleGroupItem>
         </ToggleGroup>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-3">
           <Select items={priorityFilterItems} value={priority} onValueChange={changePriority}>
             <SelectTrigger className="w-44" aria-label="Filter by priority">
               <Flag data-icon="inline-start" />
@@ -257,7 +257,7 @@ export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardP
               </SelectGroup>
             </SelectContent>
           </Select>
-          <InputGroup className="max-w-64">
+          <InputGroup className="w-64">
             <InputGroupAddon>
               <Search />
             </InputGroupAddon>

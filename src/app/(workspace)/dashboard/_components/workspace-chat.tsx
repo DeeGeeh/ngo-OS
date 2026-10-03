@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Folder, Hash } from "lucide-react";
+import { ChevronDown, Ellipsis, Folder, Hash } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,6 +18,7 @@ import {
 import { Conversation } from "./conversation";
 
 type ChatSelection = { kind: "channel" | "direct"; id: string };
+const recentDirectLimit = 4;
 
 function initials(name: string) {
   return name
@@ -33,6 +34,18 @@ function MemberAvatar({ member, size = "sm" }: { member: Member; size?: "sm" | "
       {portrait ? <AvatarImage src={portrait} alt="" /> : null}
       <AvatarFallback>{initials(member.name)}</AvatarFallback>
     </Avatar>
+  );
+}
+
+function byRecentDirect(members: Member[], messages: Workspace["messages"]) {
+  const lastActivity = new Map<string, string>();
+  for (const message of messages) {
+    if (message.conversation.kind !== "direct") continue;
+    const previous = lastActivity.get(message.conversation.id) ?? "";
+    if (message.createdAt > previous) lastActivity.set(message.conversation.id, message.createdAt);
+  }
+  return members.toSorted((left, right) =>
+    (lastActivity.get(right.id) ?? "").localeCompare(lastActivity.get(left.id) ?? ""),
   );
 }
 
@@ -159,8 +172,16 @@ export function WorkspaceChat({
   const generalChannels = workspace.channels.filter((channel) => channel.kind === "general");
   const projectChannels = workspace.channels.filter((channel) => channel.kind === "project");
   const others = workspace.members.filter((member) => member.id !== workspace.currentMemberId);
-  const teamMembers = others.filter((member) => member.role !== "Volunteer");
-  const volunteers = others.filter((member) => member.role === "Volunteer");
+  const directPeople = byRecentDirect(others, workspace.messages);
+  const [showAllDirect, setShowAllDirect] = useState(false);
+  const showMoreDirect = useCallback(() => setShowAllDirect(true), []);
+  const visibleDirect = directPeople.filter(
+    (member, index) =>
+      showAllDirect ||
+      index < recentDirectLimit ||
+      (selection?.kind === "direct" && selection.id === member.id),
+  );
+  const hiddenDirect = directPeople.length - visibleDirect.length;
   const conversation = useMemo(() => {
     if (selectedChannel) {
       return { kind: "channel", id: selectedChannel.id } satisfies ConversationTarget;
@@ -208,7 +229,7 @@ export function WorkspaceChat({
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <div className="flex flex-col gap-0.5">
-                  {teamMembers.map((member) => (
+                  {visibleDirect.map((member) => (
                     <DirectItem
                       key={member.id}
                       member={member}
@@ -216,17 +237,16 @@ export function WorkspaceChat({
                       onSelect={selectDirect}
                     />
                   ))}
-                  {volunteers.length > 0 && (
-                    <p className="px-2.5 pt-2 pb-1 text-xs text-muted-foreground">Volunteers</p>
+                  {hiddenDirect > 0 && (
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      onClick={showMoreDirect}
+                      aria-label={`Show ${hiddenDirect} more direct messages`}
+                    >
+                      <Ellipsis data-icon="inline-start" />
+                    </Button>
                   )}
-                  {volunteers.map((member) => (
-                    <DirectItem
-                      key={member.id}
-                      member={member}
-                      selected={selection?.kind === "direct" && selection.id === member.id}
-                      onSelect={selectDirect}
-                    />
-                  ))}
                 </div>
               </CollapsibleContent>
             </Collapsible>

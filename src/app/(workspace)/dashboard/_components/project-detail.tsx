@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { AssigneeAvatars, PriorityFlag } from "./work-cards";
 import { WorkEditor } from "./work-editor";
 import { Conversation } from "./conversation";
+import { TelegramProjectControls } from "./telegram-project-controls";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   month: "short",
@@ -182,12 +183,14 @@ export function ProjectDetail({ project, workspace, onTask, onNewTask }: Project
                 )}
               </div>
               <Separator />
+              <TelegramProjectControls project={project} workspace={workspace} />
+              <Separator />
               <Card>
                 <CardHeader>
                   <CardTitle>
                     <div className="flex items-center gap-2">
                       <Ticket className="size-5" />
-                      Luma<Badge variant="outline">Demo</Badge>
+                      Luma
                     </div>
                   </CardTitle>
                 </CardHeader>
