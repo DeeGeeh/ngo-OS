@@ -393,6 +393,12 @@
       }
     },
     {
+      "files": ["src/components/ui/animated-beam.tsx"],
+      "rules": {
+        "react-perf/jsx-no-new-object-as-prop": "off"
+      }
+    },
+    {
       "files": ["src/components/ui/dialog.tsx"],
       "rules": {
         "react-perf/jsx-no-jsx-as-prop": "off"
