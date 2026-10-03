@@ -29,7 +29,6 @@ import {
   Pencil,
   Plus,
   RotateCcw,
-  Sparkles,
   Square,
   HardDrive,
   Wrench,
@@ -181,10 +180,6 @@ function UserMessage() {
 function AssistantMessage() {
   return (
     <MessagePrimitive.Root className="mb-6 text-sm leading-relaxed">
-      <div className="mb-2 flex items-center gap-2 font-medium">
-        <Sparkles className="size-4 text-primary" />
-        Assistant
-      </div>
       <div className="flex flex-col gap-3 break-words">
         <MessagePrimitive.Parts components={messageParts} />
       </div>
@@ -376,11 +371,7 @@ export function AssistantThread({
   return (
     <ThreadPrimitive.Root className="flex h-full min-h-0 flex-col bg-background">
       {!wide && (
-        <header className="flex h-16 shrink-0 items-center justify-between border-b px-5">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Sparkles className="size-4 text-primary" />
-            Assistant
-          </h2>
+        <header className="flex h-16 shrink-0 items-center justify-end border-b px-5">
           <div className="flex items-center gap-1">
             <ThreadListPrimitive.New
               className={buttonVariants({ variant: "ghost", size: "icon" })}

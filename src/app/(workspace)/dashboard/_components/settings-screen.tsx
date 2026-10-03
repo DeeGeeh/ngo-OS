@@ -123,7 +123,7 @@ export function SettingsScreen({
         icon={Plug}
       >
         <Row label="Luma">
-          <Badge variant="secondary">Demo data</Badge>
+          <Badge variant="secondary">Event calendar</Badge>
         </Row>
         <Separator />
         <Row label="Google Calendar">

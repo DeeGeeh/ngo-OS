@@ -197,7 +197,7 @@ export function ProjectDetail({
                   <CardTitle>
                     <div className="flex items-center gap-2">
                       <Ticket className="size-5" />
-                      Luma<Badge variant="outline">Demo</Badge>
+                      Luma
                     </div>
                   </CardTitle>
                 </CardHeader>

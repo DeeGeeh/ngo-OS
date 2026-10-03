@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import Image from "next/image";
 import Link from "next/link";
 import {
   CalendarDays,
@@ -14,7 +13,7 @@ import {
   Moon,
   PanelRight,
   Settings,
-  Sparkles,
+  Bot,
   Sun,
   Ticket,
   UserRound,
@@ -46,7 +45,7 @@ import type { AssistantThread } from "@/lib/assistant";
 import { dataLibraryQueryKey, dataLibrarySchema, type DataLibrary } from "@/lib/data";
 import { lumaCalendarItems, type CalendarItem } from "@/lib/calendar";
 import { lumaQueryKey, type LumaCalendar } from "@/lib/luma";
-import { defaultOrganizationId, product } from "@/lib/organizations";
+import { defaultOrganizationId } from "@/lib/organizations";
 import { cn } from "@/lib/utils";
 import { workspaceQueryKey, type Member, type Workspace, type WorkStatus } from "@/lib/workspace";
 
@@ -148,14 +147,6 @@ function NavButton({
   );
 }
 
-const sparkleMotion = { rotate: [0, 14, -8, 0], scale: [1, 1.15, 1] };
-const sparkleTransition = {
-  duration: 2.4,
-  repeat: Infinity,
-  repeatDelay: 2.6,
-  ease: "easeInOut",
-} as const;
-
 function AgentNavButton({ active, onSelect }: { active: boolean; onSelect: (id: Screen) => void }) {
   const select = useCallback(() => onSelect("agent"), [onSelect]);
   return (
@@ -170,14 +161,7 @@ function AgentNavButton({ active, onSelect }: { active: boolean; onSelect: (id: 
           : "border-primary/20 bg-linear-to-r from-primary/10 via-chart-3/10 to-primary/5 text-sidebar-foreground hover:border-primary/40",
       )}
     >
-      <motion.span
-        aria-hidden="true"
-        animate={sparkleMotion}
-        transition={sparkleTransition}
-        className="flex"
-      >
-        <Sparkles className={cn("size-4", !active && "text-primary")} />
-      </motion.span>
+      <Bot aria-hidden="true" className={cn("size-4", !active && "text-primary")} />
       <span className="flex-1 text-left">Ask the agent</span>
       <span
         className={cn(
@@ -198,35 +182,6 @@ const userMenuButton = (
     aria-label="Open account menu"
   />
 );
-
-function ProductMark() {
-  return (
-    <Link
-      href="/"
-      className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      <Image
-        src={product.markLight}
-        alt=""
-        width={512}
-        height={355}
-        unoptimized
-        className="h-4 w-auto dark:hidden"
-      />
-      <Image
-        src={product.markDark}
-        alt=""
-        width={512}
-        height={355}
-        unoptimized
-        className="hidden h-4 w-auto dark:block"
-      />
-      <span>
-        Powered by <span className="font-semibold text-foreground">{product.name}</span>
-      </span>
-    </Link>
-  );
-}
 
 function UserMenu({ member, onSettings }: { member?: Member; onSettings: () => void }) {
   if (!member) return null;
@@ -439,7 +394,6 @@ export function WorkspaceApp({
                 )}
                 <div className="mt-auto flex flex-col gap-2">
                   <UserMenu member={currentMember} onSettings={openSettings} />
-                  <ProductMark />
                 </div>
               </div>
             </SidebarBody>
