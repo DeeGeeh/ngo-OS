@@ -4,6 +4,7 @@ Next.js/T3 scaffold for a NGO Operating System made for a hackathon.
 
 - [Product context](docs/product-context.md)
 - [Luo research](docs/research/luo-ngo-demo/README.md)
+- [Claude subscription integration research](docs/research/claude-subscriptions.md)
 
 ## Development
 
