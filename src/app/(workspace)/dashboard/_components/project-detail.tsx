@@ -37,6 +37,7 @@ import { updateTaskAction } from "../actions";
 import { AssigneeAvatars } from "./work-cards";
 import { WorkEditor } from "./work-editor";
 import { Conversation } from "./conversation";
+import { TelegramProjectControls } from "./telegram-project-controls";
 
 const dateFormat = new Intl.DateTimeFormat("en-GB", {
   month: "short",
@@ -188,6 +189,8 @@ export function ProjectDetail({
                   </Empty>
                 )}
               </div>
+              <Separator />
+              <TelegramProjectControls project={project} workspace={workspace} />
               <Separator />
               <Card>
                 <CardHeader>

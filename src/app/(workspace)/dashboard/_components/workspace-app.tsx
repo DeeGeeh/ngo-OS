@@ -9,6 +9,7 @@ import {
   Folder,
   LayoutDashboard,
   LogOut,
+  MessageCircle,
   MessageSquare,
   Moon,
   PanelRight,
@@ -59,6 +60,7 @@ import { ProjectDetail } from "./project-detail";
 import { SettingsScreen } from "./settings-screen";
 import { CreateWorkMenu, WorkBoard } from "./work-board";
 import { TaskDetail } from "./task-detail";
+import { TelegramConnection } from "./telegram-connection";
 import { MemberAvatar } from "./work-cards";
 import { WorkEditor } from "./work-editor";
 import { WorkspaceChat } from "./workspace-chat";
@@ -245,6 +247,7 @@ export function WorkspaceApp({
   const [taskId, setTaskId] = useState<string | null>(null);
   const [creation, setCreation] = useState<Creation | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [telegramOpen, setTelegramOpen] = useState(false);
   const [organizationId, setOrganizationId] = useState(defaultOrganizationId);
   const isMobile = useIsMobile();
   const { resolvedTheme, setTheme } = useTheme();
@@ -300,6 +303,7 @@ export function WorkspaceApp({
     [resolvedTheme, setTheme],
   );
   const toggleAssistant = useCallback(() => setAssistantOpen((open) => !open), []);
+  const openTelegram = useCallback(() => setTelegramOpen(true), []);
   const selectedKind = useMemo(() => (creation ? [creation.kind] : []), [creation]);
 
   return (
@@ -357,6 +361,14 @@ export function WorkspaceApp({
                   onClick={openSettings}
                 >
                   <Settings />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Open Telegram connection"
+                  onClick={openTelegram}
+                >
+                  <MessageCircle />
                 </Button>
                 {screen !== "agent" && (
                   <Button
@@ -509,6 +521,7 @@ export function WorkspaceApp({
             )}
           </DialogContent>
         </Dialog>
+        <TelegramConnection open={telegramOpen} onOpenChange={setTelegramOpen} />
       </Sidebar>
     </AssistantProvider>
   );
