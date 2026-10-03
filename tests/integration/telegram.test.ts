@@ -207,6 +207,14 @@ await test("Telegram organizer and bot flows use shared facades and isolated per
   const workspace = await import("@/server/workspace/facade");
   const { workspaceTools } = await import("@/server/assistant/facade");
   try {
+    const telegramProject = await workspace.createProject({
+      title: "Telegram coordination",
+      description: "Project for organizer and agent integration checks",
+      status: "todo",
+      assigneeIds: ["aino", "leo", "elias", "noora"],
+      dueDate: null,
+      location: "Campus",
+    });
     await t.test(
       "login resumes two-step verification and binds encrypted sessions to the owner",
       async () => {
@@ -229,7 +237,7 @@ await test("Telegram organizer and bot flows use shared facades and isolated per
         actor = "other-owner";
         await assert.rejects(telegram.getTelegramStatus(), /another workspace user/);
         await assert.rejects(
-          telegram.sendTelegramProjectMessage({ projectId: "founder-night", text: "blocked" }),
+          telegram.sendTelegramProjectMessage({ projectId: telegramProject.id, text: "blocked" }),
           /another workspace user/,
         );
         actor = "owner";
@@ -289,7 +297,7 @@ await test("Telegram organizer and bot flows use shared facades and isolated per
           /session has expired/,
         );
         authorized = true;
-        await telegram.ensureProjectTelegramGroup({ projectId: "founder-night" });
+        await telegram.ensureProjectTelegramGroup({ projectId: telegramProject.id });
       },
     );
     await t.test(
@@ -298,7 +306,7 @@ await test("Telegram organizer and bot flows use shared facades and isolated per
         const options = { toolCallId: "telegram-flow", messages: [], context: {} };
         assert.ok(workspaceTools.inviteTelegramProjectMembers.execute);
         const result = await workspaceTools.inviteTelegramProjectMembers.execute(
-          { projectId: "founder-night", memberIds: ["aino", "leo", "elias", "noora", "aino"] },
+          { projectId: telegramProject.id, memberIds: ["aino", "leo", "elias", "noora", "aino"] },
           options,
         );
         assert.deepEqual(result, [
@@ -315,23 +323,23 @@ await test("Telegram organizer and bot flows use shared facades and isolated per
         assert.deepEqual(invited, ["101", "102"]);
         rejectLink = true;
         const withoutLink = await telegram.inviteTelegramProjectMembers({
-          projectId: "founder-night",
+          projectId: telegramProject.id,
           memberIds: ["aino", "leo"],
         });
         assert.equal(withoutLink[0]?.status, "added");
         assert.equal(withoutLink[1]?.status, "invite_required");
         rejectLink = false;
         assert.deepEqual(
-          await telegram.listTelegramProjectMembers({ projectId: "founder-night" }),
+          await telegram.listTelegramProjectMembers({ projectId: telegramProject.id }),
           [{ id: "103", name: "Elias", username: "elias" }],
         );
         assert.equal(
-          (await telegram.readTelegramProjectMessages({ projectId: "founder-night" }))[0]?.text,
+          (await telegram.readTelegramProjectMessages({ projectId: telegramProject.id }))[0]?.text,
           "Meet at six",
         );
         assert.ok(workspaceTools.sendTelegramProjectMessage.execute);
         await workspaceTools.sendTelegramProjectMessage.execute(
-          { projectId: "founder-night", text: "Meet at six" },
+          { projectId: telegramProject.id, text: "Meet at six" },
           options,
         );
         assert.deepEqual(sent, ["Meet at six"]);
@@ -390,7 +398,7 @@ await test("Telegram organizer and bot flows use shared facades and isolated per
         assert.equal((await workspace.getWorkspace()).messages.length, before + 1);
         actor = null;
         await assert.rejects(
-          telegram.listTelegramProjectMembers({ projectId: "founder-night" }),
+          telegram.listTelegramProjectMembers({ projectId: telegramProject.id }),
           /Sign in/,
         );
       },
