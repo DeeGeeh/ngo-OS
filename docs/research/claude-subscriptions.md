@@ -1,105 +1,72 @@
 # Claude subscriptions in NGO OS
 
-Research checked on 2026-10-03. This document describes integration options. It does not implement a connection or validate a live subscription.
+Research checked on 2026-10-03 for a private hackathon demo. Community projects already implement subscription-backed Claude access. This document compares their code and proposes an integration. No live subscription request or connection UI was tested.
 
 ## Recommendation
 
-There is no documented, generally available way to turn a user's Claude subscription into API tokens for the NGO OS assistant. Claude subscriptions and Claude Console API billing are separate. An Anthropic API key gives access to Claude models, but does not spend a user's subscription allowance. See [Anthropic's explanation of separate API billing](https://support.claude.com/en/articles/9876003-i-have-a-paid-claude-subscription-pro-max-team-or-enterprise-plans-why-do-i-have-to-pay-separately-to-use-the-claude-api-and-console).
+Use [ben-vargas/ai-sdk-provider-claude-code](https://github.com/ben-vargas/ai-sdk-provider-claude-code) for the first local demo. Its current npm release is `4.3.3`, supports our AI SDK 7 stack, and uses the Claude Agent SDK with a Claude Code login. It avoids adding a separate proxy service. These facts were checked against npm metadata and the repository's current README.
 
-For the hackathon, keep the mocked connection described in [the product context](../product-context.md). A mock must not claim that a subscription pays for actual requests. For a real subscription workflow, an NGO OS MCP connector is the simplest candidate. Users would work inside Claude with NGO OS tools. For chat inside NGO OS, use a user-supplied API key with separate billing.
+For the exact browser-based **Connect Claude** feature, use [shahidshabbir-se/opencode-anthropic-oauth](https://github.com/shahidshabbir-se/opencode-anthropic-oauth) as the OAuth and transport reference. It implements browser authorization, code exchange, and token refresh. It is an OpenCode plugin, so it needs adaptation to our server facade rather than installation as a Next.js provider.
 
-## What Anthropic currently supports
+These are two useful implementation routes. The first gets subscription-backed inference into the demo with less work. The second supplies the browser login flow the requested feature needs.
 
-The official documents distinguish access, billing, and permission to build a product.
+## Repositories worth reusing
 
-| Option | Subscription allowance | Where users work | Assessment |
-| --- | --- | --- | --- |
-| NGO OS collects a Claude OAuth token and calls inference | Not a supported product integration | NGO OS chat | Reject. The credential restrictions prohibit this flow. |
-| User-supplied Anthropic API key | No. Separate API billing | NGO OS chat | Supported authentication route. Does not meet the subscription requirement. |
-| NGO OS remote MCP connector | Claude controls the account's usage | Claude | Best candidate if users can work in Claude. Does not power NGO OS chat. |
-| Hosted, unmodified Claude Code | User's plan and billing rules apply | User's own Claude Code terminal | Permitted under the hosting conditions. Requires a separate execution environment. |
-| Custom Agent SDK assistant with subscription login | Billing documentation describes subscription usage, but product permission is restricted | NGO OS chat | Requires Anthropic approval and clarification before implementation. |
+| Repository | What its code provides | Fit for NGO OS |
+| --- | --- | --- |
+| [ben-vargas/ai-sdk-provider-claude-code](https://github.com/ben-vargas/ai-sdk-provider-claude-code) | AI SDK 7 provider, streaming, model selection, and Claude Code authentication | Best local demo candidate. Custom workspace tools need its MCP bridge. |
+| [shahidshabbir-se/opencode-anthropic-oauth](https://github.com/shahidshabbir-se/opencode-anthropic-oauth) | Browser OAuth with PKCE, code exchange, refresh, and custom Anthropic request handling | Closest reference for a real Connect Claude button. Port its small auth module and adapt the transport. |
+| [griffinmartin/opencode-claude-auth](https://github.com/griffinmartin/opencode-claude-auth) | Existing Claude Code credential reuse, refresh coordination, and tool/request/stream transformations | Useful reference for the direct Anthropic transport. Not a drop-in web package. |
+| [RichardAtCT/claude-code-openai-wrapper](https://github.com/RichardAtCT/claude-code-openai-wrapper) | Python service wrapping the Agent SDK behind OpenAI-compatible endpoints | Useful if we want a separate local proxy. More deployment work than a native TypeScript provider. |
 
-[Claude Code's credential rules](https://code.claude.com/docs/en/legal-and-compliance#authentication-and-credential-use) prohibit collecting Claude account credentials or session tokens and routing app requests through users' Free, Pro, or Max credentials. Authentication must complete through Anthropic's own flow. The same page explicitly allows end users to sign into an unmodified Claude Code binary, including on a hosting platform. Its [hosting conditions](https://code.claude.com/docs/en/legal-and-compliance#can-customers-offer-claude-code-in-their-products) require the commercial terms, preserve all built-in authentication methods, and require billing directly to the end user.
+All four repositories report an MIT license. The source inspections below establish implementation details, not successful access with our account.
 
-### The Agent SDK billing notice is not product approval
+## The local demo route
 
-The [Agent SDK overview](https://code.claude.com/docs/en/agent-sdk/overview#get-started) requires prior approval for offering Claude login or subscription rate limits in a third-party product.
+The [provider's tool example](https://github.com/ben-vargas/ai-sdk-provider-claude-code/blob/main/examples/ai-sdk-tools.ts) exports `createAiSdkMcpServer`. It converts AI SDK tools with Zod object schemas into an in-process MCP server. The example demonstrates provider-executed tool calls and results in both generated and streamed responses.
 
-The Help Center's [Agent SDK plan notice](https://support.claude.com/en/articles/15036540-use-the-claude-agent-sdk-with-your-claude-plan) says a June 15 billing change was paused. Its current notice says Agent SDK, `claude -p`, and third-party app usage still draw from subscription limits. The monthly credits described below that notice are historical and are not available under the paused change.
+Our `workspaceTools` in `src/server/assistant/facade.ts` already use Zod object schemas and call `src/server/workspace/facade.ts`. Reuse those definitions through the helper. A separate public MCP endpoint is unnecessary for this route.
 
-These statements leave the permitted scope of a custom subscription-backed NGO OS assistant unclear. A billing description does not establish approval to collect credentials or offer our own login. Obtain written clarification for this exact architecture before committing to it. Do not infer approval from a successful token request or another tool's implementation. The Help Center's [login guidance for developers](https://support.claude.com/en/articles/13189465-log-in-to-your-claude-account#developers) also directs products to API keys or supported cloud providers.
+The proposed implementation is small.
 
-## Where the integration would live
+1. Add the community provider through pnpm. Configure a Claude-specific model path in the server assistant facade.
+2. Authenticate Claude Code on the machine running the demo server. A login on a visitor's laptop does not automatically authenticate a remote server.
+3. Bridge `workspaceTools` into an in-process server named `workspace`. Allow its named tools and disable Claude Code's built-in filesystem and shell tools.
+4. Stream through the existing AI SDK and assistant-ui chat. Let Claude Code own its tool loop for this path. Passing our normal `tools` map to `ToolLoopAgent` does not automatically expose it to the CLI.
+5. Add a model choice using Claude Code aliases such as `sonnet`, `opus`, and `haiku`. Actual availability comes from the signed-in account.
+6. Verify a streamed reply and a persisted task creation before calling the integration working.
 
-The committed main branch now has an assistant route and a workspace domain. `streamAssistant()` in `src/server/assistant/facade.ts` uses one server-owned `OPENROUTER_API_KEY` and the global `WORKSPACE_AI_MODEL`. It passes the model to `createWorkspaceAssistant()`, which runs workspace tools through the AI SDK and streams responses to assistant-ui. There is no per-user provider connection or credential store.
+Keep the existing OpenRouter path. The Claude path has different tool execution semantics, so this is a provider-specific branch behind the facade, not a replacement for the workspace tools or UI.
 
-The assistant route does not enforce Clerk identity, and the workspace facade uses shared demo data without a user ownership parameter. Authentication and access isolation must precede any real per-user credential connection. The tRPC router and Drizzle schema remain empty.
+One host login is one connected account. That is enough to prove the demo's inference path, but it is not the requested per-user connection feature. Separate users need separate authenticated runtimes or configuration directories. The provider's [settings type](https://github.com/ben-vargas/ai-sdk-provider-claude-code/blob/main/src/types.ts) supports per-instance subprocess environment configuration. Never claim that every visitor spends their own allowance when requests use the host account.
 
-| Existing location | Responsibility |
+## The browser Connect Claude route
+
+The browser plugin's [OAuth module](https://github.com/shahidshabbir-se/opencode-anthropic-oauth/blob/master/src/oauth.ts) has `createAuthorizationRequest`, `exchangeCodeForTokens`, and `refreshTokens`. It uses a SHA-256 PKCE challenge and a code-paste flow. Its [plugin entry point](https://github.com/shahidshabbir-se/opencode-anthropic-oauth/blob/master/src/index.ts) wires those operations into OpenCode and customizes Anthropic requests.
+
+The proposed data shape is one connection per authenticated user. A connection holds its access token, refresh token, expiry, and selected model. Pending authorization holds its verifier, state, owner, and expiry. Public UI state is disconnected, awaiting authorization, connected, or needs attention. Tokens remain server-side and encrypted at rest.
+
+A new server-only connection facade starts authorization, completes the code exchange, refreshes credentials, and disconnects. Route-local settings show **Connect Claude**, an authorization link, a code field when needed, a model choice, and **Disconnect**. Use the existing UI components.
+
+Resolve the current user's connection inside `streamAssistant()`. For the direct API route, use the AI SDK Anthropic provider with a custom fetch adapter based on the community transport. That keeps our existing `ToolLoopAgent` and workspace tools. For the native CLI route, keep credentials in the user's own runtime and let the CLI manage them. Avoid combining both refresh mechanisms against one login.
+
+The transport requires more than replacing an API key with a bearer token. The two OpenCode plugins also transform headers, system prompts, tool names, and stream events. Their implementations differ, including billing-header handling. Copying a README snippet is not enough. Select one complete transport and test it against the current account before porting it.
+
+## Existing app integration points
+
+| Location | Change needed |
 | --- | --- |
-| `src/app/(api)/api/assistant/route.ts` | Thin streaming handler with a 60-second request limit |
-| `src/server/assistant/facade.ts` | Message validation, model creation, tools, and response stream |
-| `src/server/workspace/facade.ts` | Project, task, member, and conversation data |
-| `src/server/api/context.ts` and `src/server/api/trpc.ts` | Clerk identity and authenticated procedures |
-| `src/server/api/facade.ts` | Server-only entry point for the HTTP adapter |
-| `src/server/db/schema.ts` | Future connection metadata, only when an integration needs storage |
-| `src/env.ts` | Validated server configuration |
-| `src/app/(workspace)/dashboard/` | Route-local settings and connection UI |
-| `.oxlintrc.json` | Provider and facade import boundaries |
+| `src/server/assistant/facade.ts` | Resolve the selected connection and provider before generation. Reuse `workspaceTools`. |
+| `src/app/(api)/api/assistant/route.ts` | Keep the route thin. Its current 60-second limit needs a check with CLI startup latency. |
+| `src/server/api/context.ts` and `src/server/api/trpc.ts` | Reuse Clerk identity and authenticated procedures for per-user connections. |
+| `src/server/<domain>/facade.ts` | New server-only boundary for connection lifecycle and credential access. |
+| `src/env.ts` | Validated provider configuration and encryption settings. |
+| `src/app/(workspace)/dashboard/` | Route-local connection controls and model selection. |
 
-A future connection domain belongs behind `src/server/<domain>/facade.ts`, marked `server-only`. Routes validate requests and call the facade. React components receive connection status and available choices, never stored credentials. The assistant facade resolves the authenticated user's selected provider before it calls `createWorkspaceAssistant(model)`.
+The current assistant uses one `OPENROUTER_API_KEY` and the global `WORKSPACE_AI_MODEL`. Its route does not enforce Clerk identity, and workspace operations use shared demo data. Add user identity before storing per-user credentials. Keep the hackathon's shared workspace behavior explicit.
 
-## A subscription workflow through MCP
+## What still needs a live check
 
-[Claude supports custom remote MCP connectors](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp) on subscription plans. Claude calls our tools and runs inference itself. The OAuth direction is Claude authenticating to NGO OS, not NGO OS obtaining a Claude subscription token. Remote connectors must be reachable from Anthropic's infrastructure.
+Verify subscription authentication, model availability, token refresh, and a streamed response. Verify that a tool creates a real task through the existing facade. Check that disconnect prevents future requests and that two users cannot select each other's connection. Usage metadata describes requests; it is not a transferable subscription token balance.
 
-The proposed implementation has these parts.
-
-1. Add an authenticated MCP endpoint using an existing MCP server library. Keep the handler thin and call NGO OS domain facades.
-2. Start with tools to list projects, read a project, and find volunteers. Add invitations only after permissions and user confirmation work.
-3. Use a library-supported OAuth authorization server compatible with the app's Clerk identity. Verify connector discovery, token audience, scopes, expiry, and revocation. Clerk session cookies alone do not authenticate remote MCP calls.
-4. Enforce the user's NGO OS permissions in every tool. Connection authorization does not grant unrestricted workspace access.
-5. Put connector instructions and the server URL in settings. Claude handles model selection and subscription limits. NGO OS does not advertise a transferable token balance.
-
-```mermaid
-sequenceDiagram
-    actor User
-    participant Claude
-    participant MCP as NGO OS MCP endpoint
-    participant Facade as NGO OS domain facade
-    User->>Claude: Connect NGO OS and authorize access
-    User->>Claude: Find volunteers for a project
-    Claude->>MCP: Call tool with NGO OS authorization
-    MCP->>Facade: Read authorized project and volunteer data
-    Facade-->>Claude: Return tool result through MCP
-    Claude-->>User: Answer using Claude's model and usage rules
-```
-
-This is an architectural proposal, not a tested connector. The existing workspace facade can supply projects and members, but first needs authenticated access rules. Verification must cover unauthorized access, access across users, revoked authorization, and a real Claude connector conversation. A localhost-only demo needs a public development endpoint for a remote connector.
-
-## Claude models inside NGO OS
-
-For a separately billed API connection, the proposed domain stores one encrypted credential per authenticated user. Its public state is disconnected, connected, or needs attention. Storage holds the encryption key version and safe credential metadata. Model availability is a separate result from the provider, not proof of connection.
-
-The facade connects, lists available models, disconnects, and resolves the credential for an authenticated request. The server validates access before marking the connection active. It passes the decrypted key directly to an official provider adapter. It never returns or logs the key. Encryption configuration goes through `src/env.ts`.
-
-Settings show **Connect Anthropic API**, a model choice, and **Disconnect**. The connection form states that API usage has separate billing. Responses reuse the app's AI SDK and assistant-ui integration. Invalid credentials, unavailable models, exhausted API credit, and rate limits have distinct errors. An error must not silently switch billing to the app's shared key.
-
-Useful integration checks cover credential isolation between users, connection validation, disconnect, and a request using the selected provider and model. No unit tests are needed for this proposal.
-
-## A hosted Claude Code alternative
-
-If the product must use subscriptions while remaining accessible from NGO OS, a separate per-user Claude Code terminal is the documented hosting route. This is more work than a settings connection.
-
-The proposed host provides an isolated user-owned runtime, persistent private storage, an authenticated terminal connection, resource limits, and lifecycle management. The user signs in through the binary's own flow. NGO OS does not extract the resulting credential for an AI SDK provider. Sharing the server's home directory or one process account between users is unsuitable.
-
-[Claude Code authentication](https://code.claude.com/docs/en/iam#log-in-to-claude-code) handles browser login, container login codes, and logout. [Claude Code model configuration](https://code.claude.com/docs/en/model-config) handles model selection and account restrictions. A subscription does not guarantee every model or unlimited tokens.
-
-The app has no terminal transport or runtime manager today. Design this as a separate hosted workspace service before adding database tables or settings controls. Turning its output into the NGO OS assistant would return to the unresolved custom-product question. The hosting exception alone does not establish permission for that design.
-
-## Remaining decisions
-
-The product choice is whether users need chat inside NGO OS or can work with NGO OS tools inside Claude. Those experiences require different integrations. The hackathon scope already selects a mock.
-
-A custom subscription-backed assistant needs Anthropic's written approval, an approved authentication flow, confirmed billing behavior, and a live per-user isolation check. None of those gates were validated in this research. Recheck the official documents before implementation because the SDK billing policy is under revision.
+The repositories are community integrations and can break when upstream auth or request handling changes. [Anthropic's official SDK documentation](https://code.claude.com/docs/en/agent-sdk/overview#get-started) restricts third-party subscription login without prior approval. That distinction does not erase the implementations above. For this private demo, the technical recommendation is the native AI SDK provider first, with the browser plugin as the reference for a per-user connection flow.
