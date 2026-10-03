@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState, type FormEvent } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -17,16 +16,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { cn } from "@/lib/utils";
 import {
   createProjectSchema,
   createTaskSchema,
+  priorities,
+  projectFormats,
   workStatuses,
+  workTags,
   workspaceQueryKey,
+  type Priority,
   type Project,
+  type ProjectFormat,
   type Task,
   type Workspace,
   type WorkStatus,
+  type WorkTag,
 } from "@/lib/workspace";
+
+import { MemberAvatar } from "./work-cards";
 
 import {
   createProjectAction,
@@ -36,6 +45,17 @@ import {
 } from "../actions";
 
 const statusItems = workStatuses.map((status) => ({ value: status.id, label: status.label }));
+const priorityItems = priorities.map((priority) => ({ value: priority.id, label: priority.label }));
+const tagItems = workTags.map((tag) => ({ value: tag, label: tag }));
+
+function isTag(value: string): value is WorkTag {
+  return workTags.some((tag) => tag === value);
+}
+
+function readCapacity(value: FormDataEntryValue | null) {
+  if (typeof value !== "string" || value.trim() === "") return null;
+  return Number(value);
+}
 
 type WorkEditorProps = {
   workspace: Workspace;
@@ -47,7 +67,16 @@ export function WorkEditor(props: WorkEditorProps) {
   const { workspace, onSaved } = props;
   const existing = props.kind === "task" ? props.task : props.project;
   const [status, setStatus] = useState(existing?.status ?? props.status ?? "todo");
+  const [format, setFormat] = useState<ProjectFormat>(
+    props.kind === "project" ? (props.project?.format ?? "in-person") : "in-person",
+  );
   const [assigneeIds, setAssigneeIds] = useState(existing?.assigneeIds ?? []);
+  const [priority, setPriority] = useState<Priority>(
+    props.kind === "task" ? (props.task?.priority ?? "normal") : "normal",
+  );
+  const [tags, setTags] = useState<WorkTag[]>(
+    props.kind === "task" ? (props.task?.tags ?? []) : [],
+  );
   const [projectId, setProjectId] = useState(
     props.kind === "task" ? (props.task?.projectId ?? props.projectId ?? "none") : "none",
   );
@@ -73,7 +102,12 @@ export function WorkEditor(props: WorkEditorProps) {
         assigneeIds,
       };
       if (props.kind === "project") {
-        const input = createProjectSchema.parse({ ...fields, location: form.get("location") });
+        const input = createProjectSchema.parse({
+          ...fields,
+          location: form.get("location"),
+          capacity: readCapacity(form.get("capacity")),
+          format,
+        });
         return props.project
           ? updateProjectAction({ ...input, id: props.project.id })
           : createProjectAction(input);
@@ -81,6 +115,8 @@ export function WorkEditor(props: WorkEditorProps) {
       const input = createTaskSchema.parse({
         ...fields,
         projectId: projectId === "none" ? null : projectId,
+        priority,
+        tags,
       });
       return props.task
         ? updateTaskAction({ ...input, id: props.task.id })
@@ -106,11 +142,22 @@ export function WorkEditor(props: WorkEditorProps) {
   const changeProject = useCallback((value: string | null) => {
     if (value) setProjectId(value);
   }, []);
+  const changePriority = useCallback((value: Priority | null) => {
+    if (value) setPriority(value);
+  }, []);
+  const changeTags = useCallback((value: string[]) => {
+    setTags(value.filter(isTag));
+  }, []);
+  const selectedFormat = useMemo(() => [format], [format]);
+  const changeFormat = useCallback((values: string[]) => {
+    const value = values[0];
+    if (value === "in-person" || value === "online") setFormat(value);
+  }, []);
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-6">
-      <FieldGroup>
-        <Field>
+      <FieldGroup className={cn(props.kind === "project" && "sm:grid sm:grid-cols-2")}>
+        <Field className={cn(props.kind === "project" && "sm:col-span-2")}>
           <FieldLabel htmlFor="work-title">Name</FieldLabel>
           <Input
             id="work-title"
@@ -121,7 +168,7 @@ export function WorkEditor(props: WorkEditorProps) {
             maxLength={160}
           />
         </Field>
-        <Field>
+        <Field className={cn(props.kind === "project" && "sm:col-span-2")}>
           <FieldLabel htmlFor="work-description">Description</FieldLabel>
           <Textarea
             id="work-description"
@@ -168,9 +215,7 @@ export function WorkEditor(props: WorkEditorProps) {
               <SelectGroup>
                 {workspace.members.map((member) => (
                   <SelectItem key={member.id} value={member.id}>
-                    <Avatar size="sm">
-                      <AvatarFallback>{member.name.slice(0, 1)}</AvatarFallback>
-                    </Avatar>
+                    <MemberAvatar member={member} />
                     {member.name}
                   </SelectItem>
                 ))}
@@ -179,37 +224,106 @@ export function WorkEditor(props: WorkEditorProps) {
           </Select>
         </Field>
         {props.kind === "task" ? (
-          <Field>
-            <FieldLabel htmlFor="work-project">Project</FieldLabel>
-            <Select items={projects} value={projectId} onValueChange={changeProject}>
-              <SelectTrigger id="work-project" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {projects.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </Field>
+          <>
+            <Field>
+              <FieldLabel htmlFor="work-project">Project</FieldLabel>
+              <Select items={projects} value={projectId} onValueChange={changeProject}>
+                <SelectTrigger id="work-project" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {projects.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="work-priority">Priority</FieldLabel>
+              <Select items={priorityItems} value={priority} onValueChange={changePriority}>
+                <SelectTrigger id="work-priority" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {priorityItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="work-tags">Tags</FieldLabel>
+              <Select items={tagItems} multiple value={tags} onValueChange={changeTags}>
+                <SelectTrigger id="work-tags" className="w-full">
+                  <SelectValue>
+                    {(value: string[]) => (value.length ? value.join(", ") : "No tags")}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {tagItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+          </>
         ) : (
-          <Field>
-            <FieldLabel htmlFor="work-location">Location</FieldLabel>
-            <Input
-              id="work-location"
-              name="location"
-              defaultValue={props.project?.location}
-              placeholder="Tampere"
-              maxLength={200}
-            />
-          </Field>
+          <>
+            <Field>
+              <FieldLabel>Format</FieldLabel>
+              <ToggleGroup
+                value={selectedFormat}
+                onValueChange={changeFormat}
+                aria-label="Format"
+                className="w-full"
+              >
+                {projectFormats.map((item) => (
+                  <ToggleGroupItem key={item.id} value={item.id} className="flex-1">
+                    {item.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="work-location">Location</FieldLabel>
+              <Input
+                id="work-location"
+                name="location"
+                defaultValue={props.project?.location}
+                placeholder="Tampere"
+                maxLength={200}
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="work-capacity">Capacity</FieldLabel>
+              <Input
+                id="work-capacity"
+                name="capacity"
+                type="number"
+                min={1}
+                max={10000}
+                defaultValue={props.project?.capacity ?? ""}
+                placeholder="How many people"
+              />
+            </Field>
+          </>
         )}
         <Field>
-          <FieldLabel htmlFor="work-date">Due date</FieldLabel>
+          <FieldLabel htmlFor="work-date">
+            {props.kind === "project" ? "Date" : "Due date"}
+          </FieldLabel>
           <Input id="work-date" name="dueDate" type="date" defaultValue={existing?.dueDate ?? ""} />
         </Field>
       </FieldGroup>

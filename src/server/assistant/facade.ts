@@ -92,7 +92,7 @@ export const workspaceTools = {
   }),
   createTask: tool({
     description:
-      "Create a task. Use existing member IDs for assigneeIds, a real project ID or null, and an ISO date or null. Defaults when unspecified are todo, empty description, no assignees, no project, and no due date.",
+      "Create a task. Use existing member IDs for assigneeIds, a real project ID or null, and an ISO date or null. Defaults when unspecified are todo, empty description, no assignees, no project, no due date, normal priority, and no tags. Priority is urgent, high, normal, or low. Tags are chosen from Outreach, Venue, Design, Speakers, Volunteers, Campus, and Board.",
     inputSchema: createTaskSchema,
     execute: (input) => createTask(input),
   }),
@@ -104,7 +104,7 @@ export const workspaceTools = {
   }),
   createProject: tool({
     description:
-      "Create a project. Use existing member IDs for assigneeIds and an ISO date or null. Defaults when unspecified are todo, empty description and location, no assignees, and no due date.",
+      "Create a project. Use existing member IDs for assigneeIds and an ISO date or null. Defaults when unspecified are todo, empty description and location, no assignees, no due date, in-person format, and no capacity. Capacity is a positive whole number or null.",
     inputSchema: createProjectSchema,
     execute: (input) => createProject(input),
   }),

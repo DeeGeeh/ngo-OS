@@ -18,6 +18,13 @@ import type {
   UpdateTask,
 } from "@/lib/workspace";
 import {
+  addLumaGuest,
+  createLumaEvent,
+  getLumaCalendar,
+  sendLumaBlast,
+  updateLumaGuest,
+} from "@/server/luma/facade";
+import {
   createProject,
   createTask,
   getWorkspace,
@@ -25,6 +32,13 @@ import {
   updateProject,
   updateTask,
 } from "@/server/workspace/facade";
+
+function saved<T>(work: () => Promise<T>) {
+  return work().catch((error: unknown) => {
+    if (error instanceof Error && error.name !== "ZodError") throw error;
+    throw new Error("Check the details and try again.");
+  });
+}
 
 export async function getWorkspaceAction() {
   return getWorkspace();

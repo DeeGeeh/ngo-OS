@@ -3,16 +3,41 @@ import type { Workspace } from "@/lib/workspace";
 export const demoWorkspace = {
   currentMemberId: "diar",
   members: [
-    { id: "diar", name: "Diar", role: "Board member", skills: ["Product", "Technology"] },
-    { id: "aino", name: "Aino Laine", role: "Community lead", skills: ["Community", "Outreach"] },
+    {
+      id: "diar",
+      name: "Diar",
+      role: "Board member",
+      skills: ["Product", "Technology"],
+      avatar: "/avatars/diar.jpg",
+    },
+    {
+      id: "aino",
+      name: "Aino Laine",
+      role: "Community lead",
+      skills: ["Community", "Outreach"],
+      avatar: "/avatars/aino.jpg",
+    },
     {
       id: "elias",
       name: "Elias Koski",
       role: "Project lead",
       skills: ["Operations", "Partnerships"],
+      avatar: "/avatars/elias.jpg",
     },
-    { id: "noora", name: "Noora Niemi", role: "Communications", skills: ["Design", "Marketing"] },
-    { id: "leo", name: "Leo Virtanen", role: "Volunteer", skills: ["Photography", "Technology"] },
+    {
+      id: "noora",
+      name: "Noora Niemi",
+      role: "Communications",
+      skills: ["Design", "Marketing"],
+      avatar: "/avatars/noora.jpg",
+    },
+    {
+      id: "leo",
+      name: "Leo Virtanen",
+      role: "Volunteer",
+      skills: ["Photography", "Technology"],
+      avatar: "/avatars/leo.jpg",
+    },
   ],
   projects: [
     {
@@ -24,6 +49,8 @@ export const demoWorkspace = {
       assigneeIds: ["elias", "aino", "noora"],
       dueDate: "2026-10-22",
       location: "Platform6, Tampere",
+      capacity: 80,
+      format: "in-person",
     },
     {
       id: "campus-builders",
@@ -34,6 +61,8 @@ export const demoWorkspace = {
       assigneeIds: ["diar", "leo"],
       dueDate: "2026-11-05",
       location: "Tampere University, City Centre Campus",
+      capacity: 40,
+      format: "in-person",
     },
   ],
   tasks: [
@@ -45,6 +74,14 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["elias"],
       dueDate: "2026-10-08",
+      priority: "high",
+      tags: ["Speakers"],
+      subtasks: [
+        { id: "speaker-shortlist", title: "Shortlist six founders", done: true },
+        { id: "speaker-outreach", title: "Send the invitations", done: true },
+        { id: "speaker-topics", title: "Agree the talk topics", done: false },
+        { id: "speaker-bios", title: "Collect bios and photos", done: false },
+      ],
     },
     {
       id: "book-venue",
@@ -54,6 +91,9 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["elias"],
       dueDate: "2026-10-02",
+      priority: "normal",
+      tags: ["Venue"],
+      subtasks: [],
     },
     {
       id: "founder-visuals",
@@ -63,6 +103,12 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["noora"],
       dueDate: "2026-10-09",
+      priority: "normal",
+      tags: ["Design"],
+      subtasks: [
+        { id: "visuals-cover", title: "Project cover image", done: true },
+        { id: "visuals-social", title: "Social posts", done: false },
+      ],
     },
     {
       id: "welcome-team",
@@ -72,6 +118,12 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["aino"],
       dueDate: "2026-10-12",
+      priority: "high",
+      tags: ["Volunteers", "Outreach"],
+      subtasks: [
+        { id: "visuals-cover", title: "Project cover image", done: true },
+        { id: "visuals-social", title: "Social posts", done: false },
+      ],
     },
     {
       id: "photography",
@@ -81,6 +133,9 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["leo"],
       dueDate: "2026-10-16",
+      priority: "low",
+      tags: ["Design"],
+      subtasks: [],
     },
     {
       id: "founder-run-sheet",
@@ -90,6 +145,13 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["elias", "aino"],
       dueDate: "2026-10-15",
+      priority: "high",
+      tags: ["Volunteers"],
+      subtasks: [
+        { id: "runsheet-setup", title: "Setup and doors", done: false },
+        { id: "runsheet-talks", title: "Talks and Q&A timings", done: false },
+        { id: "runsheet-close", title: "Networking and close", done: false },
+      ],
     },
     {
       id: "campus-format",
@@ -100,6 +162,13 @@ export const demoWorkspace = {
       projectId: "campus-builders",
       assigneeIds: ["diar"],
       dueDate: "2026-10-13",
+      priority: "normal",
+      tags: ["Campus"],
+      subtasks: [
+        { id: "runsheet-setup", title: "Setup and doors", done: false },
+        { id: "runsheet-talks", title: "Talks and Q&A timings", done: false },
+        { id: "runsheet-close", title: "Networking and close", done: false },
+      ],
     },
     {
       id: "campus-room",
@@ -109,6 +178,12 @@ export const demoWorkspace = {
       projectId: "campus-builders",
       assigneeIds: ["leo"],
       dueDate: "2026-10-16",
+      priority: "high",
+      tags: ["Campus", "Venue"],
+      subtasks: [
+        { id: "room-shortlist", title: "Shortlist three rooms", done: true },
+        { id: "room-book", title: "Confirm the booking", done: false },
+      ],
     },
     {
       id: "campus-invite",
@@ -118,6 +193,13 @@ export const demoWorkspace = {
       projectId: "campus-builders",
       assigneeIds: ["noora", "diar"],
       dueDate: "2026-10-20",
+      priority: "normal",
+      tags: ["Campus", "Outreach"],
+      subtasks: [
+        { id: "invite-draft", title: "Draft the copy", done: false },
+        { id: "invite-review", title: "Review with the board", done: false },
+        { id: "invite-send", title: "Send to student lists", done: false },
+      ],
     },
     {
       id: "campus-mentors",
@@ -127,6 +209,12 @@ export const demoWorkspace = {
       projectId: "campus-builders",
       assigneeIds: ["aino"],
       dueDate: "2026-10-23",
+      priority: "low",
+      tags: ["Campus", "Volunteers"],
+      subtasks: [
+        { id: "room-shortlist", title: "Shortlist three rooms", done: true },
+        { id: "room-book", title: "Confirm the booking", done: false },
+      ],
     },
     {
       id: "board-agenda",
@@ -136,6 +224,12 @@ export const demoWorkspace = {
       projectId: null,
       assigneeIds: ["diar"],
       dueDate: "2026-10-06",
+      priority: "urgent",
+      tags: ["Board"],
+      subtasks: [
+        { id: "agenda-collect", title: "Collect open questions", done: true },
+        { id: "agenda-share", title: "Share before Tuesday", done: false },
+      ],
     },
     {
       id: "member-onboarding",
@@ -145,6 +239,13 @@ export const demoWorkspace = {
       projectId: null,
       assigneeIds: ["aino", "noora"],
       dueDate: "2026-10-14",
+      priority: "normal",
+      tags: ["Outreach"],
+      subtasks: [
+        { id: "invite-draft", title: "Draft the copy", done: false },
+        { id: "invite-review", title: "Review with the board", done: false },
+        { id: "invite-send", title: "Send to student lists", done: false },
+      ],
     },
     {
       id: "drive-folder",
@@ -154,6 +255,12 @@ export const demoWorkspace = {
       projectId: null,
       assigneeIds: ["leo"],
       dueDate: "2026-10-01",
+      priority: "low",
+      tags: ["Board"],
+      subtasks: [
+        { id: "agenda-collect", title: "Collect open questions", done: true },
+        { id: "agenda-share", title: "Share before Tuesday", done: false },
+      ],
     },
   ],
   channels: [
@@ -175,11 +282,25 @@ export const demoWorkspace = {
   ],
   messages: [
     {
+      id: "general-kickoff",
+      conversation: { kind: "channel", id: "general" },
+      authorId: "diar",
+      text: "Autumn season is live. Founder Night and Campus Builders are the two projects we're running until November.",
+      createdAt: "2026-10-01T06:40:00.000Z",
+    },
+    {
+      id: "general-roles",
+      conversation: { kind: "channel", id: "general" },
+      authorId: "diar",
+      text: "Shout if you want to own a piece of either one.",
+      createdAt: "2026-10-01T06:42:00.000Z",
+    },
+    {
       id: "general-hello",
       conversation: { kind: "channel", id: "general" },
       authorId: "aino",
       text: "Welcome back! Founder Night and Campus Builders are taking shape. Pick a task if you'd like to help.",
-      createdAt: "2026-10-03T08:15:00.000Z",
+      createdAt: "2026-10-02T08:15:00.000Z",
     },
     {
       id: "general-help",
@@ -187,6 +308,13 @@ export const demoWorkspace = {
       authorId: "leo",
       text: "I'm in for photos at Founder Night. I'll also check rooms for the campus session.",
       createdAt: "2026-10-03T08:28:00.000Z",
+    },
+    {
+      id: "board-budget",
+      conversation: { kind: "channel", id: "board" },
+      authorId: "elias",
+      text: "Venue deposit is paid. I'll add the receipt to the shared folder.",
+      createdAt: "2026-10-02T12:05:00.000Z",
     },
     {
       id: "board-agenda-message",
@@ -200,28 +328,49 @@ export const demoWorkspace = {
       conversation: { kind: "channel", id: "ideas" },
       authorId: "noora",
       text: "What about a small builder breakfast next month? Members could share what they're working on.",
-      createdAt: "2026-10-03T09:20:00.000Z",
+      createdAt: "2026-10-02T09:20:00.000Z",
+    },
+    {
+      id: "idea-breakfast-reply",
+      conversation: { kind: "channel", id: "ideas" },
+      authorId: "aino",
+      text: "I like it. Low effort, and it keeps people talking between the bigger events.",
+      createdAt: "2026-10-03T07:05:00.000Z",
     },
     {
       id: "founder-venue-message",
       conversation: { kind: "channel", id: "founder-night-channel" },
       authorId: "elias",
       text: "Platform6 is confirmed. We can set up at 17:00 and open the doors at 18:00.",
-      createdAt: "2026-10-03T10:05:00.000Z",
+      createdAt: "2026-10-01T10:05:00.000Z",
+    },
+    {
+      id: "founder-capacity",
+      conversation: { kind: "channel", id: "founder-night-channel" },
+      authorId: "elias",
+      text: "Room fits 80 comfortably, so let's cap registration there.",
+      createdAt: "2026-10-01T10:08:00.000Z",
     },
     {
       id: "founder-visuals-message",
       conversation: { kind: "channel", id: "founder-night-channel" },
       authorId: "noora",
       text: "I'll have the first visuals ready on Thursday. Send me the speaker names when they're confirmed.",
-      createdAt: "2026-10-03T10:12:00.000Z",
+      createdAt: "2026-10-02T10:12:00.000Z",
+    },
+    {
+      id: "founder-runsheet-nudge",
+      conversation: { kind: "channel", id: "founder-night-channel" },
+      authorId: "aino",
+      text: "Run sheet is still open. I'll draft it tonight unless someone already started.",
+      createdAt: "2026-10-03T09:45:00.000Z",
     },
     {
       id: "campus-format-message",
       conversation: { kind: "channel", id: "campus-builders-channel" },
       authorId: "diar",
       text: "Let's give teams two hours to build something small. A working demo is a better finish than a slide deck.",
-      createdAt: "2026-10-03T10:30:00.000Z",
+      createdAt: "2026-10-02T10:30:00.000Z",
     },
     {
       id: "campus-room-message",
@@ -235,7 +384,7 @@ export const demoWorkspace = {
       conversation: { kind: "task", id: "confirm-speakers" },
       authorId: "aino",
       text: "Should we invite a first-time founder too? It would make the stories more relatable for students.",
-      createdAt: "2026-10-03T11:00:00.000Z",
+      createdAt: "2026-10-02T11:00:00.000Z",
     },
     {
       id: "speaker-task-answer",
@@ -250,6 +399,27 @@ export const demoWorkspace = {
       authorId: "leo",
       text: "Happy to help teams with their first prototype. We can keep the introductions to 20 minutes.",
       createdAt: "2026-10-03T11:25:00.000Z",
+    },
+    {
+      id: "dm-aino-earlier",
+      conversation: { kind: "direct", id: "aino" },
+      authorId: "aino",
+      text: "Thanks for picking up the board agenda.",
+      createdAt: "2026-10-02T14:02:00.000Z",
+    },
+    {
+      id: "dm-aino",
+      conversation: { kind: "direct", id: "aino" },
+      authorId: "aino",
+      text: "Can you look at the welcome team list before Tuesday?",
+      createdAt: "2026-10-03T11:40:00.000Z",
+    },
+    {
+      id: "dm-leo",
+      conversation: { kind: "direct", id: "leo" },
+      authorId: "leo",
+      text: "I'll send the photo plan once the run sheet is ready.",
+      createdAt: "2026-10-03T11:48:00.000Z",
     },
   ],
 } satisfies Workspace;

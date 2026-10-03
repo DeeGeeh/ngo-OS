@@ -14,7 +14,11 @@ import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-export const metadata: Metadata = { title: "NGO OS" };
+export const metadata: Metadata = {
+  title: { default: "Nest", template: "%s · Nest" },
+  description: "The operating system for non-profits.",
+  applicationName: "Nest",
+};
 
 const clerkAppearance = { theme: shadcn };
 

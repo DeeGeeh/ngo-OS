@@ -18,6 +18,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 const columnIcons = { todo: Circle, "in-progress": Clock3, done: CircleCheck };
+const columnAccents = {
+  todo: "text-muted-foreground",
+  "in-progress": "text-chart-2",
+  done: "text-primary",
+};
+const columnRules = {
+  todo: "bg-muted-foreground/30",
+  "in-progress": "bg-chart-2",
+  done: "bg-primary",
+};
 export type ColumnStatus = keyof typeof columnIcons;
 export type Assignee = { name: string; avatar?: string };
 export type CardTag = { label: string; variant?: string };
@@ -44,6 +54,7 @@ export type ColumnProps = {
   setDragState: Dispatch<SetStateAction<DragState>>;
   onCardClick: (card: CardData) => void;
   onAddCard?: (columnId: ColumnStatus) => void;
+  renderAdd?: (columnId: ColumnStatus) => ReactNode;
   renderCard?: (card: CardData) => ReactNode;
   disabled?: boolean;
 };
@@ -113,11 +124,8 @@ function WorkCard({
     <div draggable={!disabled} onDragStart={startDrag} onDragEnd={endDrag}>
       <motion.button
         type="button"
-        className={cn(
-          "relative block w-full cursor-grab rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default active:cursor-grabbing",
-          card.kind === "project" && "pt-3",
-        )}
-        aria-label={card.title}
+        className="relative block w-full cursor-grab rounded-xl text-left outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing disabled:cursor-default"
+        aria-label={card.kind === "project" ? `Open project ${card.title}` : card.title}
         disabled={disabled}
         initial={reducedMotion ? false : "initial"}
         animate="animate"
@@ -129,15 +137,7 @@ function WorkCard({
         whileTap={reducedMotion ? undefined : cardPress}
         onClick={openCard}
       >
-        {card.kind === "project" && (
-          <span
-            aria-hidden="true"
-            className="absolute top-0 left-0 h-5 w-2/5 rounded-t-xl border bg-card"
-          />
-        )}
-        <div className="relative">
-          {renderCard ? <Card>{renderCard(card)}</Card> : <CardBody card={card} />}
-        </div>
+        {renderCard ? renderCard(card) : <CardBody card={card} />}
       </motion.button>
     </div>
   );
@@ -150,6 +150,7 @@ export function Column({
   setDragState,
   onCardClick,
   onAddCard,
+  renderAdd,
   renderCard,
   disabled,
 }: ColumnProps) {
@@ -183,24 +184,31 @@ export function Column({
   const addCard = useCallback(() => onAddCard?.(column.id), [onAddCard, column.id]);
   return (
     <section className="flex h-full min-h-80 min-w-0 flex-col" aria-label={column.title}>
-      <header className="mb-5 flex items-center gap-2 px-1">
-        <Icon className="size-4" />
-        <h2 className="font-medium">{column.title}</h2>
-        <span className="ml-auto tabular-nums">{column.cards.length}</span>
-        {onAddCard && (
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={`Add to ${column.title}`}
-            onClick={addCard}
-          >
-            <Plus />
-          </Button>
-        )}
+      <div aria-hidden="true" className={cn("h-1 rounded-full", columnRules[column.status])} />
+      <header className="mt-3 mb-3 flex items-center gap-2 px-1">
+        <Icon className={cn("size-4", columnAccents[column.status])} />
+        <h2 className="text-sm font-semibold tracking-tight">{column.title}</h2>
+        <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground tabular-nums">
+          {column.cards.length}
+        </span>
+        <div className="ml-auto">
+          {renderAdd
+            ? renderAdd(column.id)
+            : onAddCard && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={`Add to ${column.title}`}
+                  onClick={addCard}
+                >
+                  <Plus />
+                </Button>
+              )}
+        </div>
       </header>
       <div
         className={cn(
-          "flex min-h-64 flex-1 flex-col gap-4 rounded-xl p-1",
+          "flex min-h-64 flex-1 flex-col gap-3 rounded-xl p-1 transition-colors",
           dragOver && dragState && "bg-accent ring-1 ring-border",
         )}
         onDragOver={handleDragOver}
