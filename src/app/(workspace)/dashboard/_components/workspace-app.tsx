@@ -62,6 +62,7 @@ import { TaskDetail } from "./task-detail";
 import { MemberAvatar } from "./work-cards";
 import { WorkEditor } from "./work-editor";
 import { WorkspaceChat } from "./workspace-chat";
+import { UserSettingsDialog } from "./user-settings";
 
 type View =
   | { kind: "board" }

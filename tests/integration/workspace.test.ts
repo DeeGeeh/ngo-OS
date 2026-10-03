@@ -235,6 +235,32 @@ await test("workspace facade persists valid edits in an isolated local database"
       },
     );
 
+    await t.test("user settings persist and update only the current member", async () => {
+      const before = await workspace.getWorkspace();
+      const settings = {
+        firstName: "  Diar  ",
+        lastName: "Example",
+        email: "diar@example.com",
+        telegramHandle: "@diar_example",
+      };
+      const updated = await workspace.updateUserSettings(settings);
+      assert.equal(updated.firstName, "Diar");
+      const saved = await workspace.getWorkspace();
+      const currentMember = saved.members.find((member) => member.id === saved.currentMemberId);
+      assert.equal(currentMember?.name, "Diar Example");
+      assert.deepEqual(currentMember?.settings, updated);
+      assert.deepEqual(saved.tasks, before.tasks);
+      assert.deepEqual(
+        saved.members.filter((member) => member.id !== saved.currentMemberId),
+        before.members.filter((member) => member.id !== before.currentMemberId),
+      );
+      await assert.rejects(workspace.updateUserSettings({ ...settings, email: "invalid" }));
+      await assert.rejects(
+        workspace.updateUserSettings({ ...settings, telegramHandle: "invalid" }),
+      );
+      assert.deepEqual(await workspace.getWorkspace(), saved);
+    });
+
     await t.test("a fresh process reloads the persisted workspace", async () => {
       const { stdout } = await runProcess(
         process.execPath,

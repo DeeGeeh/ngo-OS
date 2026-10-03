@@ -54,12 +54,24 @@ const titleSchema = z.string().trim().min(1).max(160);
 const assigneesSchema = z.array(idSchema).max(20);
 const dueDateSchema = z.iso.date().nullable();
 
+export const userSettingsSchema = z.object({
+  firstName: z.string().trim().min(1).max(100),
+  lastName: z.string().trim().max(100),
+  email: z.union([z.email().max(254), z.literal("")]),
+  telegramHandle: z
+    .string()
+    .trim()
+    .regex(/^$|^@[a-zA-Z][a-zA-Z0-9_]{4,31}$/, "Enter a Telegram handle like @username."),
+});
+export type UserSettings = z.infer<typeof userSettingsSchema>;
+
 export const memberSchema = z.object({
   id: idSchema,
   name: z.string(),
   role: z.string(),
   skills: z.array(z.string()),
   avatar: z.string().max(200).default(""),
+  settings: userSettingsSchema.optional(),
 });
 export const subtaskSchema = z.object({
   id: idSchema,
