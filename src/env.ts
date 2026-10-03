@@ -11,7 +11,7 @@ export const env = createEnv({
       .regex(/^\.next(?:-[a-z0-9-]+)?$/)
       .default(".next"),
     WORKSPACE_DATABASE_URL: z.string().startsWith("file:").default("file:./tres-demo.db"),
-    WORKSPACE_AI_MODEL: z.string().min(1).default("openai/gpt-6.1-sol"),
+    WORKSPACE_AI_MODEL: z.string().min(1).default("google/gemini-3.8-flash"),
     TURSO_DATABASE_URL: z.url().default("file:./local.db"),
     TURSO_AUTH_TOKEN: z.string().min(1).optional(),
     CLERK_SECRET_KEY: z.string().min(1).optional(),
