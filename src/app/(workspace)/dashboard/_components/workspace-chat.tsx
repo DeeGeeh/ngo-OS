@@ -85,12 +85,20 @@ function DirectItem({
   );
 }
 
-function SectionLabel({ icon: Icon, label }: { icon: typeof Hash; label: string }) {
+function SectionLabel({
+  icon: Icon,
+  label,
+  chevron = true,
+}: {
+  icon: typeof Hash;
+  label: string;
+  chevron?: boolean;
+}) {
   return (
     <span className="flex items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground">
       <Icon className="size-4" />
       <span className="flex-1 text-left">{label}</span>
-      <ChevronDown className="size-4" />
+      {chevron ? <ChevronDown className="size-4" /> : null}
     </span>
   );
 }
@@ -155,24 +163,20 @@ export function WorkspaceChat({
                 onSelect={selectChannel}
               />
             ))}
-            <Collapsible defaultOpen={Boolean(projectId)} className="mt-3">
-              <CollapsibleTrigger className="w-full">
-                <SectionLabel icon={Folder} label="Projects" />
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <div className="flex flex-col gap-0.5 pt-1 pl-8 text-muted-foreground">
-                  {projectChannels.map((channel) => (
-                    <ChannelItem
-                      key={channel.id}
-                      channel={channel}
-                      selected={selection?.kind === "channel" && selection.id === channel.id}
-                      onSelect={selectChannel}
-                      nested
-                    />
-                  ))}
-                </div>
-              </CollapsibleContent>
-            </Collapsible>
+            <div className="mt-3">
+              <SectionLabel icon={Folder} label="Projects" chevron={false} />
+              <div className="flex flex-col gap-0.5 pt-1 pl-8 text-muted-foreground">
+                {projectChannels.map((channel) => (
+                  <ChannelItem
+                    key={channel.id}
+                    channel={channel}
+                    selected={selection?.kind === "channel" && selection.id === channel.id}
+                    onSelect={selectChannel}
+                    nested
+                  />
+                ))}
+              </div>
+            </div>
             <Collapsible defaultOpen className="mt-3">
               <CollapsibleTrigger className="w-full">
                 <SectionLabel icon={MessageSquare} label="Direct messages" />

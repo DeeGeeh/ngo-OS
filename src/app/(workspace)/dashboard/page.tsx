@@ -9,8 +9,12 @@ import { getWorkspace } from "@/server/workspace/facade";
 import { WorkspaceProviders } from "./_components/providers";
 import { WorkspaceApp } from "./_components/workspace-app";
 
-export const metadata: Metadata = { title: "TR3S" };
-const loading = <main className="flex h-svh items-center justify-center">TR3S</main>;
+export const metadata: Metadata = { title: "Workspace" };
+const loading = (
+  <main className="flex h-svh items-center justify-center text-sm text-muted-foreground">
+    Loading workspace…
+  </main>
+);
 
 async function WorkspaceContent() {
   await connection();

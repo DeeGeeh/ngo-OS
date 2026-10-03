@@ -1,11 +1,20 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useMemo, useState, type ChangeEvent, type FormEvent } from "react";
+import {
+  useCallback,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
+import { ExternalLink, Globe, Lock, MapPin, Plus, Ticket, type LucideIcon } from "lucide-react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -34,14 +43,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import {
   approvalLabels,
-  formatLumaDay,
+  formatLumaDateLong,
+  formatLumaDayNumber,
+  formatLumaMonth,
+  formatLumaTime,
+  formatLumaTimeRange,
   formatLumaWhen,
   formatTicketPrice,
   hostRoleLabels,
+  lumaPath,
   lumaQueryKey,
   type AddLumaGuest,
   type CreateLumaEvent,
@@ -80,6 +96,213 @@ function failureMessage(error: unknown) {
   return error instanceof Error ? error.message : "Luma could not save that.";
 }
 
+function DateChip({ iso, large = false }: { iso: string; large?: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex shrink-0 flex-col items-center justify-center rounded-lg border bg-card",
+        large ? "size-12" : "size-10",
+      )}
+    >
+      <span className="text-xs leading-none font-medium text-muted-foreground">
+        {formatLumaMonth(iso)}
+      </span>
+      <span
+        className={cn("leading-tight font-semibold tabular-nums", large ? "text-lg" : "text-sm")}
+      >
+        {formatLumaDayNumber(iso)}
+      </span>
+    </span>
+  );
+}
+
+function InfoRow({
+  icon: Icon,
+  title,
+  subtitle,
+}: {
+  icon: LucideIcon;
+  title: ReactNode;
+  subtitle?: ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span
+        aria-hidden="true"
+        className="flex size-10 shrink-0 items-center justify-center rounded-lg border bg-card"
+      >
+        <Icon className="size-4 text-muted-foreground" />
+      </span>
+      <span className="flex min-w-0 flex-col">
+        <span className="truncate text-sm font-semibold">{title}</span>
+        {subtitle && <span className="truncate text-sm text-muted-foreground">{subtitle}</span>}
+      </span>
+    </div>
+  );
+}
+
+function EventCover({ event }: { event: LumaEvent }) {
+  return (
+    <div className="relative flex aspect-video w-full items-end overflow-hidden rounded-xl bg-gradient-to-br from-primary via-chart-1 to-chart-3 p-5">
+      <span
+        aria-hidden="true"
+        className="absolute -top-16 -right-10 size-56 rounded-full bg-primary-foreground/10"
+      />
+      <span
+        aria-hidden="true"
+        className="absolute -bottom-20 -left-12 size-56 rounded-full bg-primary-foreground/10"
+      />
+      <div className="relative flex flex-col gap-1">
+        <span className="text-xs font-medium tracking-wide text-primary-foreground/80 uppercase">
+          {formatLumaDateLong(event.startAt)}
+        </span>
+        <span className="text-2xl leading-tight font-bold text-primary-foreground">
+          {event.name}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function EventHero({
+  event,
+  going,
+  pending,
+}: {
+  event: LumaEvent;
+  going: number;
+  pending: number;
+}) {
+  const capacity = event.tickets.reduce((total, ticket) => total + ticket.capacity, 0);
+  const filled = capacity === 0 ? 0 : Math.round((going / capacity) * 100);
+  return (
+    <div className="grid gap-8 lg:grid-cols-3">
+      <div className="flex flex-col gap-5">
+        <EventCover event={event} />
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            Hosted by
+          </p>
+          <div className="flex flex-col gap-2.5">
+            {event.hosts.map((host) => (
+              <div key={host.apiId} className="flex items-center gap-2.5">
+                <Avatar size="sm">
+                  <AvatarFallback>
+                    {host.name
+                      .split(" ")
+                      .map((part) => part[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate text-sm font-medium">{host.name}</span>
+                  <span className="truncate text-xs text-muted-foreground">
+                    {hostRoleLabels[host.role]}
+                  </span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={event.status === "published" ? "secondary" : "outline"}>
+              {event.status === "published" ? "Published" : "Draft"}
+            </Badge>
+            <Badge variant="outline">
+              {event.visibility === "public" ? (
+                <Globe data-icon="inline-start" />
+              ) : (
+                <Lock data-icon="inline-start" />
+              )}
+              {event.visibility === "public" ? "Public" : "Private"}
+            </Badge>
+            {event.requireApproval && <Badge variant="outline">Approval required</Badge>}
+          </div>
+          <h2 className="text-3xl leading-tight font-bold tracking-tight">{event.name}</h2>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <DateChip iso={event.startAt} large />
+            <span className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-semibold">
+                {formatLumaDateLong(event.startAt)}
+              </span>
+              <span className="truncate text-sm text-muted-foreground">
+                {formatLumaTimeRange(event.startAt, event.endAt)}
+              </span>
+            </span>
+          </div>
+          <InfoRow icon={MapPin} title={event.location} subtitle={event.timezone} />
+        </div>
+
+        <Card>
+          <CardContent>
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="flex flex-col">
+                  <span className="text-2xl font-semibold tabular-nums">{going}</span>
+                  <span className="text-xs text-muted-foreground">Going</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-semibold tabular-nums">{pending}</span>
+                  <span className="text-xs text-muted-foreground">Pending</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-2xl font-semibold tabular-nums">{capacity}</span>
+                  <span className="text-xs text-muted-foreground">Capacity</span>
+                </div>
+              </div>
+              {capacity > 0 && <Progress value={filled} />}
+              <div className="flex flex-col gap-2">
+                {event.tickets.map((ticket) => (
+                  <div
+                    key={ticket.apiId}
+                    className="flex items-center justify-between gap-3 text-sm"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Ticket className="size-4 shrink-0 text-muted-foreground" />
+                      <span className="truncate">{ticket.name}</span>
+                    </span>
+                    <span className="shrink-0 text-muted-foreground tabular-nums">
+                      {ticket.sold}/{ticket.capacity} · {formatTicketPrice(ticket.priceCents)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {event.pageUrl && (
+                <a
+                  href={event.pageUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={buttonVariants({ variant: "outline" })}
+                >
+                  <ExternalLink data-icon="inline-start" />
+                  Open on Luma
+                </a>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {event.description && (
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+              About event
+            </p>
+            <p className="text-sm leading-relaxed whitespace-pre-wrap">{event.description}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function EventPick({
   event,
   selected,
@@ -90,17 +313,26 @@ function EventPick({
   onSelect: (id: string) => void;
 }) {
   const select = useCallback(() => onSelect(event.apiId), [event.apiId, onSelect]);
+  const going = event.guests.filter((guest) => guest.approvalStatus === "approved").length;
   return (
-    <Button
-      variant={selected ? "secondary" : "ghost"}
-      className="w-full justify-start"
+    <button
+      type="button"
       onClick={select}
+      aria-current={selected ? "true" : undefined}
+      className={cn(
+        "flex w-full items-center gap-3 rounded-xl border p-2.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        selected ? "border-primary bg-accent" : "border-transparent hover:bg-muted",
+      )}
     >
-      <span className="flex min-w-0 flex-col items-start">
-        <span className="max-w-full truncate">{event.name}</span>
-        <span className="text-xs text-muted-foreground">{formatLumaDay(event.startAt)}</span>
+      <DateChip iso={event.startAt} />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="truncate text-sm font-medium">{event.name}</span>
+        <span className="truncate text-xs text-muted-foreground">
+          {formatLumaTime(event.startAt)} · {going} going
+        </span>
       </span>
-    </Button>
+      {event.status === "draft" && <Badge variant="outline">Draft</Badge>}
+    </button>
   );
 }
 
@@ -467,13 +699,30 @@ export function EventsScreen({ calendar }: { calendar: LumaCalendar }) {
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-col gap-1">
-          <p className="font-medium">{calendar.name}</p>
-          <a href={calendar.url} target="_blank" rel="noreferrer">
-            luma.com/{calendar.slug}
-          </a>
+        <div className="flex items-center gap-3">
+          <span
+            aria-hidden="true"
+            className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-chart-3"
+          >
+            <Ticket className="size-5 text-primary-foreground" />
+          </span>
+          <div className="flex flex-col">
+            <p className="font-semibold">{calendar.name}</p>
+            <a
+              href={calendar.url}
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+            >
+              {lumaPath(calendar.slug)}
+              <ExternalLink className="size-3" />
+            </a>
+          </div>
         </div>
-        <Button onClick={openCreate}>Create event</Button>
+        <Button onClick={openCreate}>
+          <Plus data-icon="inline-start" />
+          Create event
+        </Button>
       </div>
       {problem ? (
         <Alert variant="destructive">
@@ -481,7 +730,10 @@ export function EventsScreen({ calendar }: { calendar: LumaCalendar }) {
         </Alert>
       ) : null}
       <div className="grid gap-6 lg:grid-cols-4">
-        <nav aria-label="Luma events" className="flex flex-col gap-1">
+        <nav aria-label="Luma events" className="flex flex-col gap-1 self-start lg:sticky lg:top-0">
+          <p className="px-2.5 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+            {events.length} {events.length === 1 ? "event" : "events"}
+          </p>
           {events.map((event) => (
             <EventPick
               key={event.apiId}
@@ -492,59 +744,8 @@ export function EventsScreen({ calendar }: { calendar: LumaCalendar }) {
           ))}
         </nav>
         {selected ? (
-          <div className="flex min-w-0 flex-col gap-6 lg:col-span-3">
-            <div className="flex flex-col gap-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <h2 className="text-lg font-semibold">{selected.name}</h2>
-                <Badge variant="secondary">
-                  {selected.status === "published" ? "Published" : "Draft"}
-                </Badge>
-                <Badge variant="outline">
-                  {selected.visibility === "public" ? "Public" : "Private"}
-                </Badge>
-              </div>
-              <p>{formatLumaWhen(selected.startAt)}</p>
-              <p>{selected.location}</p>
-              {selected.pageUrl ? (
-                <a href={selected.pageUrl} target="_blank" rel="noreferrer">
-                  Open on Luma
-                </a>
-              ) : null}
-              <div className="flex flex-wrap gap-2">
-                {selected.hosts.map((host) => (
-                  <Badge key={host.apiId} variant="outline">
-                    {host.name} · {hostRoleLabels[host.role]}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <Card>
-                <CardHeader>
-                  <CardDescription>Going</CardDescription>
-                  <CardTitle>{going}</CardTitle>
-                </CardHeader>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardDescription>Pending</CardDescription>
-                  <CardTitle>{pendingGuests}</CardTitle>
-                </CardHeader>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardDescription>Tickets</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  {selected.tickets.map((ticket) => (
-                    <p key={ticket.apiId}>
-                      {ticket.name}: {ticket.sold}/{ticket.capacity} ·{" "}
-                      {formatTicketPrice(ticket.priceCents)}
-                    </p>
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
+          <div className="flex min-w-0 flex-col gap-8 lg:col-span-3">
+            <EventHero event={selected} going={going} pending={pendingGuests} />
             <Tabs defaultValue="guests">
               <TabsList>
                 <TabsTrigger value="guests">Guests</TabsTrigger>

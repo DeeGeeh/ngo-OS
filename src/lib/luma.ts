@@ -158,8 +158,52 @@ const helsinkiDay = new Intl.DateTimeFormat("en-GB", {
   month: "short",
 });
 
+const helsinkiMonth = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Europe/Helsinki",
+  month: "short",
+});
+
+const helsinkiDayNumber = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Europe/Helsinki",
+  day: "numeric",
+});
+
+const helsinkiDateLong = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Europe/Helsinki",
+  weekday: "long",
+  day: "numeric",
+  month: "long",
+});
+
+const helsinkiTime = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "Europe/Helsinki",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
 export function formatLumaWhen(iso: string) {
   return helsinkiWhen.format(new Date(iso));
+}
+
+export function formatLumaMonth(iso: string) {
+  return helsinkiMonth.format(new Date(iso)).toUpperCase();
+}
+
+export function formatLumaDayNumber(iso: string) {
+  return helsinkiDayNumber.format(new Date(iso));
+}
+
+export function formatLumaDateLong(iso: string) {
+  return helsinkiDateLong.format(new Date(iso));
+}
+
+export function formatLumaTime(iso: string) {
+  return helsinkiTime.format(new Date(iso));
+}
+
+export function formatLumaTimeRange(startIso: string, endIso: string) {
+  return `${formatLumaTime(startIso)} – ${formatLumaTime(endIso)}`;
 }
 
 export function formatLumaDay(iso: string) {

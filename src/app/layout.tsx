@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "TR3S",
-  description: "The operating workspace for Tampere Entrepreneurship Society.",
-  applicationName: "TR3S",
+  title: { default: "Nest", template: "%s · Nest" },
+  description: "The operating system for non-profits.",
+  applicationName: "Nest",
 };
 
 const clerkAppearance = { theme: shadcn };

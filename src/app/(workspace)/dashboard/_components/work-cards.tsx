@@ -171,7 +171,7 @@ export function ProjectCard({ project, workspace }: { project: Project; workspac
                 </span>
                 <span className="tabular-nums">{percent}%</span>
               </div>
-              <Progress value={percent} className="h-1.5" />
+              <Progress value={percent} />
             </div>
           )}
           <div className="flex items-center justify-between gap-2">
