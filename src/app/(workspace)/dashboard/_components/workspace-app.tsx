@@ -62,6 +62,7 @@ import { TaskDetail } from "./task-detail";
 import { MemberAvatar } from "./work-cards";
 import { WorkEditor } from "./work-editor";
 import { WorkspaceChat } from "./workspace-chat";
+import { UserSettingsDialog } from "./user-settings";
 
 type View =
   | { kind: "board" }
@@ -179,7 +180,15 @@ function ProductMark() {
   );
 }
 
-function UserMenu({ member, onSettings }: { member?: Member; onSettings: () => void }) {
+function UserMenu({
+  member,
+  onSettings,
+  onProfile,
+}: {
+  member?: Member;
+  onSettings: () => void;
+  onProfile: () => void;
+}) {
   if (!member) return null;
   return (
     <DropdownMenu>
@@ -198,9 +207,9 @@ function UserMenu({ member, onSettings }: { member?: Member; onSettings: () => v
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
         <DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem onClick={onProfile}>
             <UserRound />
-            Profile
+            User settings
           </DropdownMenuItem>
           <DropdownMenuItem onClick={onSettings}>
             <Settings />
@@ -245,6 +254,7 @@ export function WorkspaceApp({
   const [taskId, setTaskId] = useState<string | null>(null);
   const [creation, setCreation] = useState<Creation | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const [userSettingsOpen, setUserSettingsOpen] = useState(false);
   const [organizationId, setOrganizationId] = useState(defaultOrganizationId);
   const isMobile = useIsMobile();
   const { resolvedTheme, setTheme } = useTheme();
@@ -287,6 +297,7 @@ export function WorkspaceApp({
   }, []);
   const switchScreen = useCallback((value: Screen) => setView({ kind: value }), []);
   const openSettings = useCallback(() => setView({ kind: "settings" }), []);
+  const openUserSettings = useCallback(() => setUserSettingsOpen(true), []);
   const switchCreationKind = useCallback(
     (values: string[]) => {
       const value = values[0];
@@ -329,7 +340,11 @@ export function WorkspaceApp({
                   ))}
                 </nav>
                 <div className="mt-auto flex flex-col gap-2">
-                  <UserMenu member={currentMember} onSettings={openSettings} />
+                  <UserMenu
+                    member={currentMember}
+                    onSettings={openSettings}
+                    onProfile={openUserSettings}
+                  />
                   <ProductMark />
                 </div>
               </div>
@@ -509,6 +524,13 @@ export function WorkspaceApp({
             )}
           </DialogContent>
         </Dialog>
+        {currentMember?.settings && (
+          <UserSettingsDialog
+            settings={currentMember.settings}
+            open={userSettingsOpen}
+            onOpenChange={setUserSettingsOpen}
+          />
+        )}
       </Sidebar>
     </AssistantProvider>
   );

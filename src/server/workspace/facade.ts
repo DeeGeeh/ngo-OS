@@ -8,6 +8,8 @@ import {
   sendMessageSchema,
   updateProjectSchema,
   updateTaskSchema,
+  userSettingsSchema,
+  type UserSettings,
   type CreateProject,
   type CreateTask,
   type Message,
@@ -37,7 +39,14 @@ function validateProject(workspace: Workspace, projectId: string | null) {
 }
 
 export async function getWorkspace(): Promise<Workspace> {
-  return withWorkspace((workspace) => workspace, false);
+  return withWorkspace((workspace) => {
+    const member = workspace.members.find((item) => item.id === workspace.currentMemberId);
+    if (member && !member.settings) {
+      const [firstName = "", ...lastName] = member.name.trim().split(/\s+/);
+      member.settings = { firstName, lastName: lastName.join(" "), email: "", telegramHandle: "" };
+    }
+    return workspace;
+  }, false);
 }
 
 export async function createTask(input: CreateTask): Promise<Task> {
@@ -144,5 +153,16 @@ export async function sendMessage(input: SendMessage): Promise<Message> {
     };
     workspace.messages.push(message);
     return message;
+  });
+}
+
+export async function updateUserSettings(input: UserSettings) {
+  const settings = userSettingsSchema.parse(input);
+  return withWorkspace((workspace) => {
+    const member = workspace.members.find((item) => item.id === workspace.currentMemberId);
+    if (!member) throw new Error("Current member does not exist.");
+    member.settings = settings;
+    member.name = [settings.firstName, settings.lastName].filter(Boolean).join(" ");
+    return member;
   });
 }
