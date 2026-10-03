@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import {
   Folder,
   LayoutDashboard,
@@ -30,6 +31,7 @@ import { workspaceQueryKey, type Workspace, type WorkStatus } from "@/lib/worksp
 import { getWorkspaceAction } from "../actions";
 import { AssistantPanel, AssistantProvider } from "./assistant-panel";
 import { Conversation } from "./conversation";
+import { OrgSwitcher } from "./org-switcher";
 import { ProjectDetail } from "./project-detail";
 import { WorkBoard } from "./work-board";
 import { WorkEditor } from "./work-editor";
@@ -115,8 +117,18 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
           <div className="shrink-0 md:border-r">
             <SidebarBody className="md:w-48!">
               <div className="flex h-full flex-col gap-8">
-                <div className="px-2 pt-3 text-3xl font-bold tracking-tighter">
-                  TRES<span className="text-primary">.</span>
+                <div className="flex flex-col gap-2 px-2 pt-3">
+                  <div className="flex h-10 w-fit items-center rounded-lg bg-foreground px-2 dark:bg-background">
+                    <Image
+                      src="/brand/svg/nest-mark-white.svg"
+                      alt="Nest"
+                      width={512}
+                      height={355}
+                      unoptimized
+                      className="h-7 w-auto"
+                    />
+                  </div>
+                  <OrgSwitcher />
                 </div>
                 <nav aria-label="Main navigation">
                   <ToggleGroup
