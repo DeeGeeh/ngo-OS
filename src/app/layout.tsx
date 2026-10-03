@@ -9,6 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { env } from "@/env";
 import { TRPCReactProvider } from "@/trpc/client";
 import { trpcConfig } from "@/trpc/config";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -28,7 +29,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   );
 
   return (
-    <html lang="en" className={inter.className} suppressHydrationWarning>
+    <html
+      lang="en"
+      className={cn(inter.className, "font-sans", inter.variable)}
+      suppressHydrationWarning
+    >
       <body className={inter.variable}>
         {env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ? (
           <ClerkProvider appearance={clerkAppearance}>{content}</ClerkProvider>

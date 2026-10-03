@@ -1,137 +1,247 @@
 <!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Nest — logo concepts</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root { --accent: #F2643D; }
-  * { box-sizing: border-box; }
-  body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f4f4f5; color: #18181b; }
-  header { padding: 32px 40px 8px; }
-  h1 { margin: 0; font-size: 28px; letter-spacing: -0.02em; }
-  header p { margin: 6px 0 0; color: #71717a; }
-  h2 { padding: 0 40px; margin: 28px 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: #71717a; }
-  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; padding: 0 40px; }
-  .card { border-radius: 16px; padding: 22px 18px 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
-  .light .card { background: #fff; color: #18181b; border: 1px solid #e4e4e7; }
-  .dark { background: #09090b; padding: 24px 40px 40px; margin-top: 28px; }
-  .dark h2 { padding: 0; margin-top: 0; color: #a1a1aa; }
-  .dark .grid { padding: 0; }
-  .dark .card { background: #18181b; color: #fafafa; border: 1px solid #27272a; }
-  .card svg { width: 96px; height: 96px; }
-  .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 20px; letter-spacing: -0.03em; }
-  .brand svg { width: 24px; height: 24px; }
-  .num { font-size: 12px; font-weight: 600; color: var(--accent); }
-  .name { font-weight: 600; font-size: 14px; }
-  .desc { font-size: 12px; color: #71717a; text-align: center; line-height: 1.4; }
-  .dark .desc { color: #a1a1aa; }
-</style>
-</head>
-<body>
-<header>
-  <h1>nest — logo concepts</h1>
-  <p>10 directions · foreground uses currentColor, accent is one brand color</p>
-</header>
-<section class="light"><h2>Light</h2><div class="grid" id="light"></div></section>
-<section class="dark"><h2>Dark</h2><div class="grid" id="dark"></div></section>
-<script>
-const A = 'var(--accent)';
-const s = 'fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"';
-const concepts = [
-  {
-    name: 'Woven Nest',
-    desc: 'Two crossing twigs form the bowl, with one egg resting in it. Warm and literal.',
-    svg: id => `<ellipse cx="50" cy="40" rx="13" ry="16" fill="${A}"/>
+  <head>
+    <meta charset="utf-8" />
+    <title>Nest — logo concepts</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --accent: #f2643d;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #f4f4f5;
+        color: #18181b;
+      }
+      header {
+        padding: 32px 40px 8px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: -0.02em;
+      }
+      header p {
+        margin: 6px 0 0;
+        color: #71717a;
+      }
+      h2 {
+        padding: 0 40px;
+        margin: 28px 0 12px;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #71717a;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 16px;
+        padding: 0 40px;
+      }
+      .card {
+        border-radius: 16px;
+        padding: 22px 18px 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      .light .card {
+        background: #fff;
+        color: #18181b;
+        border: 1px solid #e4e4e7;
+      }
+      .dark {
+        background: #09090b;
+        padding: 24px 40px 40px;
+        margin-top: 28px;
+      }
+      .dark h2 {
+        padding: 0;
+        margin-top: 0;
+        color: #a1a1aa;
+      }
+      .dark .grid {
+        padding: 0;
+      }
+      .dark .card {
+        background: #18181b;
+        color: #fafafa;
+        border: 1px solid #27272a;
+      }
+      .card svg {
+        width: 96px;
+        height: 96px;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 700;
+        font-size: 20px;
+        letter-spacing: -0.03em;
+      }
+      .brand svg {
+        width: 24px;
+        height: 24px;
+      }
+      .num {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent);
+      }
+      .name {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .desc {
+        font-size: 12px;
+        color: #71717a;
+        text-align: center;
+        line-height: 1.4;
+      }
+      .dark .desc {
+        color: #a1a1aa;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>nest — logo concepts</h1>
+      <p>10 directions · foreground uses currentColor, accent is one brand color</p>
+    </header>
+    <section class="light">
+      <h2>Light</h2>
+      <div class="grid" id="light"></div>
+    </section>
+    <section class="dark">
+      <h2>Dark</h2>
+      <div class="grid" id="dark"></div>
+    </section>
+    <script>
+      const A = "var(--accent)";
+      const s = 'fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"';
+      const concepts = [
+        {
+          name: "Woven Nest",
+          desc: "Two crossing twigs form the bowl, with one egg resting in it. Warm and literal.",
+          svg: (id) => `<ellipse cx="50" cy="40" rx="13" ry="16" fill="${A}"/>
       <path ${s} stroke-width="7" d="M12 48 Q45 92 88 54"/>
-      <path ${s} stroke-width="7" d="M12 54 Q55 92 88 48"/>`
-  },
-  {
-    name: 'The Clutch',
-    desc: 'Three eggs in a solid nest. The team, with one highlighted member (you or Jev).',
-    svg: id => `<ellipse cx="32" cy="50" rx="11" ry="14" fill="currentColor" opacity=".35"/>
+      <path ${s} stroke-width="7" d="M12 54 Q55 92 88 48"/>`,
+        },
+        {
+          name: "The Clutch",
+          desc: "Three eggs in a solid nest. The team, with one highlighted member (you or Jev).",
+          svg: (id) => `<ellipse cx="32" cy="50" rx="11" ry="14" fill="currentColor" opacity=".35"/>
       <ellipse cx="68" cy="50" rx="11" ry="14" fill="currentColor" opacity=".35"/>
       <ellipse cx="50" cy="42" rx="12" ry="15" fill="${A}"/>
-      <path fill="currentColor" d="M8 52 C10 88 90 88 92 52 Q50 64 8 52 Z"/>`
-  },
-  {
-    name: 'Flock Home',
-    desc: 'A V of birds above the nest. The flock coming back to base.',
-    svg: id => `<path ${s} stroke-width="6" d="M24 40 l8 7 l8 -7"/>
+      <path fill="currentColor" d="M8 52 C10 88 90 88 92 52 Q50 64 8 52 Z"/>`,
+        },
+        {
+          name: "Flock Home",
+          desc: "A V of birds above the nest. The flock coming back to base.",
+          svg: (id) => `<path ${s} stroke-width="6" d="M24 40 l8 7 l8 -7"/>
       <path ${s} stroke-width="6" d="M60 40 l8 7 l8 -7"/>
       <path fill="none" stroke="${A}" stroke-linecap="round" stroke-linejoin="round" stroke-width="6" d="M41 26 l9 8 l9 -8"/>
       <path ${s} stroke-width="7" d="M16 66 Q50 98 84 66"/>
-      <path ${s} stroke-width="5" d="M28 66 Q50 82 72 66"/>`
-  },
-  {
-    name: 'N Monogram',
-    desc: 'A bold N with an egg in the top corner. Works well as an app icon.',
-    svg: id => `<path ${s} stroke-width="11" d="M26 80 V22 L74 78"/>
-      <ellipse cx="74" cy="34" rx="9" ry="12" fill="${A}"/>`
-  },
-  {
-    name: 'The Circle',
-    desc: 'Members in a ring around a shared center (the shared context).',
-    svg: id => [[80,50],[71.2,71.2],[50,80],[28.8,71.2],[20,50],[28.8,28.8],[50,20],[71.2,28.8]]
-      .map(([x,y]) => `<circle cx="${x}" cy="${y}" r="7" fill="currentColor"/>`).join('')
-      + `<circle cx="50" cy="50" r="12" fill="${A}"/>`
-  },
-  {
-    name: 'Shelter',
-    desc: 'A roof line over an egg in a nest. A home for your organization.',
-    svg: id => `<path ${s} stroke-width="8" d="M14 50 L50 18 L86 50"/>
+      <path ${s} stroke-width="5" d="M28 66 Q50 82 72 66"/>`,
+        },
+        {
+          name: "N Monogram",
+          desc: "A bold N with an egg in the top corner. Works well as an app icon.",
+          svg: (id) => `<path ${s} stroke-width="11" d="M26 80 V22 L74 78"/>
+      <ellipse cx="74" cy="34" rx="9" ry="12" fill="${A}"/>`,
+        },
+        {
+          name: "The Circle",
+          desc: "Members in a ring around a shared center (the shared context).",
+          svg: (id) =>
+            [
+              [80, 50],
+              [71.2, 71.2],
+              [50, 80],
+              [28.8, 71.2],
+              [20, 50],
+              [28.8, 28.8],
+              [50, 20],
+              [71.2, 28.8],
+            ]
+              .map(([x, y]) => `<circle cx="${x}" cy="${y}" r="7" fill="currentColor"/>`)
+              .join("") + `<circle cx="50" cy="50" r="12" fill="${A}"/>`,
+        },
+        {
+          name: "Shelter",
+          desc: "A roof line over an egg in a nest. A home for your organization.",
+          svg: (id) => `<path ${s} stroke-width="8" d="M14 50 L50 18 L86 50"/>
       <ellipse cx="50" cy="56" rx="11" ry="14" fill="${A}"/>
-      <path ${s} stroke-width="7" d="M26 64 Q50 92 74 64"/>`
-  },
-  {
-    name: 'Chat Nest',
-    desc: 'A speech bubble holding a nest. Telegram coordination meets home base.',
-    svg: id => `<path ${s} stroke-width="6" d="M22 18 h56 a10 10 0 0 1 10 10 v34 a10 10 0 0 1 -10 10 h-32 l-16 13 v-13 h-8 a10 10 0 0 1 -10 -10 v-34 a10 10 0 0 1 10 -10 z"/>
+      <path ${s} stroke-width="7" d="M26 64 Q50 92 74 64"/>`,
+        },
+        {
+          name: "Chat Nest",
+          desc: "A speech bubble holding a nest. Telegram coordination meets home base.",
+          svg: (
+            id,
+          ) => `<path ${s} stroke-width="6" d="M22 18 h56 a10 10 0 0 1 10 10 v34 a10 10 0 0 1 -10 10 h-32 l-16 13 v-13 h-8 a10 10 0 0 1 -10 -10 v-34 a10 10 0 0 1 10 -10 z"/>
       <ellipse cx="50" cy="40" rx="8" ry="10" fill="${A}"/>
-      <path ${s} stroke-width="5" d="M34 48 Q50 64 66 48"/>`
-  },
-  {
-    name: 'Twig Weave',
-    desc: 'A crosshatched bowl: built twig by twig, like shared context.',
-    svg: id => `<defs><clipPath id="c${id}"><path d="M8 46 A42 42 0 0 0 92 46 Z"/></clipPath></defs>
+      <path ${s} stroke-width="5" d="M34 48 Q50 64 66 48"/>`,
+        },
+        {
+          name: "Twig Weave",
+          desc: "A crosshatched bowl: built twig by twig, like shared context.",
+          svg: (
+            id,
+          ) => `<defs><clipPath id="c${id}"><path d="M8 46 A42 42 0 0 0 92 46 Z"/></clipPath></defs>
       <ellipse cx="50" cy="34" rx="12" ry="15" fill="${A}"/>
       <g clip-path="url(#c${id})" stroke="currentColor" stroke-width="4.5" stroke-linecap="round">
         <path d="M-10 40 L50 100"/><path d="M10 40 L70 100"/><path d="M30 40 L90 100"/><path d="M50 40 L110 100"/><path d="M70 40 L130 100"/>
         <path d="M110 40 L50 100"/><path d="M90 40 L30 100"/><path d="M70 40 L10 100"/><path d="M50 40 L-10 100"/><path d="M30 40 L-30 100"/>
-      </g>`
-  },
-  {
-    name: 'Landing',
-    desc: 'A paper plane flying into the nest. Telegram outreach bringing people home.',
-    svg: id => `<path fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="1 8" d="M10 58 Q16 34 32 34"/>
+      </g>`,
+        },
+        {
+          name: "Landing",
+          desc: "A paper plane flying into the nest. Telegram outreach bringing people home.",
+          svg: (
+            id,
+          ) => `<path fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="1 8" d="M10 58 Q16 34 32 34"/>
       <path fill="${A}" d="M30 34 L84 16 L66 56 L56 42 Z"/>
       <path fill="none" stroke="currentColor" stroke-opacity=".35" stroke-width="3" stroke-linejoin="round" d="M56 42 L84 16"/>
       <path ${s} stroke-width="7" d="M20 68 Q50 96 80 68"/>
-      <path ${s} stroke-width="5" d="M30 68 Q50 82 70 68"/>`
-  },
-  {
-    name: 'Arch n',
-    desc: 'A lowercase n shaped like an arch, sheltering an egg. Minimal and clear at 16px.',
-    svg: id => `<path ${s} stroke-width="12" d="M24 84 V46 a26 26 0 0 1 52 0 V84"/>
-      <ellipse cx="50" cy="66" rx="9" ry="11" fill="${A}"/>`
-  },
-];
-let uid = 0;
-for (const target of ['light', 'dark']) {
-  const grid = document.getElementById(target);
-  concepts.forEach((c, i) => {
-    const big = `<svg viewBox="0 0 100 100">${c.svg(uid++)}</svg>`;
-    const small = `<svg viewBox="0 0 100 100">${c.svg(uid++)}</svg>`;
-    grid.insertAdjacentHTML('beforeend', `<div class="card">
-      <span class="num">${String(i + 1).padStart(2, '0')}</span>
+      <path ${s} stroke-width="5" d="M30 68 Q50 82 70 68"/>`,
+        },
+        {
+          name: "Arch n",
+          desc: "A lowercase n shaped like an arch, sheltering an egg. Minimal and clear at 16px.",
+          svg: (id) => `<path ${s} stroke-width="12" d="M24 84 V46 a26 26 0 0 1 52 0 V84"/>
+      <ellipse cx="50" cy="66" rx="9" ry="11" fill="${A}"/>`,
+        },
+      ];
+      let uid = 0;
+      for (const target of ["light", "dark"]) {
+        const grid = document.getElementById(target);
+        concepts.forEach((c, i) => {
+          const big = `<svg viewBox="0 0 100 100">${c.svg(uid++)}</svg>`;
+          const small = `<svg viewBox="0 0 100 100">${c.svg(uid++)}</svg>`;
+          grid.insertAdjacentHTML(
+            "beforeend",
+            `<div class="card">
+      <span class="num">${String(i + 1).padStart(2, "0")}</span>
       ${big}
       <div class="brand">${small}<span>nest</span></div>
       <div class="name">${c.name}</div>
       <div class="desc">${c.desc}</div>
-    </div>`);
-  });
-}
-</script>
-</body>
+    </div>`,
+          );
+        });
+      }
+    </script>
+  </body>
 </html>

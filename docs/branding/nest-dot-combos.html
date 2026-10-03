@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Nest — blue dot combinations</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #f4f6f9;
+        color: #0f1b2d;
+        padding: 28px 40px;
+      }
+      h1 {
+        margin: 0 0 18px;
+        font-size: 24px;
+        letter-spacing: -0.02em;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 18px 14px;
+      }
+      .col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .title {
+        font-weight: 600;
+        font-size: 14px;
+      }
+      .title small {
+        display: block;
+        font-weight: 400;
+        color: #64748b;
+        font-size: 12px;
+        margin-top: 2px;
+      }
+      .pair {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 8px;
+      }
+      .sky,
+      .dark {
+        border-radius: 14px;
+        height: 210px;
+        display: grid;
+        place-items: center;
+      }
+      .sky {
+        background: url("sky-wallpaper.png") 50% 8% / 1389px 571px;
+      }
+      .dark {
+        background: #0b1220;
+      }
+      .lock {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #fffffc;
+        filter: drop-shadow(0 6px 18px rgba(29, 72, 128, 0.35));
+      }
+      .lock svg {
+        width: 104px;
+        height: 104px;
+      }
+      .lock span {
+        font-weight: 700;
+        font-size: 48px;
+        letter-spacing: -0.05em;
+        line-height: 1;
+        margin-top: -6px;
+      }
+      .dark svg {
+        width: 96px;
+        height: 96px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Blue outer dots + horizon inner dots</h1>
+    <div class="grid" id="grid"></div>
+    <script>
+      const W = "#FFFFFC",
+        HZ = "#88BDE9";
+      const mix = (a, b, t) =>
+        "#" +
+        [0, 2, 4]
+          .map((i) =>
+            Math.round(
+              parseInt(a.slice(1 + i, 3 + i), 16) * (1 - t) +
+                parseInt(b.slice(1 + i, 3 + i), 16) * t,
+            )
+              .toString(16)
+              .padStart(2, "0"),
+          )
+          .join("");
+      const options = [
+        {
+          name: "A · Pale outer",
+          note: "outer #B5D5F3 · inner #88BDE9 · egg white",
+          outer: () => "#B5D5F3",
+          inner: HZ,
+          egg: W,
+        },
+        {
+          name: "B · Ice outer",
+          note: "outer #DDEBF8 · inner #88BDE9 · egg white",
+          outer: () => "#DDEBF8",
+          inner: HZ,
+          egg: W,
+        },
+        {
+          name: "C · Cloud shading",
+          note: "outer white → #A9CEF1 at bottom · inner #88BDE9",
+          outer: (t) => mix(W, "#A9CEF1", t),
+          inner: HZ,
+          egg: W,
+        },
+        {
+          name: "D · Inverted",
+          note: "outer #88BDE9 · inner #D4E8FA · egg white",
+          outer: () => HZ,
+          inner: "#D4E8FA",
+          egg: W,
+        },
+        {
+          name: "E · Sky gradient",
+          note: "outer #D4E8FA → #88BDE9 at bottom · inner #B5D5F3",
+          outer: (t) => mix("#D4E8FA", HZ, t),
+          inner: "#B5D5F3",
+          egg: W,
+        },
+        {
+          name: "F · All blue tones",
+          note: "outer #B5D5F3 · inner #88BDE9 · egg #DDEBF8",
+          outer: () => "#B5D5F3",
+          inner: HZ,
+          egg: "#DDEBF8",
+        },
+      ];
+      const rad = (d) => (d * Math.PI) / 180;
+      const pt = (r, deg) => [50 + r * Math.cos(rad(deg)), 44 + r * Math.sin(rad(deg))];
+      const dot = ([x, y], r, f) => `<circle cx="${x}" cy="${y}" r="${r}" fill="${f}"/>`;
+      const mark = (o) =>
+        `<svg viewBox="0 0 100 100">${
+          Array.from({ length: 7 }, (_, i) =>
+            dot(pt(36, i * 30), 6.5, o.outer(Math.sin(rad(i * 30)))),
+          ).join("") +
+          Array.from({ length: 4 }, (_, i) => dot(pt(22, 22.5 + i * 45), 5, o.inner)).join("") +
+          `<ellipse cx="50" cy="40" rx="10" ry="12.5" fill="${o.egg}"/>`
+        }</svg>`;
+      document.getElementById("grid").innerHTML = options
+        .map(
+          (o) => `
+  <div class="col">
+    <div class="title">${o.name}<small>${o.note}</small></div>
+    <div class="pair">
+      <div class="sky"><div class="lock">${mark(o)}<span>nest</span></div></div>
+      <div class="dark">${mark(o)}</div>
+    </div>
+  </div>`,
+        )
+        .join("");
+    </script>
+  </body>
+</html>
