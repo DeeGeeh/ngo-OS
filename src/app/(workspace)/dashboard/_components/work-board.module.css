@@ -1,0 +1,8 @@
+.viewport {
+  mask-image: linear-gradient(to bottom, black calc(100% - var(--spacing) * 12), transparent);
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
