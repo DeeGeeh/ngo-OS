@@ -23,8 +23,8 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTheme } from "next-themes";
-import { usePathname, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useMemo, useState, type ReactNode } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -274,12 +274,14 @@ export function WorkspaceApp({
   initialDataLibrary,
   googleEvents,
   initialLuma,
+  children,
 }: {
   initialWorkspace: Workspace;
   initialThreads: AssistantThread[];
   initialDataLibrary: DataLibrary;
   googleEvents: CalendarItem[];
   initialLuma: LumaCalendar;
+  children: ReactNode;
 }) {
   const { data: workspace, error } = useQuery({
     queryKey: workspaceQueryKey,
@@ -304,6 +306,8 @@ export function WorkspaceApp({
   const [workspaceView, setView] = useState<View>(initialView);
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const router = useRouter();
+  const isWorkspaceHome = pathname === "/dashboard";
   const screenName = searchParams.get("view");
   const selectedScreen = isScreen(screenName) ? screenName : undefined;
   const view =
@@ -319,9 +323,16 @@ export function WorkspaceApp({
   const project =
     view.kind === "project" ? workspace.projects.find((item) => item.id === view.id) : undefined;
   const currentMember = workspace.members.find((member) => member.id === workspace.currentMemberId);
-  const screen = view.kind === "project" ? "board" : view.kind;
-  const title = screenTitles[screen];
-  const subtitle = screenSubtitles[screen];
+  const screen = isWorkspaceHome ? (view.kind === "project" ? "board" : view.kind) : null;
+  const currentDashboard = dataLibrary.dashboards.find(
+    (item) => pathname === `/dashboard/data/${encodeURIComponent(item.id)}`,
+  );
+  const title = screen
+    ? screenTitles[screen]
+    : pathname === "/dashboard/integrations"
+      ? "Connections"
+      : "Dashboard";
+  const subtitle = screen ? screenSubtitles[screen] : currentDashboard?.title;
   const navCounts = useMemo(
     () => ({
       board: workspace.tasks.filter((item) => item.status !== "done").length,
@@ -355,11 +366,13 @@ export function WorkspaceApp({
   const switchScreen = useCallback(
     (value: Screen) => {
       setView(initialView);
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(isWorkspaceHome ? searchParams.toString() : "");
       params.set("view", value);
-      window.history.pushState(null, "", `${pathname}?${params.toString()}`);
+      const href = `/dashboard?${params.toString()}` as const;
+      if (isWorkspaceHome) window.history.pushState(null, "", href);
+      else router.push(href);
     },
-    [pathname, searchParams],
+    [isWorkspaceHome, router, searchParams],
   );
   const openSettings = useCallback(() => switchScreen("settings"), [switchScreen]);
   const switchCreationKind = useCallback(
@@ -412,6 +425,11 @@ export function WorkspaceApp({
                       <Link
                         key={dashboard.id}
                         href={`/dashboard/data/${encodeURIComponent(dashboard.id)}`}
+                        aria-current={
+                          pathname === `/dashboard/data/${encodeURIComponent(dashboard.id)}`
+                            ? "page"
+                            : undefined
+                        }
                         className="truncate text-sm text-muted-foreground hover:text-foreground"
                       >
                         {dashboard.title}
@@ -430,7 +448,11 @@ export function WorkspaceApp({
             <header className="flex shrink-0 items-center justify-between gap-3 border-b px-5 py-3.5 lg:px-8">
               <div className="flex min-w-0 flex-col">
                 <h1 className="truncate text-base font-semibold tracking-tight">{title}</h1>
-                <p className="hidden truncate text-xs text-muted-foreground sm:block">{subtitle}</p>
+                {subtitle && (
+                  <p className="hidden truncate text-xs text-muted-foreground sm:block">
+                    {subtitle}
+                  </p>
+                )}
               </div>
               <div className="flex items-center gap-1">
                 <Button
@@ -442,7 +464,7 @@ export function WorkspaceApp({
                   {resolvedTheme === "dark" ? <Sun /> : <Moon />}
                 </Button>
                 <Button
-                  variant={view.kind === "settings" ? "secondary" : "ghost"}
+                  variant={screen === "settings" ? "secondary" : "ghost"}
                   size="icon"
                   aria-label="Settings"
                   onClick={openSettings}
@@ -485,44 +507,50 @@ export function WorkspaceApp({
             <ResizablePanelGroup orientation="horizontal" className="min-h-0 flex-1">
               <ResizablePanel id="workspace" defaultSize="72%" minSize="35%">
                 <motion.main
-                  key={view.kind === "project" ? view.id : view.kind}
+                  key={isWorkspaceHome ? (view.kind === "project" ? view.id : view.kind) : pathname}
                   initial={enter}
                   animate={visible}
                   className={cn(
                     "h-full",
-                    view.kind === "calendar" ? "overflow-hidden" : "overflow-auto",
+                    screen === "calendar" ? "overflow-hidden" : "overflow-auto",
                   )}
                 >
-                  {view.kind === "board" && (
-                    <WorkBoard
-                      workspace={workspace}
-                      onTask={openTask}
-                      onProject={openProject}
-                      onCreate={create}
-                    />
-                  )}
-                  {project && (
-                    <ProjectDetail
-                      project={project}
-                      workspace={workspace}
-                      onBack={returnToBoard}
-                      onTask={openTask}
-                      onNewTask={createProjectTask}
-                    />
-                  )}
-                  {view.kind === "chat" && <WorkspaceChat workspace={workspace} />}
-                  {view.kind === "agent" && <AgentPage />}
-                  {view.kind === "calendar" && (
-                    <CalendarScreen
-                      workspace={workspace}
-                      googleEvents={googleEvents}
-                      lumaEvents={lumaItems}
-                    />
-                  )}
-                  {view.kind === "events" && <EventsScreen calendar={luma} />}
-                  {view.kind === "people" && <PeopleScreen workspace={workspace} />}
-                  {view.kind === "settings" && (
-                    <SettingsScreen workspace={workspace} organizationId={organizationId} />
+                  {isWorkspaceHome ? (
+                    <>
+                      {view.kind === "board" && (
+                        <WorkBoard
+                          workspace={workspace}
+                          onTask={openTask}
+                          onProject={openProject}
+                          onCreate={create}
+                        />
+                      )}
+                      {project && (
+                        <ProjectDetail
+                          project={project}
+                          workspace={workspace}
+                          onBack={returnToBoard}
+                          onTask={openTask}
+                          onNewTask={createProjectTask}
+                        />
+                      )}
+                      {view.kind === "chat" && <WorkspaceChat workspace={workspace} />}
+                      {view.kind === "agent" && <AgentPage />}
+                      {view.kind === "calendar" && (
+                        <CalendarScreen
+                          workspace={workspace}
+                          googleEvents={googleEvents}
+                          lumaEvents={lumaItems}
+                        />
+                      )}
+                      {view.kind === "events" && <EventsScreen calendar={luma} />}
+                      {view.kind === "people" && <PeopleScreen workspace={workspace} />}
+                      {view.kind === "settings" && (
+                        <SettingsScreen workspace={workspace} organizationId={organizationId} />
+                      )}
+                    </>
+                  ) : (
+                    children
                   )}
                 </motion.main>
               </ResizablePanel>

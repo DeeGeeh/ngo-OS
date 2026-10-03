@@ -135,14 +135,14 @@ async function Connections() {
 
 export default function IntegrationsPage() {
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
+    <section className="mx-auto flex max-w-4xl flex-col gap-6 p-6">
       <Link href="/dashboard" className="text-sm text-muted-foreground hover:text-foreground">
         Back to workspace
       </Link>
-      <h1 className="text-2xl font-semibold">Google integrations</h1>
+      <h2 className="text-2xl font-semibold">Google integrations</h2>
       <Suspense fallback={loading}>
         <Connections />
       </Suspense>
-    </main>
+    </section>
   );
 }
