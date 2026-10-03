@@ -16,7 +16,19 @@ await test("saved assistant threads retain isolated message branches across relo
     selectAssistantBranch,
     updateAssistantThread,
   } = await import("@/server/assistant/facade");
-  const user = { role: "user", parts: [{ type: "text", text: "Plan volunteer onboarding" }] };
+  const { addSource } = await import("@/server/data/facade");
+  const source = await addSource({
+    kind: "csv-upload",
+    id: "onboarding-source",
+    file: new File(["Team,Hours\nWelcome,5\n"], "onboarding.csv", { type: "text/csv" }),
+  });
+  const user = {
+    role: "user",
+    parts: [
+      { type: "text", text: "Plan volunteer onboarding" },
+      { type: "data-source", data: source },
+    ],
+  };
   const reply = {
     role: "assistant",
     parts: [{ type: "text", text: "Ask Aino to lead onboarding." }],
@@ -72,6 +84,20 @@ await test("saved assistant threads retain isolated message branches across relo
     const saved = await readAssistantThread("first-thread");
     assert.equal(saved.thread.title, "Plan volunteer onboarding");
     assert.equal(saved.thread.headId, "reply-1");
+    assert.deepEqual(saved.messages[0]?.content, {
+      role: "user",
+      parts: [
+        { type: "text", text: "Plan volunteer onboarding" },
+        {
+          type: "data-source",
+          data: {
+            id: "onboarding-source",
+            name: "onboarding.csv",
+            origin: { kind: "csv-upload", filename: "onboarding.csv" },
+          },
+        },
+      ],
+    });
     assert.deepEqual(
       saved.messages.map(({ id, parentId }) => ({ id, parentId })),
       [
@@ -98,6 +124,12 @@ await test("saved assistant threads retain isolated message branches across relo
         parentId: null,
         format: "ai-sdk/v6",
         content: { role: "user", parts: [{ type: "text", text: 42 }] },
+      },
+      {
+        id: "bad-source",
+        parentId: null,
+        format: "ai-sdk/v6",
+        content: { role: "user", parts: [{ type: "data-source", data: { id: 42 } }] },
       },
     ];
     await Promise.all(

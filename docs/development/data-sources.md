@@ -2,6 +2,8 @@
 
 The data library stores imported source metadata, accepted snapshots, and saved dashboard definitions in the local SQLite database. Workspace reads do not include source rows. The assistant reads a bounded source sample through `inspectSource` and uses `saveDashboard` for server-computed results.
 
+`WORKSPACE_AI_MODEL` defaults to `openai/gpt-6.1-sol`. This model has been tested with the nested Metric, Chart, and Table dashboard schemas.
+
 ## Supported sources
 
 - CSV uploads use the file name as the source name. Re-uploading with the same attachment ID replaces the snapshot and keeps the source ID.
