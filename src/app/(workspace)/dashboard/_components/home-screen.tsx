@@ -124,9 +124,6 @@ function AskBox({
               aria-label="Message the agent"
             />
             <InputGroupAddon align="block-end">
-              <span className="text-xs text-muted-foreground">
-                Opens in Ask the agent with your workspace as context
-              </span>
               <InputGroupButton
                 type="submit"
                 variant="default"
@@ -300,7 +297,7 @@ export function HomeScreen({
         </h1>
       </div>
 
-      <div className="flex flex-col gap-4 rounded-3xl border bg-linear-to-b from-primary/5 to-transparent px-4 py-10 md:px-10">
+      <div className="flex flex-col gap-4 py-6">
         <AskBox organizationName={organizationName} onAsk={onAsk} />
         <UnreadNotice workspace={workspace} unread={unread} onOpenChannel={onOpenChannel} />
       </div>
