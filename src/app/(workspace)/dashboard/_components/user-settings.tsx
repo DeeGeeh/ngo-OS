@@ -6,15 +6,6 @@ import { useCallback, useState, type FormEvent } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
@@ -27,32 +18,6 @@ import {
 } from "@/lib/workspace";
 
 import { updateUserSettingsAction } from "../actions";
-
-const cancelButton = <Button type="button" variant="outline" />;
-
-export function UserSettingsDialog({
-  settings,
-  open,
-  onOpenChange,
-}: {
-  settings: UserSettings;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const close = useCallback(() => onOpenChange(false), [onOpenChange]);
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-dvh overflow-y-auto sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>User settings</DialogTitle>
-          <DialogDescription>Your profile and connected accounts.</DialogDescription>
-        </DialogHeader>
-        <UserSettingsForm key={JSON.stringify(settings)} settings={settings} onSaved={close} />
-      </DialogContent>
-    </Dialog>
-  );
-}
 
 function MockConnection({ provider }: { provider: "Claude" | "ChatGPT" }) {
   const [connected, setConnected] = useState(false);
@@ -87,7 +52,7 @@ function MockConnection({ provider }: { provider: "Claude" | "ChatGPT" }) {
   );
 }
 
-function UserSettingsForm({ settings, onSaved }: { settings: UserSettings; onSaved: () => void }) {
+export function UserSettingsForm({ settings }: { settings: UserSettings }) {
   const queryClient = useQueryClient();
   const save = useMutation({
     mutationFn: (form: FormData) =>
@@ -103,7 +68,6 @@ function UserSettingsForm({ settings, onSaved }: { settings: UserSettings; onSav
             ),
           },
       );
-      onSaved();
     },
   });
   const { mutate } = save;
@@ -193,12 +157,11 @@ function UserSettingsForm({ settings, onSaved }: { settings: UserSettings; onSav
           <AlertTitle>Could not save settings. Please check your details and try again.</AlertTitle>
         </Alert>
       )}
-      <DialogFooter>
-        <DialogClose render={cancelButton}>Cancel</DialogClose>
+      <Field orientation="horizontal" className="justify-end">
         <Button type="submit" disabled={save.isPending}>
           {save.isPending ? "Saving..." : "Save changes"}
         </Button>
-      </DialogFooter>
+      </Field>
     </form>
   );
 }
