@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Folder, Hash, MessageSquare } from "lucide-react";
+import { ChevronDown, Folder, Hash } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -40,25 +40,26 @@ function ChannelItem({
   channel,
   selected,
   onSelect,
-  nested = false,
   unread = 0,
 }: {
   channel: Channel;
   selected: boolean;
   onSelect: (id: string) => void;
-  nested?: boolean;
   unread?: number;
 }) {
   const select = useCallback(() => onSelect(channel.id), [channel.id, onSelect]);
   return (
     <Button
       variant={selected ? "secondary" : "ghost"}
-      size={nested ? "sm" : "default"}
       className="w-full min-w-0 justify-start"
       onClick={select}
       aria-pressed={selected}
     >
-      {nested ? <Folder data-icon="inline-start" /> : <Hash data-icon="inline-start" />}
+      {channel.kind === "project" ? (
+        <Folder data-icon="inline-start" />
+      ) : (
+        <Hash data-icon="inline-start" />
+      )}
       <span
         className={
           unread > 0 ? "flex-1 truncate text-left font-semibold" : "flex-1 truncate text-left"
@@ -101,20 +102,11 @@ function DirectItem({
   );
 }
 
-function SectionLabel({
-  icon: Icon,
-  label,
-  chevron = true,
-}: {
-  icon: typeof Hash;
-  label: string;
-  chevron?: boolean;
-}) {
+function SectionLabel({ label, chevron = false }: { label: string; chevron?: boolean }) {
   return (
-    <span className="flex items-center gap-2 px-2 py-2 text-sm font-medium text-muted-foreground">
-      <Icon className="size-4" />
+    <span className="flex items-center gap-2 px-2.5 pt-4 pb-1.5 text-xs font-medium text-muted-foreground first:pt-0">
       <span className="flex-1 text-left">{label}</span>
-      {chevron ? <ChevronDown className="size-4" /> : null}
+      {chevron ? <ChevronDown className="size-3.5" /> : null}
     </span>
   );
 }
@@ -179,12 +171,18 @@ export function WorkspaceChat({
     return undefined;
   }, [selectedChannel, selectedMember]);
 
+  const memberCount = workspace.members.length;
+  const project =
+    selectedChannel?.kind === "project"
+      ? workspace.projects.find((item) => item.id === selectedChannel.projectId)
+      : undefined;
+
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-xl border bg-background sm:flex-row">
-      <aside className="flex shrink-0 flex-col border-b sm:w-64 sm:border-r sm:border-b-0">
-        <h2 className="flex h-16 items-center px-5 font-semibold">Chat</h2>
+    <div className="flex h-full min-h-0 flex-col sm:flex-row">
+      <aside className="flex shrink-0 flex-col bg-linear-to-b from-muted/50 to-transparent sm:w-64 sm:bg-linear-to-r">
         <ScrollArea className="min-h-0 flex-1">
-          <nav className="flex flex-col gap-1 px-3 pb-4" aria-label="Conversations">
+          <nav className="flex flex-col gap-0.5 px-3 py-4" aria-label="Conversations">
+            <SectionLabel label="Channels" />
             {generalChannels.map((channel) => (
               <ChannelItem
                 key={channel.id}
@@ -194,29 +192,22 @@ export function WorkspaceChat({
                 unread={unread[channel.id]}
               />
             ))}
-            <div className="mt-3">
-              <SectionLabel icon={Folder} label="Projects" chevron={false} />
-              <div className="flex flex-col gap-0.5 pt-1 pl-8 text-muted-foreground">
-                {projectChannels.map((channel) => (
-                  <ChannelItem
-                    key={channel.id}
-                    channel={channel}
-                    selected={selection?.kind === "channel" && selection.id === channel.id}
-                    onSelect={selectChannel}
-                    nested
-                  />
-                ))}
-              </div>
-            </div>
-            <Collapsible defaultOpen className="mt-3">
+            <SectionLabel label="Projects" />
+            {projectChannels.map((channel) => (
+              <ChannelItem
+                key={channel.id}
+                channel={channel}
+                selected={selection?.kind === "channel" && selection.id === channel.id}
+                onSelect={selectChannel}
+                unread={unread[channel.id]}
+              />
+            ))}
+            <Collapsible defaultOpen>
               <CollapsibleTrigger className="w-full">
-                <SectionLabel icon={MessageSquare} label="Direct messages" />
+                <SectionLabel label="Direct messages" chevron />
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <div className="flex flex-col gap-1 pt-1">
-                  {teamMembers.length > 0 && (
-                    <p className="px-2 pt-1 text-xs font-medium text-muted-foreground">Team</p>
-                  )}
+                <div className="flex flex-col gap-0.5">
                   {teamMembers.map((member) => (
                     <DirectItem
                       key={member.id}
@@ -226,9 +217,7 @@ export function WorkspaceChat({
                     />
                   ))}
                   {volunteers.length > 0 && (
-                    <p className="px-2 pt-2 text-xs font-medium text-muted-foreground">
-                      Volunteers
-                    </p>
+                    <p className="px-2.5 pt-2 pb-1 text-xs text-muted-foreground">Volunteers</p>
                   )}
                   {volunteers.map((member) => (
                     <DirectItem
@@ -247,13 +236,13 @@ export function WorkspaceChat({
       <section className="flex min-h-0 min-w-0 flex-1 flex-col">
         {conversation ? (
           <>
-            <header className="flex h-16 shrink-0 items-center gap-3 border-b px-5">
+            <header className="mx-auto flex h-14 w-full max-w-3xl shrink-0 items-center gap-3 px-5">
               {selectedMember ? (
                 <>
                   <MemberAvatar member={selectedMember} />
                   <div className="min-w-0">
-                    <div className="truncate font-semibold">{selectedMember.name}</div>
-                    <div className="truncate text-xs font-normal text-muted-foreground">
+                    <div className="truncate text-sm font-semibold">{selectedMember.name}</div>
+                    <div className="truncate text-xs text-muted-foreground">
                       {selectedMember.role}
                     </div>
                   </div>
@@ -266,7 +255,12 @@ export function WorkspaceChat({
                     ) : (
                       <Hash className="size-4 text-muted-foreground" />
                     )}
-                    <span className="truncate font-semibold">{selectedChannel.name}</span>
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-semibold">{selectedChannel.name}</div>
+                      <div className="truncate text-xs text-muted-foreground">
+                        {project ? project.description : `${memberCount} members`}
+                      </div>
+                    </div>
                   </>
                 )
               )}

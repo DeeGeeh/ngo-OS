@@ -29,6 +29,7 @@ import {
 } from "@/lib/workspace";
 
 import { sendMessageAction } from "../actions";
+import { MemberAvatar } from "./work-cards";
 
 function convertMessage(message: Message): ThreadMessageLike {
   return {
@@ -80,12 +81,10 @@ function DaySeparator({ iso }: { iso: string }) {
   const label =
     offset === 0 ? "Today" : offset === -1 ? "Yesterday" : dayFormat.format(new Date(iso));
   return (
-    <div className="flex items-center gap-3 px-5 py-3">
-      <span className="h-px flex-1 bg-border" />
-      <span className="rounded-full border bg-background px-3 py-0.5 text-xs font-medium text-muted-foreground">
-        {label}
-      </span>
-      <span className="h-px flex-1 bg-border" />
+    <div className="flex items-center gap-3 px-5 pt-5 pb-2">
+      <span className="h-px flex-1 bg-linear-to-r from-transparent to-border" />
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+      <span className="h-px flex-1 bg-linear-to-l from-transparent to-border" />
     </div>
   );
 }
@@ -112,7 +111,7 @@ function TeamMessage({ workspace, messages }: { workspace: Workspace; messages: 
       {message && startsDay && <DaySeparator iso={message.createdAt} />}
       <MessagePrimitive.Root
         className={cn(
-          "group/message flex gap-3 px-5 hover:bg-muted/40",
+          "group/message flex gap-3 rounded-lg px-5 hover:bg-muted/40",
           grouped ? "py-0.5" : "pt-3 pb-1",
         )}
       >
@@ -120,14 +119,11 @@ function TeamMessage({ workspace, messages }: { workspace: Workspace; messages: 
           <span className="w-8 shrink-0 pt-0.5 text-right text-xs text-muted-foreground tabular-nums opacity-0 group-hover/message:opacity-100">
             {message && timeFormat.format(new Date(message.createdAt))}
           </span>
+        ) : author ? (
+          <MemberAvatar member={author} size="default" />
         ) : (
           <Avatar>
-            <AvatarFallback>
-              {author?.name
-                .split(" ")
-                .map((name) => name[0])
-                .join("") ?? "?"}
-            </AvatarFallback>
+            <AvatarFallback>?</AvatarFallback>
           </Avatar>
         )}
         <div className="min-w-0 flex-1">
@@ -199,36 +195,37 @@ function ConversationThread({
   return (
     <AssistantRuntimeProvider runtime={runtime}>
       <ThreadPrimitive.Root className="flex h-full min-h-0 flex-col">
-        <ThreadPrimitive.Viewport className="min-h-0 flex-1 overflow-y-auto py-3">
-          <AuiIf condition={isEmpty}>
-            <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-muted-foreground">
-              <MessageSquare className="size-6" />
-              <p className="text-sm">Start the conversation.</p>
-            </div>
-          </AuiIf>
-          <ThreadPrimitive.Messages>{renderMessage}</ThreadPrimitive.Messages>
+        <ThreadPrimitive.Viewport className="min-h-0 flex-1 overflow-y-auto">
+          <div className="mx-auto flex w-full max-w-3xl flex-col pb-4">
+            <AuiIf condition={isEmpty}>
+              <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-muted-foreground">
+                <MessageSquare className="size-6" />
+                <p className="text-sm">Start the conversation.</p>
+              </div>
+            </AuiIf>
+            <ThreadPrimitive.Messages>{renderMessage}</ThreadPrimitive.Messages>
+          </div>
         </ThreadPrimitive.Viewport>
-        <div className="flex shrink-0 flex-col gap-3 p-4">
+        <div className="mx-auto flex w-full max-w-3xl shrink-0 flex-col gap-3 px-4 pt-2 pb-4">
           {send.error && (
             <Alert variant="destructive">
               <AlertDescription>{send.error.message}</AlertDescription>
             </Alert>
           )}
-          <ComposerPrimitive.Root className="rounded-xl border bg-background p-3">
+          <ComposerPrimitive.Root className="flex items-end gap-2 rounded-2xl border bg-card py-1.5 pr-1.5 pl-4 shadow-sm focus-within:ring-2 focus-within:ring-ring/40">
             <ComposerPrimitive.Input
-              className="max-h-40 min-h-16 w-full resize-none bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="max-h-40 min-h-9 flex-1 resize-none bg-transparent py-2 text-sm outline-none placeholder:text-muted-foreground"
               placeholder={placeholder}
               aria-label={placeholder}
               maxLength={4000}
+              rows={1}
             />
-            <div className="flex justify-end">
-              <ComposerPrimitive.Send
-                className={buttonVariants({ size: "icon" })}
-                aria-label="Send message"
-              >
-                <ArrowUp />
-              </ComposerPrimitive.Send>
-            </div>
+            <ComposerPrimitive.Send
+              className={buttonVariants({ size: "icon" })}
+              aria-label="Send message"
+            >
+              <ArrowUp />
+            </ComposerPrimitive.Send>
           </ComposerPrimitive.Root>
         </div>
       </ThreadPrimitive.Root>

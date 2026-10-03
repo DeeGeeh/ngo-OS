@@ -39,6 +39,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
+import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -98,10 +99,12 @@ type Screen = keyof typeof screenTitles;
 type NavItem = { id: Screen; label: string; icon: LucideIcon };
 const enter = { opacity: 0 };
 const visible = { opacity: 1 };
-const navItems = [
+const primaryNavItems = [
   { id: "home", label: "Dashboard", icon: House },
-  { id: "board", label: "Board", icon: LayoutDashboard },
   { id: "agent", label: "Ask the agent", icon: Sparkles },
+] satisfies NavItem[];
+const navItems = [
+  { id: "board", label: "Board", icon: LayoutDashboard },
   { id: "chat", label: "Chat", icon: MessageSquare },
   { id: "sponsors", label: "Sponsors", icon: Handshake },
   { id: "calendar", label: "Calendar", icon: CalendarDays },
@@ -372,6 +375,15 @@ export function WorkspaceApp({
                   onSettings={openSettings}
                 />
                 <nav aria-label="Main navigation" className="flex flex-col gap-1">
+                  {primaryNavItems.map((item) => (
+                    <NavButton
+                      key={item.id}
+                      item={item}
+                      active={screen === item.id}
+                      onSelect={switchScreen}
+                    />
+                  ))}
+                  <Separator className="my-2" />
                   <p className="px-2 pt-1 pb-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                     Workspace
                   </p>
@@ -476,14 +488,12 @@ export function WorkspaceApp({
                     <AgentPage prompt={pendingPrompt} onPromptSent={promptSent} />
                   )}
                   {screen === "chat" && (
-                    <div className="h-full p-4 lg:p-6">
-                      <WorkspaceChat
-                        workspace={workspace}
-                        initialChannelId={chatChannel}
-                        unread={unread}
-                        onRead={markRead}
-                      />
-                    </div>
+                    <WorkspaceChat
+                      workspace={workspace}
+                      initialChannelId={chatChannel}
+                      unread={unread}
+                      onRead={markRead}
+                    />
                   )}
                   {screen === "sponsors" && <SponsorsScreen workspace={workspace} />}
                   {screen === "donations" && (
