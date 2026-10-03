@@ -44,6 +44,14 @@ const toolLabels: Record<string, string> = {
   updateTask: "Update task",
   createProject: "Create project",
   updateProject: "Update project",
+  telegramStatus: "Check Telegram",
+  linkTelegramMember: "Link Telegram member",
+  ensureProjectTelegramGroup: "Create Telegram group",
+  inviteTelegramProjectMembers: "Invite Telegram members",
+  listTelegramProjectMembers: "Read Telegram members",
+  readTelegramProjectMessages: "Read Telegram messages",
+  sendTelegramProjectMessage: "Send Telegram message",
+  createTelegramProjectInviteLink: "Create Telegram invite link",
 };
 
 const isEmpty = (state: AssistantState) => state.thread.isEmpty && !state.thread.isLoading;
