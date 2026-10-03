@@ -1,11 +1,30 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, Circle, Flag, Tag, UserRound } from "lucide-react";
-import { useCallback, useMemo, useState, type ChangeEvent, type ReactNode } from "react";
+import {
+  CalendarDays,
+  Circle,
+  CircleCheck,
+  Flag,
+  ListChecks,
+  Plus,
+  Tag,
+  Trash2,
+  UserRound,
+} from "lucide-react";
+import {
+  useCallback,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -15,12 +34,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
 import {
   priorities,
   workStatuses,
   workTags,
   workspaceQueryKey,
   type Priority,
+  type Subtask,
   type Task,
   type UpdateTask,
   type Workspace,
@@ -57,6 +78,122 @@ function Property({
       </span>
       <div className="min-w-0 flex-1">{children}</div>
     </div>
+  );
+}
+
+function SubtaskRow({
+  subtask,
+  onToggle,
+  onRemove,
+}: {
+  subtask: Subtask;
+  onToggle: (id: string) => void;
+  onRemove: (id: string) => void;
+}) {
+  const toggle = useCallback(() => onToggle(subtask.id), [onToggle, subtask.id]);
+  const remove = useCallback(() => onRemove(subtask.id), [onRemove, subtask.id]);
+  return (
+    <div className="group/subtask flex items-center gap-2 rounded-lg border bg-card p-1 pr-1 pl-2.5 transition-colors hover:border-ring hover:bg-accent">
+      <button
+        type="button"
+        onClick={toggle}
+        aria-pressed={subtask.done}
+        className="flex min-w-0 flex-1 items-center gap-2.5 py-1.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        {subtask.done ? (
+          <CircleCheck className="size-4 shrink-0 text-primary" />
+        ) : (
+          <Circle className="size-4 shrink-0 text-muted-foreground" />
+        )}
+        <span
+          className={cn("truncate text-sm", subtask.done && "text-muted-foreground line-through")}
+        >
+          {subtask.title}
+        </span>
+      </button>
+      <span className="opacity-0 group-hover/subtask:opacity-100 focus-within:opacity-100">
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Remove subtask ${subtask.title}`}
+          onClick={remove}
+        >
+          <Trash2 />
+        </Button>
+      </span>
+    </div>
+  );
+}
+
+function SubtaskList({ task, onChange }: { task: Task; onChange: (next: Subtask[]) => void }) {
+  const [draft, setDraft] = useState("");
+  const done = task.subtasks.filter((subtask) => subtask.done).length;
+  const percent = task.subtasks.length === 0 ? 0 : Math.round((done / task.subtasks.length) * 100);
+
+  const toggle = useCallback(
+    (id: string) =>
+      onChange(
+        task.subtasks.map((subtask) =>
+          subtask.id === id ? { ...subtask, done: !subtask.done } : subtask,
+        ),
+      ),
+    [onChange, task.subtasks],
+  );
+  const remove = useCallback(
+    (id: string) => onChange(task.subtasks.filter((subtask) => subtask.id !== id)),
+    [onChange, task.subtasks],
+  );
+  const changeDraft = useCallback(
+    (event: ChangeEvent<HTMLInputElement>) => setDraft(event.target.value),
+    [],
+  );
+  const add = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      const title = draft.trim();
+      if (!title) return;
+      onChange([...task.subtasks, { id: crypto.randomUUID(), title, done: false }]);
+      setDraft("");
+    },
+    [draft, onChange, task.subtasks],
+  );
+
+  return (
+    <section className="flex flex-col gap-2.5" aria-label="Subtasks">
+      <div className="flex items-center gap-2">
+        <h3 className="flex items-center gap-2 text-sm font-medium">
+          <ListChecks className="size-4 text-muted-foreground" />
+          Subtasks
+        </h3>
+        {task.subtasks.length > 0 && (
+          <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground tabular-nums">
+            {done}/{task.subtasks.length}
+          </span>
+        )}
+        {task.subtasks.length > 0 && (
+          <span className="ml-auto text-xs text-muted-foreground tabular-nums">{percent}%</span>
+        )}
+      </div>
+      {task.subtasks.length > 0 && <Progress value={percent} />}
+      <div className="flex flex-col gap-1.5">
+        {task.subtasks.map((subtask) => (
+          <SubtaskRow key={subtask.id} subtask={subtask} onToggle={toggle} onRemove={remove} />
+        ))}
+      </div>
+      <form onSubmit={add} className="flex items-center gap-2">
+        <Input
+          value={draft}
+          onChange={changeDraft}
+          aria-label="New subtask"
+          placeholder="Add a subtask"
+          maxLength={160}
+        />
+        <Button type="submit" variant="outline" disabled={draft.trim().length === 0}>
+          <Plus data-icon="inline-start" />
+          Add
+        </Button>
+      </form>
+    </section>
   );
 }
 
@@ -111,6 +248,7 @@ export function TaskDetail({ task, workspace }: { task: Task; workspace: Workspa
     (value: string[]) => persist({ tags: value.filter(isTag) }),
     [persist],
   );
+  const changeSubtasks = useCallback((subtasks: Subtask[]) => persist({ subtasks }), [persist]);
   const changeDate = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
       const dueDate = event.target.value || null;
@@ -232,6 +370,7 @@ export function TaskDetail({ task, workspace }: { task: Task; workspace: Workspa
           maxLength={5000}
           rows={5}
         />
+        <SubtaskList task={task} onChange={changeSubtasks} />
         {save.error && (
           <Alert variant="destructive">
             <AlertTitle>{save.error.message}</AlertTitle>

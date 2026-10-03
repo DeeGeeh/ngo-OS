@@ -20,13 +20,13 @@ import { cn } from "@/lib/utils";
 const columnIcons = { todo: Circle, "in-progress": Clock3, done: CircleCheck };
 const columnAccents = {
   todo: "text-muted-foreground",
-  "in-progress": "text-primary",
-  done: "text-chart-2",
+  "in-progress": "text-chart-2",
+  done: "text-primary",
 };
 const columnRules = {
   todo: "bg-muted-foreground/30",
-  "in-progress": "bg-primary",
-  done: "bg-chart-2",
+  "in-progress": "bg-chart-2",
+  done: "bg-primary",
 };
 export type ColumnStatus = keyof typeof columnIcons;
 export type Assignee = { name: string; avatar?: string };

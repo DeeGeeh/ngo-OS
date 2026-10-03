@@ -65,6 +65,7 @@ await test("assistant uses the shared workspace mutations and validates its stre
               dueDate: null,
               priority: "normal",
               tags: ["Venue"],
+              subtasks: [],
             },
             options,
           ),

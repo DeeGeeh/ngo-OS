@@ -8,35 +8,35 @@ export const demoWorkspace = {
       name: "Diar",
       role: "Board member",
       skills: ["Product", "Technology"],
-      avatar: "/avatars/diar.svg",
+      avatar: "/avatars/diar.jpg",
     },
     {
       id: "aino",
       name: "Aino Laine",
       role: "Community lead",
       skills: ["Community", "Outreach"],
-      avatar: "/avatars/aino.svg",
+      avatar: "/avatars/aino.jpg",
     },
     {
       id: "elias",
       name: "Elias Koski",
       role: "Project lead",
       skills: ["Operations", "Partnerships"],
-      avatar: "/avatars/elias.svg",
+      avatar: "/avatars/elias.jpg",
     },
     {
       id: "noora",
       name: "Noora Niemi",
       role: "Communications",
       skills: ["Design", "Marketing"],
-      avatar: "/avatars/noora.svg",
+      avatar: "/avatars/noora.jpg",
     },
     {
       id: "leo",
       name: "Leo Virtanen",
       role: "Volunteer",
       skills: ["Photography", "Technology"],
-      avatar: "/avatars/leo.svg",
+      avatar: "/avatars/leo.jpg",
     },
   ],
   projects: [
@@ -76,6 +76,12 @@ export const demoWorkspace = {
       dueDate: "2026-10-08",
       priority: "high",
       tags: ["Speakers"],
+      subtasks: [
+        { id: "speaker-shortlist", title: "Shortlist six founders", done: true },
+        { id: "speaker-outreach", title: "Send the invitations", done: true },
+        { id: "speaker-topics", title: "Agree the talk topics", done: false },
+        { id: "speaker-bios", title: "Collect bios and photos", done: false },
+      ],
     },
     {
       id: "book-venue",
@@ -87,6 +93,7 @@ export const demoWorkspace = {
       dueDate: "2026-10-02",
       priority: "normal",
       tags: ["Venue"],
+      subtasks: [],
     },
     {
       id: "founder-visuals",
@@ -98,6 +105,10 @@ export const demoWorkspace = {
       dueDate: "2026-10-09",
       priority: "normal",
       tags: ["Design"],
+      subtasks: [
+        { id: "visuals-cover", title: "Project cover image", done: true },
+        { id: "visuals-social", title: "Social posts", done: false },
+      ],
     },
     {
       id: "welcome-team",
@@ -109,6 +120,10 @@ export const demoWorkspace = {
       dueDate: "2026-10-12",
       priority: "high",
       tags: ["Volunteers", "Outreach"],
+      subtasks: [
+        { id: "visuals-cover", title: "Project cover image", done: true },
+        { id: "visuals-social", title: "Social posts", done: false },
+      ],
     },
     {
       id: "photography",
@@ -120,6 +135,7 @@ export const demoWorkspace = {
       dueDate: "2026-10-16",
       priority: "low",
       tags: ["Design"],
+      subtasks: [],
     },
     {
       id: "founder-run-sheet",
@@ -131,6 +147,11 @@ export const demoWorkspace = {
       dueDate: "2026-10-15",
       priority: "high",
       tags: ["Volunteers"],
+      subtasks: [
+        { id: "runsheet-setup", title: "Setup and doors", done: false },
+        { id: "runsheet-talks", title: "Talks and Q&A timings", done: false },
+        { id: "runsheet-close", title: "Networking and close", done: false },
+      ],
     },
     {
       id: "campus-format",
@@ -143,6 +164,11 @@ export const demoWorkspace = {
       dueDate: "2026-10-13",
       priority: "normal",
       tags: ["Campus"],
+      subtasks: [
+        { id: "runsheet-setup", title: "Setup and doors", done: false },
+        { id: "runsheet-talks", title: "Talks and Q&A timings", done: false },
+        { id: "runsheet-close", title: "Networking and close", done: false },
+      ],
     },
     {
       id: "campus-room",
@@ -154,6 +180,10 @@ export const demoWorkspace = {
       dueDate: "2026-10-16",
       priority: "high",
       tags: ["Campus", "Venue"],
+      subtasks: [
+        { id: "room-shortlist", title: "Shortlist three rooms", done: true },
+        { id: "room-book", title: "Confirm the booking", done: false },
+      ],
     },
     {
       id: "campus-invite",
@@ -165,6 +195,11 @@ export const demoWorkspace = {
       dueDate: "2026-10-20",
       priority: "normal",
       tags: ["Campus", "Outreach"],
+      subtasks: [
+        { id: "invite-draft", title: "Draft the copy", done: false },
+        { id: "invite-review", title: "Review with the board", done: false },
+        { id: "invite-send", title: "Send to student lists", done: false },
+      ],
     },
     {
       id: "campus-mentors",
@@ -176,6 +211,10 @@ export const demoWorkspace = {
       dueDate: "2026-10-23",
       priority: "low",
       tags: ["Campus", "Volunteers"],
+      subtasks: [
+        { id: "room-shortlist", title: "Shortlist three rooms", done: true },
+        { id: "room-book", title: "Confirm the booking", done: false },
+      ],
     },
     {
       id: "board-agenda",
@@ -187,6 +226,10 @@ export const demoWorkspace = {
       dueDate: "2026-10-06",
       priority: "urgent",
       tags: ["Board"],
+      subtasks: [
+        { id: "agenda-collect", title: "Collect open questions", done: true },
+        { id: "agenda-share", title: "Share before Tuesday", done: false },
+      ],
     },
     {
       id: "member-onboarding",
@@ -198,6 +241,11 @@ export const demoWorkspace = {
       dueDate: "2026-10-14",
       priority: "normal",
       tags: ["Outreach"],
+      subtasks: [
+        { id: "invite-draft", title: "Draft the copy", done: false },
+        { id: "invite-review", title: "Review with the board", done: false },
+        { id: "invite-send", title: "Send to student lists", done: false },
+      ],
     },
     {
       id: "drive-folder",
@@ -209,6 +257,10 @@ export const demoWorkspace = {
       dueDate: "2026-10-01",
       priority: "low",
       tags: ["Board"],
+      subtasks: [
+        { id: "agenda-collect", title: "Collect open questions", done: true },
+        { id: "agenda-share", title: "Share before Tuesday", done: false },
+      ],
     },
   ],
   channels: [

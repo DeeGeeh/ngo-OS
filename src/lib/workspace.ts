@@ -42,11 +42,11 @@ export const workTags = [
 const tagSchema = z.enum(workTags);
 const tagsSchema = z.array(tagSchema).max(6);
 const portraits: Record<string, string> = {
-  diar: "/avatars/diar.svg",
-  aino: "/avatars/aino.svg",
-  elias: "/avatars/elias.svg",
-  noora: "/avatars/noora.svg",
-  leo: "/avatars/leo.svg",
+  diar: "/avatars/diar.jpg",
+  aino: "/avatars/aino.jpg",
+  elias: "/avatars/elias.jpg",
+  noora: "/avatars/noora.jpg",
+  leo: "/avatars/leo.jpg",
 };
 
 const idSchema = z.string().min(1).max(100);
@@ -61,6 +61,12 @@ export const memberSchema = z.object({
   skills: z.array(z.string()),
   avatar: z.string().max(200).default(""),
 });
+export const subtaskSchema = z.object({
+  id: idSchema,
+  title: titleSchema,
+  done: z.boolean().default(false),
+});
+const subtasksSchema = z.array(subtaskSchema).max(50);
 export const taskSchema = z.object({
   id: idSchema,
   title: titleSchema,
@@ -71,6 +77,7 @@ export const taskSchema = z.object({
   dueDate: dueDateSchema,
   priority: prioritySchema.default("normal"),
   tags: tagsSchema.default([]),
+  subtasks: subtasksSchema.default([]),
 });
 export const projectSchema = z.object({
   id: idSchema,
@@ -119,6 +126,7 @@ export const updateTaskSchema = z.object({
   dueDate: dueDateSchema.optional(),
   priority: prioritySchema.optional(),
   tags: tagsSchema.optional(),
+  subtasks: subtasksSchema.optional(),
 });
 export const createProjectSchema = projectSchema.omit({ id: true }).extend({
   description: z.string().max(5000),
@@ -141,6 +149,7 @@ export const sendMessageSchema = z.object({
 });
 
 export type Member = z.infer<typeof memberSchema>;
+export type Subtask = z.infer<typeof subtaskSchema>;
 export type Task = z.infer<typeof taskSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export type Channel = z.infer<typeof channelSchema>;

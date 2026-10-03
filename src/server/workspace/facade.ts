@@ -66,6 +66,7 @@ export async function updateTask(input: UpdateTask): Promise<Task> {
       dueDate: changes.dueDate === undefined ? task.dueDate : changes.dueDate,
       priority: changes.priority ?? task.priority,
       tags: changes.tags ?? task.tags,
+      subtasks: changes.subtasks ?? task.subtasks,
     };
     validateAssignees(workspace, updated.assigneeIds);
     validateProject(workspace, updated.projectId);

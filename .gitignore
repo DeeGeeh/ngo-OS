@@ -11,6 +11,8 @@ out/
 *.db
 *.db-shm
 *.db-wal
+*.db.bak-*
+workspace-backup-*.json
 *.tsbuildinfo
 next-env.d.ts
 *.log
