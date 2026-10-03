@@ -18,11 +18,17 @@ const capacitySchema = z.number().int().min(1).max(10000).nullable();
 
 export const prioritySchema = z.enum(["urgent", "high", "normal", "low"]);
 export type Priority = z.infer<typeof prioritySchema>;
+export const priorityMeta = {
+  urgent: { label: "Urgent", rank: 0, color: "text-destructive", filled: true },
+  high: { label: "High", rank: 1, color: "text-destructive", filled: false },
+  normal: { label: "Normal", rank: 2, color: "text-muted-foreground", filled: false },
+  low: { label: "Low", rank: 3, color: "text-muted-foreground/70", filled: false },
+} satisfies Record<Priority, { label: string; rank: number; color: string; filled: boolean }>;
 export const priorities = [
-  { id: "urgent", label: "Urgent" },
-  { id: "high", label: "High" },
-  { id: "normal", label: "Normal" },
-  { id: "low", label: "Low" },
+  { id: "urgent", label: priorityMeta.urgent.label },
+  { id: "high", label: priorityMeta.high.label },
+  { id: "normal", label: priorityMeta.normal.label },
+  { id: "low", label: priorityMeta.low.label },
 ] satisfies { id: Priority; label: string }[];
 export const workTags = [
   "Outreach",
@@ -35,13 +41,13 @@ export const workTags = [
 ] as const;
 const tagSchema = z.enum(workTags);
 const tagsSchema = z.array(tagSchema).max(6);
-const portraits = {
+const portraits: Record<string, string> = {
   diar: "/avatars/diar.svg",
   aino: "/avatars/aino.svg",
   elias: "/avatars/elias.svg",
   noora: "/avatars/noora.svg",
   leo: "/avatars/leo.svg",
-} as const;
+};
 
 const idSchema = z.string().min(1).max(100);
 const titleSchema = z.string().trim().min(1).max(160);
@@ -145,8 +151,7 @@ export type CreateTask = z.input<typeof createTaskSchema>;
 export type WorkTag = (typeof workTags)[number];
 
 export function memberPortrait(member: { id: string; avatar: string }) {
-  if (member.avatar) return member.avatar;
-  return member.id in portraits ? portraits[member.id as keyof typeof portraits] : "";
+  return member.avatar || (portraits[member.id] ?? "");
 }
 export type UpdateTask = z.infer<typeof updateTaskSchema>;
 export type CreateProject = z.input<typeof createProjectSchema>;

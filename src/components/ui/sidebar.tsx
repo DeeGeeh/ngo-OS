@@ -142,7 +142,7 @@ export function DesktopSidebar({
     <motion.div
       {...props}
       className={cn(
-        "hidden h-full w-75 shrink-0 flex-col bg-background p-4 text-foreground md:flex",
+        "hidden h-full w-75 shrink-0 flex-col bg-sidebar p-3 text-sidebar-foreground md:flex",
         className,
       )}
       initial={false}
@@ -174,7 +174,7 @@ export function MobileSidebar({ className, children, ...props }: ComponentProps<
       <SheetContent
         side="left"
         className={cn(
-          "gap-4 bg-background p-4 text-foreground data-[side=left]:w-full data-[side=left]:sm:max-w-none motion-reduce:transition-none",
+          "gap-4 bg-sidebar p-3 text-sidebar-foreground data-[side=left]:w-full data-[side=left]:sm:max-w-none motion-reduce:transition-none",
           className,
         )}
       >

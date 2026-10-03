@@ -85,6 +85,8 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["elias"],
       dueDate: "2026-10-02",
+      priority: "normal",
+      tags: ["Venue"],
     },
     {
       id: "founder-visuals",
@@ -116,6 +118,8 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["leo"],
       dueDate: "2026-10-16",
+      priority: "low",
+      tags: ["Design"],
     },
     {
       id: "founder-run-sheet",
@@ -125,6 +129,8 @@ export const demoWorkspace = {
       projectId: "founder-night",
       assigneeIds: ["elias", "aino"],
       dueDate: "2026-10-15",
+      priority: "high",
+      tags: ["Volunteers"],
     },
     {
       id: "campus-format",
@@ -135,6 +141,8 @@ export const demoWorkspace = {
       projectId: "campus-builders",
       assigneeIds: ["diar"],
       dueDate: "2026-10-13",
+      priority: "normal",
+      tags: ["Campus"],
     },
     {
       id: "campus-room",
@@ -144,6 +152,8 @@ export const demoWorkspace = {
       projectId: "campus-builders",
       assigneeIds: ["leo"],
       dueDate: "2026-10-16",
+      priority: "high",
+      tags: ["Campus", "Venue"],
     },
     {
       id: "campus-invite",
@@ -153,6 +163,8 @@ export const demoWorkspace = {
       projectId: "campus-builders",
       assigneeIds: ["noora", "diar"],
       dueDate: "2026-10-20",
+      priority: "normal",
+      tags: ["Campus", "Outreach"],
     },
     {
       id: "campus-mentors",
@@ -162,6 +174,8 @@ export const demoWorkspace = {
       projectId: "campus-builders",
       assigneeIds: ["aino"],
       dueDate: "2026-10-23",
+      priority: "low",
+      tags: ["Campus", "Volunteers"],
     },
     {
       id: "board-agenda",
@@ -171,6 +185,8 @@ export const demoWorkspace = {
       projectId: null,
       assigneeIds: ["diar"],
       dueDate: "2026-10-06",
+      priority: "urgent",
+      tags: ["Board"],
     },
     {
       id: "member-onboarding",
@@ -180,6 +196,8 @@ export const demoWorkspace = {
       projectId: null,
       assigneeIds: ["aino", "noora"],
       dueDate: "2026-10-14",
+      priority: "normal",
+      tags: ["Outreach"],
     },
     {
       id: "drive-folder",
@@ -189,6 +207,8 @@ export const demoWorkspace = {
       projectId: null,
       assigneeIds: ["leo"],
       dueDate: "2026-10-01",
+      priority: "low",
+      tags: ["Board"],
     },
   ],
   channels: [
@@ -210,11 +230,25 @@ export const demoWorkspace = {
   ],
   messages: [
     {
+      id: "general-kickoff",
+      conversation: { kind: "channel", id: "general" },
+      authorId: "diar",
+      text: "Autumn season is live. Founder Night and Campus Builders are the two projects we're running until November.",
+      createdAt: "2026-10-01T06:40:00.000Z",
+    },
+    {
+      id: "general-roles",
+      conversation: { kind: "channel", id: "general" },
+      authorId: "diar",
+      text: "Shout if you want to own a piece of either one.",
+      createdAt: "2026-10-01T06:42:00.000Z",
+    },
+    {
       id: "general-hello",
       conversation: { kind: "channel", id: "general" },
       authorId: "aino",
       text: "Welcome back! Founder Night and Campus Builders are taking shape. Pick a task if you'd like to help.",
-      createdAt: "2026-10-03T08:15:00.000Z",
+      createdAt: "2026-10-02T08:15:00.000Z",
     },
     {
       id: "general-help",
@@ -222,6 +256,13 @@ export const demoWorkspace = {
       authorId: "leo",
       text: "I'm in for photos at Founder Night. I'll also check rooms for the campus session.",
       createdAt: "2026-10-03T08:28:00.000Z",
+    },
+    {
+      id: "board-budget",
+      conversation: { kind: "channel", id: "board" },
+      authorId: "elias",
+      text: "Venue deposit is paid. I'll add the receipt to the shared folder.",
+      createdAt: "2026-10-02T12:05:00.000Z",
     },
     {
       id: "board-agenda-message",
@@ -235,28 +276,49 @@ export const demoWorkspace = {
       conversation: { kind: "channel", id: "ideas" },
       authorId: "noora",
       text: "What about a small builder breakfast next month? Members could share what they're working on.",
-      createdAt: "2026-10-03T09:20:00.000Z",
+      createdAt: "2026-10-02T09:20:00.000Z",
+    },
+    {
+      id: "idea-breakfast-reply",
+      conversation: { kind: "channel", id: "ideas" },
+      authorId: "aino",
+      text: "I like it. Low effort, and it keeps people talking between the bigger events.",
+      createdAt: "2026-10-03T07:05:00.000Z",
     },
     {
       id: "founder-venue-message",
       conversation: { kind: "channel", id: "founder-night-channel" },
       authorId: "elias",
       text: "Platform6 is confirmed. We can set up at 17:00 and open the doors at 18:00.",
-      createdAt: "2026-10-03T10:05:00.000Z",
+      createdAt: "2026-10-01T10:05:00.000Z",
+    },
+    {
+      id: "founder-capacity",
+      conversation: { kind: "channel", id: "founder-night-channel" },
+      authorId: "elias",
+      text: "Room fits 80 comfortably, so let's cap registration there.",
+      createdAt: "2026-10-01T10:08:00.000Z",
     },
     {
       id: "founder-visuals-message",
       conversation: { kind: "channel", id: "founder-night-channel" },
       authorId: "noora",
       text: "I'll have the first visuals ready on Thursday. Send me the speaker names when they're confirmed.",
-      createdAt: "2026-10-03T10:12:00.000Z",
+      createdAt: "2026-10-02T10:12:00.000Z",
+    },
+    {
+      id: "founder-runsheet-nudge",
+      conversation: { kind: "channel", id: "founder-night-channel" },
+      authorId: "aino",
+      text: "Run sheet is still open. I'll draft it tonight unless someone already started.",
+      createdAt: "2026-10-03T09:45:00.000Z",
     },
     {
       id: "campus-format-message",
       conversation: { kind: "channel", id: "campus-builders-channel" },
       authorId: "diar",
       text: "Let's give teams two hours to build something small. A working demo is a better finish than a slide deck.",
-      createdAt: "2026-10-03T10:30:00.000Z",
+      createdAt: "2026-10-02T10:30:00.000Z",
     },
     {
       id: "campus-room-message",
@@ -270,7 +332,7 @@ export const demoWorkspace = {
       conversation: { kind: "task", id: "confirm-speakers" },
       authorId: "aino",
       text: "Should we invite a first-time founder too? It would make the stories more relatable for students.",
-      createdAt: "2026-10-03T11:00:00.000Z",
+      createdAt: "2026-10-02T11:00:00.000Z",
     },
     {
       id: "speaker-task-answer",
@@ -285,6 +347,13 @@ export const demoWorkspace = {
       authorId: "leo",
       text: "Happy to help teams with their first prototype. We can keep the introductions to 20 minutes.",
       createdAt: "2026-10-03T11:25:00.000Z",
+    },
+    {
+      id: "dm-aino-earlier",
+      conversation: { kind: "direct", id: "aino" },
+      authorId: "aino",
+      text: "Thanks for picking up the board agenda.",
+      createdAt: "2026-10-02T14:02:00.000Z",
     },
     {
       id: "dm-aino",

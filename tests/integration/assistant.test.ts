@@ -63,6 +63,8 @@ await test("assistant uses the shared workspace mutations and validates its stre
               projectId: project.id,
               assigneeIds: ["aino"],
               dueDate: null,
+              priority: "normal",
+              tags: ["Venue"],
             },
             options,
           ),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Folder, LayoutDashboard, Plus, Search } from "lucide-react";
+import { Flag, Folder, LayoutDashboard, Plus, Search } from "lucide-react";
 import { useCallback, useMemo, useState, type ChangeEvent } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
@@ -20,8 +20,23 @@ import {
   type ColumnStatus,
   type DragState,
 } from "@/components/ui/kanban";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { workspaceQueryKey, type Workspace, type WorkStatus } from "@/lib/workspace";
+import {
+  priorities,
+  priorityMeta,
+  workspaceQueryKey,
+  type Priority,
+  type Workspace,
+  type WorkStatus,
+} from "@/lib/workspace";
 
 import { updateProjectAction, updateTaskAction } from "../actions";
 import { ProjectCard, TaskCard } from "./work-cards";
@@ -37,6 +52,16 @@ const columnStatuses = { todo: "todo", "in-progress": "doing", done: "done" } sa
 >;
 
 type CreateWork = (status: WorkStatus, kind: "task" | "project") => void;
+type BoardItem = { kind: "task" | "project"; dueDate: string | null; priority?: Priority };
+
+function sortRank(item: BoardItem) {
+  return item.priority ? priorityMeta[item.priority].rank : -1;
+}
+
+const priorityFilterItems = [
+  { value: "any", label: "Any priority" },
+  ...priorities.map((priority) => ({ value: priority.id, label: priority.label })),
+];
 
 export function CreateWorkMenu({
   status = "todo",
@@ -90,6 +115,7 @@ type WorkBoardProps = {
 
 export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardProps) {
   const [filter, setFilter] = useState("all");
+  const [priority, setPriority] = useState<Priority | "any">("any");
   const [search, setSearch] = useState("");
   const [dragState, setDragState] = useState<DragState>(null);
   const queryClient = useQueryClient();
@@ -111,9 +137,10 @@ export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardP
       ].filter(
         (item) =>
           (filter !== "mine" || item.assigneeIds.includes(workspace.currentMemberId)) &&
+          (priority === "any" || ("priority" in item && item.priority === priority)) &&
           item.title.toLowerCase().includes(search.toLowerCase()),
       ),
-    [workspace, filter, search],
+    [workspace, filter, search, priority],
   );
   const columns: ColumnData[] = useMemo(
     () =>
@@ -123,6 +150,12 @@ export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardP
         status: column.id,
         cards: items
           .filter((item) => item.status === column.workStatus)
+          .toSorted((left, right) => {
+            if (left.kind !== right.kind) return left.kind === "project" ? -1 : 1;
+            const byPriority = sortRank(left) - sortRank(right);
+            if (byPriority !== 0) return byPriority;
+            return (left.dueDate ?? "9999").localeCompare(right.dueDate ?? "9999");
+          })
           .map((item) => ({ id: item.id, title: item.title, kind: item.kind })),
       })),
     [items],
@@ -196,6 +229,9 @@ export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardP
     (event: ChangeEvent<HTMLInputElement>) => setSearch(event.target.value),
     [],
   );
+  const changePriority = useCallback((value: Priority | "any" | null) => {
+    if (value) setPriority(value);
+  }, []);
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-6 p-6 lg:p-8">
@@ -204,17 +240,34 @@ export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardP
           <ToggleGroupItem value="all">All work</ToggleGroupItem>
           <ToggleGroupItem value="mine">Assigned to me</ToggleGroupItem>
         </ToggleGroup>
-        <InputGroup className="max-w-64">
-          <InputGroupAddon>
-            <Search />
-          </InputGroupAddon>
-          <InputGroupInput
-            value={search}
-            onChange={changeSearch}
-            aria-label="Search work"
-            placeholder="Search"
-          />
-        </InputGroup>
+        <div className="flex flex-wrap items-center gap-3">
+          <Select items={priorityFilterItems} value={priority} onValueChange={changePriority}>
+            <SelectTrigger className="w-44" aria-label="Filter by priority">
+              <Flag data-icon="inline-start" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {priorityFilterItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          <InputGroup className="max-w-64">
+            <InputGroupAddon>
+              <Search />
+            </InputGroupAddon>
+            <InputGroupInput
+              value={search}
+              onChange={changeSearch}
+              aria-label="Search work"
+              placeholder="Search"
+            />
+          </InputGroup>
+        </div>
       </div>
       {move.error && (
         <Alert variant="destructive">

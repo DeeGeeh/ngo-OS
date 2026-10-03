@@ -74,7 +74,9 @@ export function WorkEditor(props: WorkEditorProps) {
   const [priority, setPriority] = useState<Priority>(
     props.kind === "task" ? (props.task?.priority ?? "normal") : "normal",
   );
-  const [tags, setTags] = useState<WorkTag[]>(props.kind === "task" ? (props.task?.tags ?? []) : []);
+  const [tags, setTags] = useState<WorkTag[]>(
+    props.kind === "task" ? (props.task?.tags ?? []) : [],
+  );
   const [projectId, setProjectId] = useState(
     props.kind === "task" ? (props.task?.projectId ?? props.projectId ?? "none") : "none",
   );
@@ -222,23 +224,61 @@ export function WorkEditor(props: WorkEditorProps) {
           </Select>
         </Field>
         {props.kind === "task" ? (
-          <Field>
-            <FieldLabel htmlFor="work-project">Project</FieldLabel>
-            <Select items={projects} value={projectId} onValueChange={changeProject}>
-              <SelectTrigger id="work-project" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {projects.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-          </Field>
+          <>
+            <Field>
+              <FieldLabel htmlFor="work-project">Project</FieldLabel>
+              <Select items={projects} value={projectId} onValueChange={changeProject}>
+                <SelectTrigger id="work-project" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {projects.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="work-priority">Priority</FieldLabel>
+              <Select items={priorityItems} value={priority} onValueChange={changePriority}>
+                <SelectTrigger id="work-priority" className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {priorityItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="work-tags">Tags</FieldLabel>
+              <Select items={tagItems} multiple value={tags} onValueChange={changeTags}>
+                <SelectTrigger id="work-tags" className="w-full">
+                  <SelectValue>
+                    {(value: string[]) => (value.length ? value.join(", ") : "No tags")}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectGroup>
+                    {tagItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                </SelectContent>
+              </Select>
+            </Field>
+          </>
         ) : (
           <>
             <Field>
