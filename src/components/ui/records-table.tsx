@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useResizeObserver } from "@react-hookz/web/useResizeObserver";
 import GlideMenu from "@/components/ui/glide-menu";
 
 type Strength = "strong" | "weak" | "veryweak" | "none";
@@ -744,40 +745,36 @@ function TagList({ tags }: { tags: string[] }) {
   const measureRef = useRef<HTMLDivElement>(null);
   const [visibleCount, setVisibleCount] = useState(tags.length);
 
-  useLayoutEffect(() => {
+  const update = useCallback(() => {
     const container = containerRef.current;
     const measure = measureRef.current;
-    if (!container || !measure) return undefined;
+    if (!container || !measure) return;
 
-    const update = () => {
-      const available = container.clientWidth;
-      const tagWidths = Array.from(
-        measure.querySelectorAll<HTMLElement>("[data-tag-measure]"),
-        (tag) => tag.offsetWidth,
-      );
-      const moreWidth = measure.querySelector<HTMLElement>("[data-more-measure]")?.offsetWidth ?? 0;
-      let used = 0;
-      let count = 0;
+    const available = container.clientWidth;
+    const tagWidths = Array.from(
+      measure.querySelectorAll<HTMLElement>("[data-tag-measure]"),
+      (tag) => tag.offsetWidth,
+    );
+    const moreWidth = measure.querySelector<HTMLElement>("[data-more-measure]")?.offsetWidth ?? 0;
+    let used = 0;
+    let count = 0;
 
-      for (let index = 0; index < tagWidths.length; index += 1) {
-        const tagWidth = tagWidths[index];
-        if (tagWidth === undefined) break;
-        const nextUsed = used + (count > 0 ? 4 : 0) + tagWidth;
-        const hiddenAfter = tags.length - (index + 1);
-        const totalWithOverflow = nextUsed + (hiddenAfter > 0 ? 4 + moreWidth : 0);
-        if (totalWithOverflow > available) break;
-        used = nextUsed;
-        count += 1;
-      }
+    for (let index = 0; index < tagWidths.length; index += 1) {
+      const tagWidth = tagWidths[index];
+      if (tagWidth === undefined) break;
+      const nextUsed = used + (count > 0 ? 4 : 0) + tagWidth;
+      const hiddenAfter = tags.length - (index + 1);
+      const totalWithOverflow = nextUsed + (hiddenAfter > 0 ? 4 + moreWidth : 0);
+      if (totalWithOverflow > available) break;
+      used = nextUsed;
+      count += 1;
+    }
 
-      setVisibleCount(count);
-    };
-
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(container);
-    return () => observer.disconnect();
+    setVisibleCount(count);
   }, [tags]);
+
+  useLayoutEffect(update, [update]);
+  useResizeObserver(containerRef, update);
 
   const hiddenCount = tags.length - visibleCount;
 
