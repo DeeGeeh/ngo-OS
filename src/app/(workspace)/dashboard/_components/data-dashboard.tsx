@@ -5,8 +5,9 @@ import {
   renderGenerativeUI,
   type GenerativeUILibrary,
 } from "@assistant-ui/react-generative-ui";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ExternalLink, RefreshCw } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ExternalLink, RefreshCw, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useCallback, useMemo } from "react";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { z } from "zod";
@@ -23,11 +24,14 @@ import {
 } from "@/components/ui/chart";
 import {
   dashboardViewSchema,
+  dataLibraryQueryKey,
   dataLimits,
   type DashboardNode,
   type DashboardView,
   type Result,
 } from "@/lib/data";
+
+import { deleteDashboardAction } from "../data/actions";
 
 export const dashboardQueryKey = (id: string) => ["dashboard", id];
 
@@ -235,7 +239,18 @@ function freshnessLabel(freshness: DashboardView["sources"][number]["freshness"]
 
 export function DataDashboard({ initialData }: { initialData: DashboardView }) {
   const id = initialData.definition.id;
+  const router = useRouter();
+
   const queryClient = useQueryClient();
+  const deletion = useMutation({
+    mutationFn: () => deleteDashboardAction(id),
+    onSuccess: async () => {
+      queryClient.removeQueries({ queryKey: dashboardQueryKey(id) });
+      await queryClient.invalidateQueries({ queryKey: dataLibraryQueryKey });
+      router.replace("/dashboard?view=home");
+    },
+  });
+  const remove = useCallback(() => deletion.mutate(), [deletion]);
   const query = useQuery({
     queryKey: dashboardQueryKey(id),
     queryFn: () => fetchDashboard(id),
@@ -267,10 +282,20 @@ export function DataDashboard({ initialData }: { initialData: DashboardView }) {
           <div>
             <h2 className="text-3xl font-semibold tracking-tight">{view.definition.title}</h2>
           </div>
-          <Button variant="outline" onClick={refresh} disabled={query.isFetching}>
-            <RefreshCw data-icon="inline-start" />
-            Refresh
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={refresh}
+              disabled={query.isFetching || deletion.isPending}
+            >
+              <RefreshCw data-icon="inline-start" />
+              Refresh
+            </Button>
+            <Button variant="destructive" onClick={remove} disabled={deletion.isPending}>
+              <Trash2 data-icon="inline-start" />
+              {deletion.isPending ? "Deleting…" : "Delete dashboard"}
+            </Button>
+          </div>
         </header>
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Data sources">
           {view.sources.map((source) => (
@@ -298,6 +323,12 @@ export function DataDashboard({ initialData }: { initialData: DashboardView }) {
             </Card>
           ))}
         </section>
+        {deletion.error && (
+          <Alert variant="destructive">
+            <AlertTitle>Dashboard could not be deleted</AlertTitle>
+            <AlertDescription>{deletion.error.message}</AlertDescription>
+          </Alert>
+        )}
         {query.error && (
           <Alert variant="destructive">
             <AlertTitle>Dashboard refresh failed</AlertTitle>

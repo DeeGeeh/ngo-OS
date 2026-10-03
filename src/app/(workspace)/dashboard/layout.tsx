@@ -8,9 +8,12 @@ import { getDataLibrary } from "@/server/data/facade";
 import { getGoogleCalendarEvents } from "@/server/calendar/facade";
 import { getLumaCalendar } from "@/server/luma/facade";
 
+import { DailyBrief } from "./_components/daily-brief";
 import { WorkspaceApp } from "./_components/workspace-app";
 import { WorkspaceProviders } from "./_components/providers";
 import "./_components/workspace-loading.css";
+
+const overviewBrief = <DailyBrief />;
 
 const loading = (
   <ViewTransition enter="workspace-fade" exit="workspace-fade" default="none">
@@ -34,6 +37,7 @@ async function WorkspaceContent({ children }: { children: ReactNode }) {
   ]);
   return (
     <WorkspaceApp
+      overviewBrief={overviewBrief}
       initialWorkspace={workspace}
       initialThreads={initialThreads}
       initialDataLibrary={dataLibrary}

@@ -1,0 +1,26 @@
+[
+  {
+    "method": "GET",
+    "path": "/api/data/sources",
+    "status": 200,
+    "body": "{\"sources\":[],\"dashboards\":[]}"
+  },
+  {
+    "method": "GET",
+    "path": "/api/data/dashboards/smoke-missing-id",
+    "status": 404,
+    "body": "Dashboard does not exist."
+  },
+  {
+    "method": "POST",
+    "path": "/api/assistant",
+    "status": 400,
+    "body": "Send a valid conversation to the assistant."
+  },
+  {
+    "method": "POST",
+    "path": "/api/telegram/webhook",
+    "status": 500,
+    "body": ""
+  }
+]

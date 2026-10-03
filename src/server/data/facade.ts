@@ -577,6 +577,16 @@ export async function saveDashboard(
   }
 }
 
+export async function deleteDashboard(id: string): Promise<void> {
+  const dashboardId = dashboardDefinitionSchema.shape.id.parse(id);
+  const client = await openDataClient();
+  try {
+    await client.execute({ sql: "DELETE FROM data_dashboards WHERE id = ?", args: [dashboardId] });
+  } finally {
+    client.close();
+  }
+}
+
 export async function getDashboard(
   id: string,
   options: { refresh?: "due" | "force" } = {},

@@ -63,6 +63,11 @@ export const userSettingsSchema = z.object({
   firstName: z.string().trim().min(1).max(100),
   lastName: z.string().trim().max(100),
   email: z.union([z.email().max(254), z.literal("")]),
+  phoneNumber: z
+    .string()
+    .trim()
+    .regex(/^\+[1-9]\d{6,14}$/)
+    .optional(),
   telegramHandle: z
     .string()
     .trim()

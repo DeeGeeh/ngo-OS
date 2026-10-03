@@ -7,7 +7,7 @@ import { test } from "node:test";
 await test("data facade imports, computes, refreshes, and reopens source-bound dashboards", async (t) => {
   const directory = await mkdtemp(join(tmpdir(), "tres-data-"));
   process.env.WORKSPACE_DATABASE_URL = `file:${join(directory, "workspace.db")}`;
-  const { addSource, getDashboard, getDataLibrary, inspectSource, saveDashboard } =
+  const { addSource, getDashboard, getDataLibrary, inspectSource, saveDashboard, deleteDashboard } =
     await import("@/server/data/facade");
   const csv = new File(
     ["Name,Amount,Status\n", '"Food, supplies",12,paid\n', "001,8,open\n", "Empty,,open\n"],
@@ -159,6 +159,21 @@ await test("data facade imports, computes, refreshes, and reopens source-bound d
         ],
       }),
       /numeric/,
+    );
+    await deleteDashboard("uploaded-dashboard");
+    await assert.rejects(getDashboard("uploaded-dashboard"), /does not exist/);
+    const afterDeletion = await getDataLibrary();
+    assert.equal(
+      afterDeletion.dashboards.some((dashboard) => dashboard.id === "uploaded-dashboard"),
+      false,
+    );
+    assert.equal(
+      afterDeletion.sources.some((item) => item.id === source.id),
+      true,
+    );
+    assert.equal(
+      afterDeletion.dashboards.some((dashboard) => dashboard.id === "remote-dashboard"),
+      true,
     );
   } finally {
     await rm(directory, { recursive: true, force: true });

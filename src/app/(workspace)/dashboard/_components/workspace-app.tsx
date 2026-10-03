@@ -261,6 +261,7 @@ function UserMenu({ member, onSettings }: { member?: Member; onSettings: () => v
 
 export function WorkspaceApp({
   initialWorkspace,
+  overviewBrief,
   initialThreads,
   initialDataLibrary,
   googleEvents,
@@ -268,6 +269,7 @@ export function WorkspaceApp({
   children,
 }: {
   initialWorkspace: Workspace;
+  overviewBrief: ReactNode;
   initialThreads: AssistantThread[];
   initialDataLibrary: DataLibrary;
   googleEvents: CalendarItem[];
@@ -541,9 +543,9 @@ export function WorkspaceApp({
                     <>
                       {screen === "home" && (
                         <HomeScreen
+                          brief={overviewBrief}
                           workspace={workspace}
                           luma={luma}
-                          organizationName={organization?.name ?? "your team"}
                           unread={unread}
                           onAsk={ask}
                           onOpenChannel={openChannel}

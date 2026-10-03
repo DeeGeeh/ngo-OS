@@ -1,3 +1,5 @@
+![Nest landing page hero](docs/images/hero.jpg)
+
 # NGO OS (placeholder name)
 
 Next.js/T3 scaffold for a NGO Operating System made for a hackathon.

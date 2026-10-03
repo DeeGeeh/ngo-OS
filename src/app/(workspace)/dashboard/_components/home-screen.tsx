@@ -7,7 +7,6 @@ import {
   FolderOpen,
   Hash,
   ListChecks,
-  Bot,
   Ticket,
 } from "lucide-react";
 import {
@@ -59,9 +58,9 @@ const longDate = new Intl.DateTimeFormat("en-GB", {
 });
 
 type HomeScreenProps = {
+  brief: React.ReactNode;
   workspace: Workspace;
   luma: LumaCalendar;
-  organizationName: string;
   unread: Record<string, number>;
   onAsk: (prompt: string) => void;
   onOpenChannel: (channelId: string) => void;
@@ -78,13 +77,7 @@ function Suggestion({ text, onAsk }: { text: string; onAsk: (prompt: string) => 
   );
 }
 
-function AskBox({
-  organizationName,
-  onAsk,
-}: {
-  organizationName: string;
-  onAsk: (prompt: string) => void;
-}) {
+function AskBox({ firstName, onAsk }: { firstName?: string; onAsk: (prompt: string) => void }) {
   const [text, setText] = useState("");
   const submit = useCallback(
     (event?: FormEvent) => {
@@ -106,11 +99,8 @@ function AskBox({
   );
   return (
     <section className="flex flex-col items-center gap-5 text-center" aria-label="Ask the agent">
-      <span className="flex size-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-        <Bot className="size-5" />
-      </span>
       <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
-        How can I help you, {organizationName}?
+        How can I help you{firstName ? `, ${firstName}` : ""}?
       </h2>
       <form onSubmit={submit} className="w-full max-w-2xl">
         <div className="rounded-xl bg-card shadow-md">
@@ -236,9 +226,9 @@ function subtaskProgress(task: Task) {
 }
 
 export function HomeScreen({
+  brief,
   workspace,
   luma,
-  organizationName,
   unread,
   onAsk,
   onOpenChannel,
@@ -287,191 +277,197 @@ export function HomeScreen({
     nextEvent?.guests.filter((guest) => guest.approvalStatus === "approved").length ?? 0;
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 p-6 lg:p-8">
-      <div className="flex flex-col gap-1">
-        <p className="text-sm text-muted-foreground">
-          {today ? longDate.format(new Date(`${today}T12:00:00Z`)) : " "}
-        </p>
-        <h1 className="text-xl font-semibold tracking-tight">
-          Welcome back{me ? `, ${me.name.split(" ")[0]}` : ""}
-        </h1>
+    <div className="flex w-full flex-col gap-8 p-6 lg:p-8">
+      <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-4">
+        <div className="flex flex-col gap-1 2xl:col-span-3">
+          <p className="text-sm text-muted-foreground">
+            {today ? longDate.format(new Date(`${today}T12:00:00Z`)) : " "}
+          </p>
+        </div>
+
+        <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 py-4 lg:col-span-2 lg:row-start-2 2xl:col-span-2 2xl:col-start-2">
+          <AskBox firstName={me?.name.split(" ")[0]} onAsk={onAsk} />
+          <UnreadNotice workspace={workspace} unread={unread} onOpenChannel={onOpenChannel} />
+        </div>
+        <div className="w-full max-w-sm min-w-0 justify-self-end lg:col-start-2 lg:row-start-1 2xl:col-start-4 2xl:row-span-2">
+          {brief}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4 py-6">
-        <AskBox organizationName={organizationName} onAsk={onAsk} />
-        <UnreadNotice workspace={workspace} unread={unread} onOpenChannel={onOpenChannel} />
-      </div>
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-8">
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <Stat
+            label="Open tasks"
+            value={String(openTasks.length)}
+            hint={`${inProgress.length} in progress`}
+          />
+          <Stat
+            label="Projects"
+            value={String(workspace.projects.length)}
+            hint={workspace.projects.map((project) => project.title).join(" · ")}
+          />
+          <Stat
+            label="Next event"
+            value={String(nextGoing)}
+            hint={nextEvent ? `going to ${nextEvent.name}` : "No upcoming events"}
+          />
+          <Stat
+            label="Team members"
+            value={String(workspace.members.length)}
+            hint={`${team.filter((row) => row.active).length} working on something now`}
+          />
+        </div>
 
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat
-          label="Open tasks"
-          value={String(openTasks.length)}
-          hint={`${inProgress.length} in progress`}
-        />
-        <Stat
-          label="Projects"
-          value={String(workspace.projects.length)}
-          hint={workspace.projects.map((project) => project.title).join(" · ")}
-        />
-        <Stat
-          label="Next event"
-          value={String(nextGoing)}
-          hint={nextEvent ? `going to ${nextEvent.name}` : "No upcoming events"}
-        />
-        <Stat
-          label="Team members"
-          value={String(workspace.members.length)}
-          hint={`${team.filter((row) => row.active).length} working on something now`}
-        />
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Team right now</CardTitle>
-            <CardDescription>What everyone is working on from the board</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col">
-              {team.map(({ member, task, active }) => {
-                const progress = task ? subtaskProgress(task) : null;
-                const row = (
-                  <>
-                    <MemberAvatar member={member} size="default" />
-                    <span className="flex w-28 shrink-0 flex-col">
-                      <span className="truncate text-sm font-medium">
-                        {member.name.split(" ")[0]}
-                      </span>
-                      <span className="truncate text-xs text-muted-foreground">{member.role}</span>
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col gap-1">
-                      <span className="flex items-center gap-2 text-sm">
-                        <span
-                          className={cn(
-                            "size-1.5 shrink-0 rounded-full",
-                            active ? "bg-chart-2" : "bg-muted-foreground/40",
-                          )}
-                          aria-hidden="true"
-                        />
-                        <span className={cn("truncate", !task && "text-muted-foreground")}>
-                          {task ? task.title : "Nothing assigned"}
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Team right now</CardTitle>
+              <CardDescription>What everyone is working on from the board</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col">
+                {team.map(({ member, task, active }) => {
+                  const progress = task ? subtaskProgress(task) : null;
+                  const row = (
+                    <>
+                      <MemberAvatar member={member} size="default" />
+                      <span className="flex w-28 shrink-0 flex-col">
+                        <span className="truncate text-sm font-medium">
+                          {member.name.split(" ")[0]}
+                        </span>
+                        <span className="truncate text-xs text-muted-foreground">
+                          {member.role}
                         </span>
                       </span>
-                      {task && (
-                        <span className="pl-3.5 text-xs text-muted-foreground">
-                          {active ? "In progress" : "Up next"}
-                          {progress !== null && ` · ${progress}% of subtasks`}
+                      <span className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span className="flex items-center gap-2 text-sm">
+                          <span
+                            className={cn(
+                              "size-1.5 shrink-0 rounded-full",
+                              active ? "bg-chart-2" : "bg-muted-foreground/40",
+                            )}
+                            aria-hidden="true"
+                          />
+                          <span className={cn("truncate", !task && "text-muted-foreground")}>
+                            {task ? task.title : "Nothing assigned"}
+                          </span>
                         </span>
+                        {task && (
+                          <span className="pl-3.5 text-xs text-muted-foreground">
+                            {active ? "In progress" : "Up next"}
+                            {progress !== null && ` · ${progress}% of subtasks`}
+                          </span>
+                        )}
+                      </span>
+                      {progress !== null && (
+                        <Progress value={progress} className="hidden w-20 shrink-0 sm:flex" />
                       )}
-                    </span>
-                    {progress !== null && (
-                      <Progress value={progress} className="hidden w-20 shrink-0 sm:flex" />
-                    )}
-                  </>
-                );
-                return task ? (
-                  <RowButton key={member.id} id={task.id} onOpen={onTask}>
-                    {row}
-                  </RowButton>
-                ) : (
-                  <div key={member.id} className="flex items-center gap-3 px-2 py-2">
-                    {row}
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                    </>
+                  );
+                  return task ? (
+                    <RowButton key={member.id} id={task.id} onOpen={onTask}>
+                      {row}
+                    </RowButton>
+                  ) : (
+                    <div key={member.id} className="flex items-center gap-3 px-2 py-2">
+                      {row}
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Due soon</CardTitle>
-            <CardDescription>Open tasks with the nearest deadlines</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col">
-              {dueSoon.map((task) => {
-                const overdue = today !== null && task.dueDate !== null && task.dueDate < today;
-                return (
-                  <RowButton key={task.id} id={task.id} onOpen={onTask}>
-                    <span
-                      className={cn(
-                        "flex w-14 shrink-0 items-center gap-1 text-xs tabular-nums",
-                        overdue ? "font-medium text-destructive" : "text-muted-foreground",
-                      )}
-                    >
-                      <CalendarDays className="size-3.5" />
-                      {task.dueDate && shortDate.format(new Date(`${task.dueDate}T12:00:00Z`))}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-sm">{task.title}</span>
-                  </RowButton>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Due soon</CardTitle>
+              <CardDescription>Open tasks with the nearest deadlines</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col">
+                {dueSoon.map((task) => {
+                  const overdue = today !== null && task.dueDate !== null && task.dueDate < today;
+                  return (
+                    <RowButton key={task.id} id={task.id} onOpen={onTask}>
+                      <span
+                        className={cn(
+                          "flex w-14 shrink-0 items-center gap-1 text-xs tabular-nums",
+                          overdue ? "font-medium text-destructive" : "text-muted-foreground",
+                        )}
+                      >
+                        <CalendarDays className="size-3.5" />
+                        {task.dueDate && shortDate.format(new Date(`${task.dueDate}T12:00:00Z`))}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm">{task.title}</span>
+                    </RowButton>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
 
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Projects</CardTitle>
-            <CardDescription>Progress across active projects</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col">
-              {workspace.projects.map((project) => {
-                const tasks = workspace.tasks.filter((task) => task.projectId === project.id);
-                const done = tasks.filter((task) => task.status === "done").length;
-                const percent = tasks.length === 0 ? 0 : Math.round((done / tasks.length) * 100);
-                return (
-                  <RowButton key={project.id} id={project.id} onOpen={onProject}>
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                      <FolderOpen className="size-4" />
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col gap-1.5">
-                      <span className="flex items-center justify-between gap-2 text-sm">
-                        <span className="truncate font-medium">{project.title}</span>
-                        <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
-                          <ListChecks className="size-3.5" />
-                          {done}/{tasks.length}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>Projects</CardTitle>
+              <CardDescription>Progress across active projects</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col">
+                {workspace.projects.map((project) => {
+                  const tasks = workspace.tasks.filter((task) => task.projectId === project.id);
+                  const done = tasks.filter((task) => task.status === "done").length;
+                  const percent = tasks.length === 0 ? 0 : Math.round((done / tasks.length) * 100);
+                  return (
+                    <RowButton key={project.id} id={project.id} onOpen={onProject}>
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                        <FolderOpen className="size-4" />
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col gap-1.5">
+                        <span className="flex items-center justify-between gap-2 text-sm">
+                          <span className="truncate font-medium">{project.title}</span>
+                          <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                            <ListChecks className="size-3.5" />
+                            {done}/{tasks.length}
+                          </span>
+                        </span>
+                        <Progress value={percent} />
+                      </span>
+                    </RowButton>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Upcoming events</CardTitle>
+              <CardDescription>From the Luma calendar</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-3">
+                {upcoming.map((event) => {
+                  const going = event.guests.filter(
+                    (guest) => guest.approvalStatus === "approved",
+                  ).length;
+                  return (
+                    <div key={event.apiId} className="flex items-center gap-3 px-2">
+                      <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary">
+                        <Ticket className="size-4" />
+                      </span>
+                      <span className="flex min-w-0 flex-1 flex-col">
+                        <span className="truncate text-sm font-medium">{event.name}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {eventDate.format(new Date(event.startAt))} · {going} going
                         </span>
                       </span>
-                      <Progress value={percent} />
-                    </span>
-                  </RowButton>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Upcoming events</CardTitle>
-            <CardDescription>From the Luma calendar</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-col gap-3">
-              {upcoming.map((event) => {
-                const going = event.guests.filter(
-                  (guest) => guest.approvalStatus === "approved",
-                ).length;
-                return (
-                  <div key={event.apiId} className="flex items-center gap-3 px-2">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                      <Ticket className="size-4" />
-                    </span>
-                    <span className="flex min-w-0 flex-1 flex-col">
-                      <span className="truncate text-sm font-medium">{event.name}</span>
-                      <span className="text-xs text-muted-foreground">
-                        {eventDate.format(new Date(event.startAt))} · {going} going
-                      </span>
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
