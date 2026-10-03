@@ -13,6 +13,7 @@ import {
   Moon,
   PanelRight,
   Settings,
+  Sparkles,
   Sun,
   Ticket,
   UserRound,
@@ -21,7 +22,6 @@ import {
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTheme } from "next-themes";
-import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
@@ -40,6 +40,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { AssistantThread } from "@/lib/assistant";
 import { lumaCalendarItems, type CalendarItem } from "@/lib/calendar";
 import { lumaQueryKey, type LumaCalendar } from "@/lib/luma";
 import { defaultOrganizationId, product } from "@/lib/organizations";
@@ -47,7 +48,9 @@ import { cn } from "@/lib/utils";
 import { workspaceQueryKey, type Member, type Workspace, type WorkStatus } from "@/lib/workspace";
 
 import { getLumaCalendarAction, getWorkspaceAction } from "../actions";
-import { AssistantPanel, AssistantProvider } from "./assistant-panel";
+import { AgentPage } from "./agent-page";
+import { AssistantPanel } from "./assistant-panel";
+import { AssistantProvider } from "./assistant-runtime";
 import { CalendarScreen } from "./calendar-screen";
 import { EventsScreen } from "./events-screen";
 import { OrgSwitcher } from "./org-switcher";
@@ -67,6 +70,7 @@ type View =
   | { kind: "people" }
   | { kind: "calendar" }
   | { kind: "events" }
+  | { kind: "agent" }
   | { kind: "settings" };
 const screenTitles = {
   board: "Board",
@@ -74,6 +78,7 @@ const screenTitles = {
   people: "People",
   calendar: "Calendar",
   events: "Events",
+  agent: "Agent",
   settings: "Settings",
 } as const;
 const screenSubtitles = {
@@ -82,6 +87,7 @@ const screenSubtitles = {
   people: "Members, roles, and what they are working on",
   calendar: "Everything scheduled, in one place",
   events: "Public events and registrations",
+  agent: "Saved conversations with the workspace assistant",
   settings: "Workspace preferences",
 } as const;
 type Creation = { kind: "task" | "project"; status: WorkStatus; projectId?: string };
@@ -96,6 +102,7 @@ const navItems = [
   { id: "calendar", label: "Calendar", icon: CalendarDays },
   { id: "events", label: "Events", icon: Ticket },
   { id: "people", label: "People", icon: Users },
+  { id: "agent", label: "Agent", icon: Sparkles },
   { id: "settings", label: "Settings", icon: Settings },
 ] satisfies NavItem[];
 
@@ -216,10 +223,12 @@ export function WorkspaceApp({
   initialWorkspace,
   googleEvents,
   initialLuma,
+  initialThreads,
 }: {
   initialWorkspace: Workspace;
   googleEvents: CalendarItem[];
   initialLuma: LumaCalendar;
+  initialThreads: AssistantThread[];
 }) {
   const { data: workspace, error } = useQuery({
     queryKey: workspaceQueryKey,
@@ -253,6 +262,7 @@ export function WorkspaceApp({
       calendar: undefined,
       events: luma.events.length,
       people: workspace.members.length,
+      agent: undefined,
       settings: undefined,
     }),
     [workspace.tasks, workspace.members.length, luma.events.length],
@@ -348,15 +358,17 @@ export function WorkspaceApp({
                 >
                   <Settings />
                 </Button>
-                <Button
-                  variant={assistantOpen ? "secondary" : "ghost"}
-                  size="icon"
-                  aria-label={assistantOpen ? "Hide assistant" : "Show assistant"}
-                  aria-pressed={assistantOpen}
-                  onClick={toggleAssistant}
-                >
-                  <PanelRight />
-                </Button>
+                {screen !== "agent" && (
+                  <Button
+                    variant={assistantOpen ? "secondary" : "ghost"}
+                    size="icon"
+                    aria-label={assistantOpen ? "Hide assistant" : "Show assistant"}
+                    aria-pressed={assistantOpen}
+                    onClick={toggleAssistant}
+                  >
+                    <PanelRight />
+                  </Button>
+                )}
                 <div className="ml-1">
                   <CreateWorkMenu
                     onCreate={create}
@@ -409,6 +421,7 @@ export function WorkspaceApp({
                   )}
                   {view.kind === "events" && <EventsScreen calendar={luma} />}
                   {view.kind === "people" && <PeopleScreen workspace={workspace} />}
+                  {view.kind === "agent" && <AgentPage />}
                   {view.kind === "settings" && (
                     <SettingsScreen workspace={workspace} organizationId={organizationId} />
                   )}
