@@ -17,6 +17,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { workspaceQueryKey, type Workspace, type WorkStatus } from "@/lib/workspace";
 
 import { updateProjectAction, updateTaskAction } from "../actions";
+import styles from "./work-board.module.css";
 import { ProjectCard, TaskCard } from "./work-cards";
 
 const boardColumns = [
@@ -165,8 +166,8 @@ export function WorkBoard({ workspace, onTask, onProject, onCreate }: WorkBoardP
           <AlertTitle>{move.error.message}</AlertTitle>
         </Alert>
       )}
-      <div className="min-h-0 flex-1 overflow-auto">
-        <div className="grid h-full min-w-160 grid-cols-3 gap-6">
+      <div className={`${styles.viewport} min-h-0 flex-1 overflow-auto`}>
+        <div className="grid min-h-full min-w-160 grid-cols-3 gap-6 pt-1 pb-12">
           {columns.map((column) => (
             <Column
               key={column.id}
