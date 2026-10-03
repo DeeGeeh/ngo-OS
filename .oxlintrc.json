@@ -218,9 +218,54 @@
               },
               {
                 "from": [
+                  { "element": { "type": "route" } },
+                  { "file": { "categories": "app-root" } }
+                ],
+                "allow": {
+                  "to": {
+                    "element": {
+                      "type": "trpc",
+                      "fileInternalPath": ["client.tsx", "server.tsx", "config.ts"]
+                    }
+                  }
+                }
+              },
+              {
+                "from": { "element": { "type": "server" } },
+                "allow": {
+                  "to": { "element": { "type": "trpc", "fileInternalPath": "config.ts" } }
+                }
+              },
+              {
+                "from": { "element": { "type": "trpc", "fileInternalPath": "server.tsx" } },
+                "allow": {
+                  "to": {
+                    "element": {
+                      "type": "server",
+                      "captured": { "domain": "api" },
+                      "fileInternalPath": "facade.ts"
+                    }
+                  }
+                }
+              },
+              {
+                "from": { "element": { "type": "trpc", "fileInternalPath": "client.tsx" } },
+                "allow": {
+                  "to": {
+                    "element": {
+                      "type": "server",
+                      "captured": { "domain": "api" },
+                      "fileInternalPath": "facade.ts"
+                    }
+                  },
+                  "dependency": { "kind": "type" }
+                }
+              },
+              {
+                "from": [
                   {
                     "element": {
-                      "type": ["route", "ui", "hooks", "lib"]
+                      "type": ["route", "ui", "hooks", "lib", "trpc"]
                     }
                   },
                   {
@@ -408,6 +453,11 @@
       {
         "type": "styles",
         "pattern": "src/styles",
+        "partialMatch": false
+      },
+      {
+        "type": "trpc",
+        "pattern": "src/trpc",
         "partialMatch": false
       },
       {

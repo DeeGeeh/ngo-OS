@@ -7,6 +7,8 @@ import { Inter } from "next/font/google";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { env } from "@/env";
+import { TRPCReactProvider } from "@/trpc/client";
+import { trpcConfig } from "@/trpc/config";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -15,7 +17,15 @@ export const metadata: Metadata = { title: "NGO OS" };
 const clerkAppearance = { theme: shadcn };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const content = <TooltipProvider>{children}</TooltipProvider>;
+  const serverUrl = new URL(
+    trpcConfig.endpoint,
+    env.VERCEL_URL ? `https://${env.VERCEL_URL}` : env.APP_URL,
+  ).href;
+  const content = (
+    <TRPCReactProvider serverUrl={serverUrl}>
+      <TooltipProvider>{children}</TooltipProvider>
+    </TRPCReactProvider>
+  );
 
   return (
     <html lang="en" className={inter.className}>

@@ -4,6 +4,8 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    APP_URL: z.httpUrl().default("http://localhost:3000"),
+    VERCEL_URL: z.string().min(1).optional(),
     TURSO_DATABASE_URL: z.url().default("file:./local.db"),
     TURSO_AUTH_TOKEN: z.string().min(1).optional(),
     CLERK_SECRET_KEY: z.string().min(1).optional(),
@@ -17,6 +19,8 @@ export const env = createEnv({
   },
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    APP_URL: process.env.APP_URL,
+    VERCEL_URL: process.env.VERCEL_URL,
     TURSO_DATABASE_URL: process.env.TURSO_DATABASE_URL,
     TURSO_AUTH_TOKEN: process.env.TURSO_AUTH_TOKEN,
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
