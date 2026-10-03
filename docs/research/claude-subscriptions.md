@@ -32,10 +32,15 @@ These statements leave the permitted scope of a custom subscription-backed NGO O
 
 ## Where the integration would live
 
-The committed main branch is a scaffold. AI SDK, assistant-ui, and the OpenRouter provider are dependencies, but there is no assistant route or provider domain on main. The tRPC router and database schema are empty. Existing boundaries provide the starting point.
+The committed main branch now has an assistant route and a workspace domain. `streamAssistant()` in `src/server/assistant/facade.ts` uses one server-owned `OPENROUTER_API_KEY` and the global `WORKSPACE_AI_MODEL`. It passes the model to `createWorkspaceAssistant()`, which runs workspace tools through the AI SDK and streams responses to assistant-ui. There is no per-user provider connection or credential store.
+
+The assistant route does not enforce Clerk identity, and the workspace facade uses shared demo data without a user ownership parameter. Authentication and access isolation must precede any real per-user credential connection. The tRPC router and Drizzle schema remain empty.
 
 | Existing location | Responsibility |
 | --- | --- |
+| `src/app/(api)/api/assistant/route.ts` | Thin streaming handler with a 60-second request limit |
+| `src/server/assistant/facade.ts` | Message validation, model creation, tools, and response stream |
+| `src/server/workspace/facade.ts` | Project, task, member, and conversation data |
 | `src/server/api/context.ts` and `src/server/api/trpc.ts` | Clerk identity and authenticated procedures |
 | `src/server/api/facade.ts` | Server-only entry point for the HTTP adapter |
 | `src/server/db/schema.ts` | Future connection metadata, only when an integration needs storage |
@@ -43,7 +48,7 @@ The committed main branch is a scaffold. AI SDK, assistant-ui, and the OpenRoute
 | `src/app/(workspace)/dashboard/` | Route-local settings and connection UI |
 | `.oxlintrc.json` | Provider and facade import boundaries |
 
-A future integration belongs behind `src/server/<domain>/facade.ts`, marked `server-only`. Routes validate requests and call the facade. React components receive connection status and available choices, never credentials. Do not treat installed AI packages as a working assistant implementation.
+A future connection domain belongs behind `src/server/<domain>/facade.ts`, marked `server-only`. Routes validate requests and call the facade. React components receive connection status and available choices, never stored credentials. The assistant facade resolves the authenticated user's selected provider before it calls `createWorkspaceAssistant(model)`.
 
 ## A subscription workflow through MCP
 
@@ -71,7 +76,7 @@ sequenceDiagram
     Claude-->>User: Answer using Claude's model and usage rules
 ```
 
-This is an architectural proposal, not a tested connector. The main branch first needs the project and volunteer facades. Verification must cover unauthorized access, access across users, revoked authorization, and a real Claude connector conversation. A localhost-only demo needs a public development endpoint for a remote connector.
+This is an architectural proposal, not a tested connector. The existing workspace facade can supply projects and members, but first needs authenticated access rules. Verification must cover unauthorized access, access across users, revoked authorization, and a real Claude connector conversation. A localhost-only demo needs a public development endpoint for a remote connector.
 
 ## Claude models inside NGO OS
 
@@ -79,7 +84,7 @@ For a separately billed API connection, the proposed domain stores one encrypted
 
 The facade connects, lists available models, disconnects, and resolves the credential for an authenticated request. The server validates access before marking the connection active. It passes the decrypted key directly to an official provider adapter. It never returns or logs the key. Encryption configuration goes through `src/env.ts`.
 
-Settings show **Connect Anthropic API**, a model choice, and **Disconnect**. The connection form states that API usage has separate billing. Responses stream through the app's AI SDK and assistant-ui integration once that assistant exists. Invalid credentials, unavailable models, exhausted API credit, and rate limits have distinct errors. An error must not silently switch billing to the app's shared key.
+Settings show **Connect Anthropic API**, a model choice, and **Disconnect**. The connection form states that API usage has separate billing. Responses reuse the app's AI SDK and assistant-ui integration. Invalid credentials, unavailable models, exhausted API credit, and rate limits have distinct errors. An error must not silently switch billing to the app's shared key.
 
 Useful integration checks cover credential isolation between users, connection validation, disconnect, and a request using the selected provider and model. No unit tests are needed for this proposal.
 
