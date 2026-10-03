@@ -1,6 +1,6 @@
 # Google integrations
 
-Open `/dashboard/integrations` from the workspace navigation. Sign in with Clerk, then connect Calendar or Drive & Sheets. Each button requests only that service's permissions. Existing Google sign-in accounts reauthorize to add those permissions.
+Open `/dashboard/integrations` directly. Sign in with Clerk, then connect Calendar or Drive & Sheets. Each button requests only that service's permissions. Existing Google sign-in accounts reauthorize to add those permissions.
 
 Calendar shows up to 30 events from the primary calendar over the next 30 days, including recurring occurrences and all-day events. Use Refresh events to fetch again. Drive & Sheets accepts a private Google Sheet sharing URL or a Drive CSV URL and imports it into the shared data library.
 
