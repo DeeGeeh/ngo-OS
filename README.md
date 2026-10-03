@@ -1,6 +1,6 @@
-# NGO OS
+# NGO OS (placeholder name)
 
-Next.js/T3 scaffold for the NGO Operating System hackathon. No domain features yet.
+Next.js/T3 scaffold for a NGO Operating System made for a hackathon. 
 
 ## Development
 
