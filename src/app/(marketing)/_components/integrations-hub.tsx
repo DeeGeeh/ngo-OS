@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkle } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import Image from "next/image";
 import { useRef } from "react";
 
@@ -49,7 +49,7 @@ export function IntegrationsHub() {
     >
       <div className="flex flex-col gap-8 md:gap-10">
         <Node ref={lumaRef} label="Luma">
-          <Sparkle className="size-7 text-foreground" />
+          <CalendarDays className="size-7 text-foreground" />
         </Node>
         <Node ref={googleRef} label="Google">
           <Logo name="google" label="Google" />
