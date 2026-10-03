@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+.vercel/
+.workflow-data/
+.swc/
+.audit/
+.env*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+*.tsbuildinfo
+next-env.d.ts
+*.log
+.DS_Store
+.clerk/

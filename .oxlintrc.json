@@ -1,0 +1,449 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": [
+    "typescript",
+    "unicorn",
+    "oxc",
+    "react",
+    "react-perf",
+    "jsx-a11y",
+    "nextjs",
+    "import",
+    "promise"
+  ],
+  "jsPlugins": ["@shadcn/lint", "@meitaim/oxlint-plugin-no-comments", "eslint-plugin-boundaries"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "options": {
+    "typeAware": true
+  },
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "ignorePatterns": [
+    "node_modules",
+    ".next",
+    ".agents",
+    ".audit",
+    "next-env.d.ts",
+    "src/app/.well-known/workflow/**"
+  ],
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "typescript/no-non-null-assertion": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/no-unsafe-assignment": "error",
+    "typescript/no-unsafe-call": "error",
+    "typescript/no-unsafe-member-access": "error",
+    "typescript/no-unsafe-return": "error",
+    "typescript/no-unsafe-argument": "error",
+    "no-console": "error",
+    "no-comments/no-comments": "error",
+    "shadcn/no-restyle": [
+      "error",
+      {
+        "allow": ["layout"]
+      }
+    ],
+    "shadcn/no-raw-colors": "error",
+    "shadcn/no-arbitrary-values": "error",
+    "shadcn/no-inline-styles": "error",
+    "shadcn/no-unknown-classes": "error",
+    "shadcn/require-static-classes": "error",
+    "import/no-unassigned-import": [
+      "error",
+      {
+        "allow": ["**/*.css", "server-only", "./src/env", "./scripts/load-env"]
+      }
+    ],
+    "react/react-in-jsx-scope": "off",
+    "import/no-cycle": [
+      "error",
+      {
+        "ignoreTypes": false,
+        "ignoreExternal": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["src/**/*.ts", "src/**/*.tsx"],
+      "rules": {
+        "boundaries/no-unknown-files": "error",
+        "boundaries/no-unknown-dependencies": "error",
+        "boundaries/no-ignored-dependencies": "error",
+        "boundaries/dependencies": [
+          "error",
+          {
+            "default": "disallow",
+            "checkAllOrigins": true,
+            "checkUnknownLocals": true,
+            "policies": [
+              {
+                "allow": {
+                  "to": {
+                    "module": {
+                      "origin": ["external", "core"]
+                    }
+                  }
+                }
+              },
+              {
+                "allow": {
+                  "to": {
+                    "element": {
+                      "type": "lib"
+                    }
+                  }
+                }
+              },
+              {
+                "from": [
+                  {
+                    "element": {
+                      "type": ["ui", "hooks", "route"]
+                    }
+                  },
+                  {
+                    "file": {
+                      "categories": "app-root"
+                    }
+                  }
+                ],
+                "allow": {
+                  "to": {
+                    "element": {
+                      "type": "hooks"
+                    }
+                  }
+                }
+              },
+              {
+                "from": [
+                  {
+                    "element": {
+                      "type": ["ui", "route"]
+                    }
+                  },
+                  {
+                    "file": {
+                      "categories": "app-root"
+                    }
+                  }
+                ],
+                "allow": {
+                  "to": {
+                    "element": {
+                      "type": ["ui", "styles"]
+                    }
+                  }
+                }
+              },
+              {
+                "from": [
+                  {
+                    "element": {
+                      "type": "route"
+                    }
+                  },
+                  {
+                    "file": {
+                      "categories": "app-root"
+                    }
+                  },
+                  {
+                    "element": {
+                      "type": ["server", "db"]
+                    }
+                  },
+                  {
+                    "file": {
+                      "categories": "proxy"
+                    }
+                  }
+                ],
+                "allow": {
+                  "to": {
+                    "file": {
+                      "categories": "env"
+                    }
+                  }
+                }
+              },
+              {
+                "from": [
+                  {
+                    "element": {
+                      "type": "route"
+                    }
+                  },
+                  {
+                    "file": {
+                      "categories": "app-root"
+                    }
+                  },
+                  {
+                    "element": {
+                      "type": "server"
+                    }
+                  }
+                ],
+                "allow": {
+                  "to": {
+                    "element": {
+                      "type": "server",
+                      "fileInternalPath": "facade.ts"
+                    }
+                  }
+                }
+              },
+              {
+                "from": {
+                  "element": {
+                    "type": "server"
+                  }
+                },
+                "allow": {
+                  "to": {
+                    "element": {
+                      "type": "db"
+                    }
+                  }
+                }
+              },
+              {
+                "from": [
+                  {
+                    "element": {
+                      "type": ["route", "ui", "hooks", "lib"]
+                    }
+                  },
+                  {
+                    "file": {
+                      "categories": "app-root"
+                    }
+                  }
+                ],
+                "disallow": {
+                  "to": {
+                    "module": {
+                      "source": [
+                        "@libsql/**",
+                        "drizzle-orm{,/**}",
+                        "resend{,/**}",
+                        "ai",
+                        "@openrouter/**",
+                        "@typesafe-ai/**",
+                        "@ai-sdk/workflow",
+                        "workflow{,/**}",
+                        "@clerk/nextjs/server"
+                      ]
+                    }
+                  }
+                },
+                "message": "Access data and provider SDKs through a server domain facade."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "files": [
+        "src/components/ui/badge.tsx",
+        "src/components/ui/breadcrumb.tsx",
+        "src/components/ui/button.tsx",
+        "src/components/ui/card.tsx",
+        "src/components/ui/chart.tsx",
+        "src/components/ui/command.tsx",
+        "src/components/ui/dialog.tsx",
+        "src/components/ui/empty.tsx",
+        "src/components/ui/input-group.tsx",
+        "src/components/ui/input.tsx",
+        "src/components/ui/separator.tsx",
+        "src/components/ui/sheet.tsx",
+        "src/components/ui/skeleton.tsx",
+        "src/components/ui/table.tsx",
+        "src/components/ui/textarea.tsx",
+        "src/components/ui/tooltip.tsx"
+      ],
+      "rules": {
+        "shadcn/no-restyle": "off",
+        "shadcn/no-arbitrary-values": "off",
+        "shadcn/no-inline-styles": "off",
+        "shadcn/require-static-classes": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/breadcrumb.tsx"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/chart.tsx"],
+      "rules": {
+        "no-shadow": "off",
+        "react-perf/jsx-no-new-object-as-prop": "off",
+        "react/jsx-no-constructed-context-values": "off",
+        "react/no-array-index-key": "off",
+        "typescript/no-unsafe-argument": "off",
+        "typescript/no-unsafe-assignment": "off",
+        "typescript/no-unsafe-member-access": "off",
+        "typescript/no-unsafe-type-assertion": "off",
+        "typescript/restrict-template-expressions": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/dialog.tsx"],
+      "rules": {
+        "react-perf/jsx-no-jsx-as-prop": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/input-group.tsx"],
+      "rules": {
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/no-noninteractive-element-interactions": "off",
+        "jsx-a11y/prefer-tag-over-role": "off",
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "typescript/no-unsafe-type-assertion": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/sheet.tsx"],
+      "rules": {
+        "react-perf/jsx-no-jsx-as-prop": "off"
+      }
+    },
+    {
+      "files": ["src/hooks/use-mobile.ts"],
+      "rules": {
+        "react/set-state-in-effect": "off"
+      }
+    },
+    {
+      "files": ["src/server/db/schema.ts"],
+      "rules": {
+        "unicorn/require-module-specifiers": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/sidebar.tsx"],
+      "rules": {
+        "shadcn/no-restyle": "off",
+        "shadcn/require-static-classes": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/task-list.tsx", "src/components/ui/notification-bell.tsx"],
+      "rules": {
+        "shadcn/no-inline-styles": "off",
+        "shadcn/no-arbitrary-values": "off",
+        "react-perf/jsx-no-new-object-as-prop": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/task-list.tsx"],
+      "rules": {
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/records-table.tsx", "src/components/ui/glide-menu.tsx"],
+      "rules": {
+        "shadcn/no-inline-styles": "off",
+        "shadcn/no-arbitrary-values": "off",
+        "react-perf/jsx-no-new-function-as-prop": "off",
+        "react-perf/jsx-no-new-object-as-prop": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/records-table.tsx"],
+      "rules": {
+        "react-perf/jsx-no-new-array-as-prop": "off",
+        "react-perf/jsx-no-jsx-as-prop": "off"
+      }
+    },
+    {
+      "files": ["src/components/ui/records-table.tsx"],
+      "rules": {
+        "react/set-state-in-effect": "off",
+        "jsx-a11y/prefer-tag-over-role": "off",
+        "jsx-a11y/no-noninteractive-tabindex": "off",
+        "shadcn/no-restyle": "off"
+      }
+    }
+  ],
+  "settings": {
+    "boundaries/ignore": ["src/app/.well-known/workflow/**"],
+    "boundaries/elements": [
+      {
+        "type": "route",
+        "pattern": "src/app/\\(*)",
+        "partialMatch": false,
+        "capture": ["group"]
+      },
+      {
+        "type": "ui",
+        "pattern": "src/components/ui",
+        "partialMatch": false
+      },
+      {
+        "type": "hooks",
+        "pattern": "src/hooks",
+        "partialMatch": false
+      },
+      {
+        "type": "lib",
+        "pattern": "src/lib",
+        "partialMatch": false
+      },
+      {
+        "type": "styles",
+        "pattern": "src/styles",
+        "partialMatch": false
+      },
+      {
+        "type": "db",
+        "pattern": "src/server/db",
+        "partialMatch": false
+      },
+      {
+        "type": "server",
+        "pattern": "src/server/*",
+        "partialMatch": false,
+        "capture": ["domain"]
+      }
+    ],
+    "boundaries/files": [
+      {
+        "pattern": "src/env.ts",
+        "category": "env"
+      },
+      {
+        "pattern": "src/proxy.ts",
+        "category": "proxy"
+      },
+      {
+        "pattern": "src/app/{layout,error,global-error,not-found,loading,template,default}.tsx",
+        "category": "app-root"
+      }
+    ],
+    "boundaries/dependency-nodes": ["import", "export", "dynamic-import", "require"],
+    "import/resolver": {
+      "oxc": {
+        "tsconfig": {
+          "configFile": "./tsconfig.json",
+          "references": "auto"
+        }
+      }
+    }
+  }
+}

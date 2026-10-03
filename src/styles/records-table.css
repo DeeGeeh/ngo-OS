@@ -1,0 +1,964 @@
+.records-shell {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--card);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--foreground) 6%, transparent);
+}
+
+.records-shell.is-fill {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.records-shell.is-fill .records-scroll {
+  max-height: none;
+  flex: 1;
+}
+
+.records-toolbar {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+}
+
+.records-toolbar-left,
+.records-toolbar-right,
+.records-company-header,
+.records-quiet-button,
+.records-secondary-button,
+.records-primary-button,
+.records-select-button,
+.records-strength,
+.records-link,
+.records-add-calculation {
+  display: inline-flex;
+  align-items: center;
+}
+
+.records-toolbar-left,
+.records-toolbar-right {
+  gap: 4px;
+}
+
+.records-toolbar-right {
+  flex-shrink: 0;
+}
+
+.records-select-button,
+.records-quiet-button,
+.records-secondary-button,
+.records-primary-button {
+  height: 32px;
+  gap: 7px;
+  border-radius: var(--radius-sm);
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    background-color 140ms ease-out,
+    color 140ms ease-out,
+    transform 140ms ease-out,
+    box-shadow 140ms ease-out;
+}
+
+.records-select-button {
+  gap: 8px;
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  background: var(--card);
+}
+
+.records-select-button:hover,
+.records-quiet-button:hover,
+.records-secondary-button:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.records-quiet-button {
+  color: var(--muted-foreground);
+}
+
+.records-quiet-button.is-active {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+.records-secondary-button {
+  border: 1px solid var(--border);
+  color: var(--muted-foreground);
+  box-shadow: none;
+}
+
+.records-primary-button {
+  margin-left: 3px;
+  background: var(--accent);
+  color: var(--primary-foreground);
+  box-shadow: none;
+}
+
+.records-primary-button:hover {
+  filter: saturate(0.9) brightness(1.04);
+}
+
+.records-quiet-button:active,
+.records-secondary-button:active,
+.records-primary-button:active,
+.records-select-button:active,
+.records-add-calculation:active {
+  transform: scale(0.96);
+}
+
+.records-database-icon {
+  display: inline-flex;
+  color: var(--chart-3);
+}
+
+.records-filter-wrap {
+  position: relative;
+}
+
+.records-filter-dot {
+  width: 5px;
+  height: 5px;
+  margin-left: -2px;
+  border-radius: 99px;
+  background: var(--accent);
+}
+
+.records-filter-menu {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 7px);
+  left: 0;
+  width: 190px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+  animation: records-pop-in 160ms ease-out both;
+  transform-origin: top left;
+}
+
+.records-sort-menu {
+  left: -48px;
+}
+
+.records-filter-label {
+  padding: 5px 8px 6px;
+  color: var(--muted-foreground);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.records-filter-menu button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 7px;
+  border-radius: var(--radius-sm);
+  padding: 7px 8px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+  text-align: left;
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.records-filter-menu button:hover,
+.records-filter-menu button.is-selected {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.records-menu-check {
+  width: 13px;
+  color: var(--accent-foreground);
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.records-scroll {
+  max-height: 438px;
+  overflow: auto;
+  overscroll-behavior: none;
+  scrollbar-color: var(--border) transparent;
+  scrollbar-gutter: stable;
+}
+
+.records-scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.records-table {
+  width: 100%;
+  min-width: 990px;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 500;
+  table-layout: fixed;
+}
+
+.records-company-col {
+  width: 270px;
+}
+.records-category-col {
+  width: 275px;
+}
+.records-last-col {
+  width: 190px;
+}
+.records-strength-col {
+  width: 210px;
+}
+.records-link-col {
+  width: 175px;
+}
+
+.records-table th,
+.records-table td {
+  border-right: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.records-table tr > :last-child {
+  border-right: 0;
+}
+
+.records-table thead th {
+  position: sticky;
+  z-index: 5;
+  top: 0;
+  height: 35px;
+  background: var(--card);
+  color: var(--muted-foreground);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.records-header-cell {
+  padding: 0;
+}
+
+.records-resize-handle {
+  position: absolute;
+  z-index: 12;
+  top: 0;
+  right: -6px;
+  width: 12px;
+  height: 100%;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.records-resize-handle::after {
+  position: absolute;
+  top: 7px;
+  bottom: 7px;
+  left: 5px;
+  width: 2px;
+  border-radius: 99px;
+  background: var(--accent);
+  content: "";
+  opacity: 0;
+  transform: scaleY(0.65);
+  transition:
+    opacity 120ms ease-out,
+    transform 150ms ease-out;
+}
+
+.records-resize-handle:hover::after,
+.records-resize-handle.is-resizing::after {
+  opacity: 1;
+  transform: scaleY(1);
+}
+
+.records-header-cell.records-sticky-cell {
+  z-index: 7;
+}
+
+.records-header-button,
+.records-company-header {
+  width: 100%;
+  height: 35px;
+  gap: 8px;
+  padding: 0 12px;
+}
+
+.records-company-header {
+  padding-left: 6px;
+}
+
+.records-header-button {
+  display: flex;
+  align-items: center;
+  color: var(--muted-foreground);
+  text-align: left;
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.records-header-button:hover {
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+.records-header-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--muted-foreground);
+}
+
+.records-sort {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-left: auto;
+  opacity: 0;
+  transition:
+    opacity 120ms ease-out,
+    transform 160ms ease-out;
+}
+
+.records-header-button:hover .records-sort,
+.records-sort.is-visible {
+  opacity: 1;
+}
+
+.records-company-header {
+  display: flex;
+}
+
+.records-company-header > span:not(.records-checkbox-box) {
+  white-space: nowrap;
+}
+
+.records-add-field {
+  display: inline-flex;
+  margin-left: auto;
+  color: var(--muted-foreground);
+  opacity: 0;
+  transition:
+    opacity 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.records-company-header:hover .records-add-field,
+.records-add-field:focus-visible {
+  opacity: 1;
+}
+
+.records-add-field:hover {
+  color: var(--foreground);
+}
+
+.records-checkbox {
+  position: relative;
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+}
+
+.records-checkbox input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.records-checkbox-box {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--muted-foreground);
+  background: var(--card);
+  transition:
+    border-color 140ms ease-out,
+    background-color 140ms ease-out,
+    box-shadow 140ms ease-out,
+    transform 140ms ease-out;
+}
+
+.records-checkbox:hover .records-checkbox-box {
+  border-color: var(--ring);
+  background: var(--card);
+}
+
+.records-checkbox:active .records-checkbox-box {
+  transform: scale(0.96);
+}
+
+.records-checkbox input:focus-visible + .records-checkbox-box {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.records-checkbox-box.is-active {
+  border-color: var(--accent);
+  color: var(--primary-foreground);
+  background: var(--accent);
+  box-shadow: none;
+}
+
+.records-checkbox-dash {
+  width: 8px;
+  height: 1.5px;
+  border-radius: 99px;
+  background: var(--card);
+}
+
+.records-cell {
+  height: 35px;
+  padding: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.records-sticky-cell {
+  position: sticky;
+  left: 0;
+  z-index: 2;
+  background: var(--card);
+  box-shadow: 5px 0 8px -10px color-mix(in srgb, var(--foreground) 40%, transparent);
+}
+
+.records-company-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 6px;
+  overflow: visible;
+}
+
+.records-row > .records-cell {
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+.records-row:hover > .records-cell {
+  background: var(--accent);
+}
+
+.records-row.is-selected > .records-cell {
+  background: color-mix(in srgb, var(--accent) 7%, var(--card));
+}
+
+.records-rownum {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted-foreground);
+  font-size: 11.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.records-row .records-checkbox {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0;
+}
+
+.records-row:hover .records-rownum,
+.records-row:focus-within .records-rownum,
+.records-row.is-selected .records-rownum {
+  visibility: hidden;
+}
+
+.records-row:hover .records-checkbox,
+.records-row .records-checkbox:focus-within,
+.records-row.is-selected .records-checkbox {
+  opacity: 1;
+}
+
+.records-table th.is-colsel {
+  background: color-mix(in srgb, var(--accent) 8%, var(--card));
+  box-shadow: inset 0 2px 0 var(--accent);
+}
+
+th.is-colsel .records-header-button,
+th.is-colsel .records-company-header,
+th.is-colsel .records-header-icon {
+  color: var(--accent-foreground);
+}
+
+.records-table td.is-colsel {
+  background: color-mix(in srgb, var(--accent) 4%, var(--card));
+}
+
+.records-row:hover > td.is-colsel {
+  background: color-mix(in srgb, var(--accent) 8%, var(--card));
+}
+
+.records-row.is-selected > td.is-colsel {
+  background: color-mix(in srgb, var(--accent) 10%, var(--card));
+}
+
+.records-calc {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.records-calc-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.records-company-mark {
+  display: inline-flex;
+  width: 20px;
+  height: 20px;
+  flex: 0 0 20px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 6px;
+  color: var(--muted-foreground);
+  background: var(--input);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.records-company-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.records-company-name.has-link:hover,
+.records-company-name.has-link:focus-visible {
+  color: var(--accent-foreground);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.records-tags {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.records-tags-measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  width: max-content;
+  gap: 4px;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.records-tags-measure > span {
+  display: inline-flex;
+}
+
+.records-tag {
+  display: inline-flex;
+  height: 23px;
+  max-width: 115px;
+  align-items: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid color-mix(in srgb, var(--tag-base) 32%, var(--card));
+  border-radius: 8px;
+  padding: 0 7px;
+  color: color-mix(in srgb, var(--tag-base) 92%, var(--foreground));
+  background: color-mix(in srgb, var(--tag-base) 18%, var(--card));
+  font-size: 13px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.records-more-tag {
+  display: inline-flex;
+  height: 23px;
+  align-items: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0 7px;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.records-more-tag {
+  border-color: var(--border);
+  color: var(--muted-foreground);
+  background: var(--muted);
+}
+
+.records-muted {
+  color: var(--muted-foreground);
+}
+
+.records-strength {
+  gap: 8px;
+  color: var(--muted-foreground);
+}
+
+.records-strength-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+}
+
+.records-link {
+  max-width: 100%;
+  gap: 5px;
+  overflow: hidden;
+  color: var(--accent-foreground);
+  text-overflow: ellipsis;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 35%, transparent);
+  text-underline-offset: 3px;
+  transition:
+    color 120ms ease-out,
+    text-decoration-color 120ms ease-out;
+}
+
+.records-link-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.records-link svg {
+  flex-shrink: 0;
+}
+
+.records-link:hover,
+.records-link:focus-visible {
+  color: var(--foreground);
+  text-decoration-color: currentColor;
+}
+
+.records-table tfoot td {
+  position: sticky;
+  z-index: 4;
+  bottom: 0;
+  height: 35px;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.records-table tfoot .records-sticky-cell {
+  z-index: 6;
+  background: var(--muted);
+}
+
+.records-calculation-label {
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.records-footer-value {
+  display: inline-flex;
+  height: 35px;
+  align-items: center;
+  vertical-align: middle;
+}
+
+.records-calculation-number {
+  margin-right: 3px;
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+.records-add-calculation {
+  height: 35px;
+  gap: 6px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  transition:
+    color 120ms ease-out,
+    transform 140ms ease-out;
+}
+
+.records-add-calculation:hover {
+  color: var(--foreground);
+}
+
+.records-average {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted-foreground);
+}
+
+.records-calculation-row-secondary td {
+  position: sticky;
+  bottom: 35px;
+  background: color-mix(in srgb, var(--muted) 70%, var(--card));
+}
+
+.records-calculation-row-secondary .records-sticky-cell {
+  position: sticky;
+  background: color-mix(in srgb, var(--muted) 70%, var(--card));
+}
+
+.records-footer {
+  display: flex;
+  min-height: 35px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 12px;
+  color: var(--muted-foreground);
+  font-size: 11.5px;
+}
+
+.records-footer strong {
+  color: var(--muted-foreground);
+  font-weight: 500;
+}
+
+.records-footer-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  opacity: 0;
+  transition: opacity 160ms ease-out;
+}
+
+.records-shell:hover .records-footer-hint {
+  opacity: 1;
+}
+
+.records-scroll-cue {
+  display: inline-flex;
+  color: var(--muted-foreground);
+}
+
+@media (max-width: 640px) {
+  .records-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .records-toolbar-left,
+  .records-toolbar-right {
+    width: 100%;
+  }
+
+  .records-toolbar-right {
+    justify-content: flex-end;
+  }
+}
+
+.records-company-header {
+  cursor: pointer;
+}
+
+.records-sort.is-desc {
+  transform: rotate(180deg);
+}
+
+.records-popover,
+.records-config-picker {
+  animation: records-pop-in 160ms ease-out both;
+  transform-origin: top left;
+}
+
+.records-table-options-popover {
+  transform-origin: top right;
+}
+
+.records-fade-up {
+  animation: records-fade-up 160ms ease-out both;
+}
+
+.records-menu-highlight {
+  right: 0;
+  left: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+}
+
+.records-menu-highlight-wide {
+  right: -6px;
+  left: -6px;
+}
+
+.records-switch {
+  position: relative;
+  display: inline-flex;
+  width: 30px;
+  height: 18px;
+  flex: 0 0 30px;
+  align-items: center;
+  border-radius: 999px;
+  background: var(--border);
+  transition: background-color 150ms ease-out;
+}
+
+.records-switch.is-on {
+  background: var(--primary);
+}
+
+.records-switch-handle {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  transition: transform 150ms ease-out;
+}
+
+.records-switch.is-on .records-switch-handle {
+  transform: translateX(12px);
+}
+
+.records-prompt:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+.records-strength-dot-strong {
+  background: var(--chart-3);
+}
+.records-strength-dot-weak {
+  background: var(--chart-1);
+}
+.records-strength-dot-veryweak {
+  background: var(--destructive);
+}
+.records-strength-dot-none {
+  background: var(--muted-foreground);
+}
+.records-average-dot {
+  background: var(--chart-1);
+}
+
+.records-tag-amber {
+  --tag-base: var(--chart-1);
+}
+.records-tag-lime {
+  --tag-base: var(--chart-2);
+}
+.records-tag-yellow {
+  --tag-base: var(--chart-1);
+}
+.records-tag-purple {
+  --tag-base: var(--chart-2);
+}
+.records-tag-orange {
+  --tag-base: var(--chart-1);
+}
+.records-tag-cyan {
+  --tag-base: var(--chart-2);
+}
+.records-tag-red {
+  --tag-base: var(--destructive);
+}
+.records-tag-magenta {
+  --tag-base: var(--chart-2);
+}
+.records-tag-green {
+  --tag-base: var(--chart-3);
+}
+.records-tag-pink {
+  --tag-base: var(--destructive);
+}
+.records-tag-default {
+  --tag-base: var(--muted-foreground);
+}
+
+@keyframes records-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes records-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .records-shell *,
+  .records-shell *::before,
+  .records-shell *::after {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
+}

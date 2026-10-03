@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    ".agents/**",
+    ".audit/**",
+    ".next/**",
+    "pnpm-lock.yaml",
+    "next-env.d.ts",
+    "src/app/.well-known/workflow/**"
+  ],
+  "sortTailwindcss": {
+    "stylesheet": "./src/styles/globals.css"
+  }
+}
