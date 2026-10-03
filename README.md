@@ -2,6 +2,9 @@
 
 Next.js/T3 scaffold for a NGO Operating System made for a hackathon.
 
+- [Product context](docs/product-context.md)
+- [Luo research](docs/research/luo-ngo-demo/README.md)
+
 ## Development
 
 Requires Node 24 and pnpm.
@@ -32,6 +35,7 @@ pnpm db:studio
 ## Structure
 
 ```text
+docs/                  Product context and research, grouped by topic
 src/app/(marketing)/    Marketing routes and private _components
 src/app/(workspace)/    Dashboard routes and private UI
 src/app/(auth)/         Clerk routes

@@ -5,8 +5,11 @@
 This is a hackathon project. Meaning it will never reach real production use.
 We are building an Operating System for NGOs.
 
+Product scope: [docs/product-context.md](docs/product-context.md).
+
 ## Development
 
+- Keep project documentation in `docs/`, grouped by topic. Root `README.md` and `AGENTS.md` are entry points.
 - Scaffold only. Define the NGO problem before adding features or domain schemas.
 - Use pnpm and latest dependencies. Never edit the lockfile manually.
 - SSR first. Keep route handlers and UI thin; fetch data through `src/server/<domain>/facade.ts` (marked `server-only`).
