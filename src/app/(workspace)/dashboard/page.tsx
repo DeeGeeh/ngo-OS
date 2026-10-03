@@ -4,11 +4,11 @@ import { Suspense, ViewTransition } from "react";
 
 import { listAssistantThreads } from "@/server/assistant/facade";
 import { Loader } from "@/components/ui/loader";
+import { getWorkspace } from "@/server/workspace/facade";
+import { getDataLibrary } from "@/server/data/facade";
 import { getGoogleCalendarEvents } from "@/server/calendar/facade";
 import { getLumaCalendar } from "@/server/luma/facade";
-import { getWorkspace } from "@/server/workspace/facade";
 
-import { WorkspaceProviders } from "./_components/providers";
 import { WorkspaceApp } from "./_components/workspace-app";
 import "./_components/workspace-loading.css";
 
@@ -26,30 +26,30 @@ const loading = (
 
 async function WorkspaceContent() {
   await connection();
-  const [workspace, googleEvents, luma, initialThreads] = await Promise.all([
+  const [workspace, initialThreads, dataLibrary, googleEvents, initialLuma] = await Promise.all([
     getWorkspace(),
+    listAssistantThreads(),
+    getDataLibrary(),
     getGoogleCalendarEvents(),
     getLumaCalendar(),
-    listAssistantThreads(),
   ]);
   return (
     <WorkspaceApp
       initialWorkspace={workspace}
-      googleEvents={googleEvents}
-      initialLuma={luma}
       initialThreads={initialThreads}
+      initialDataLibrary={dataLibrary}
+      googleEvents={googleEvents}
+      initialLuma={initialLuma}
     />
   );
 }
 
 export default function DashboardPage() {
   return (
-    <WorkspaceProviders>
-      <Suspense fallback={loading}>
-        <ViewTransition enter="workspace-fade" default="none">
-          <WorkspaceContent />
-        </ViewTransition>
-      </Suspense>
-    </WorkspaceProviders>
+    <Suspense fallback={loading}>
+      <ViewTransition enter="workspace-fade" default="none">
+        <WorkspaceContent />
+      </ViewTransition>
+    </Suspense>
   );
 }

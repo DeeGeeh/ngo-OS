@@ -314,6 +314,8 @@
                         "@libsql/**",
                         "drizzle-orm{,/**}",
                         "resend{,/**}",
+                        "telegram{,/**}",
+                        "grammy{,/**}",
                         "ai",
                         "@openrouter/**",
                         "@typesafe-ai/**",

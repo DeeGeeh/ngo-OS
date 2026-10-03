@@ -17,6 +17,7 @@ import type {
   SendMessage,
   UpdateProject,
   UpdateTask,
+  UserSettings,
 } from "@/lib/workspace";
 import {
   addLumaGuest,
@@ -32,6 +33,7 @@ import {
   sendMessage,
   updateProject,
   updateTask,
+  updateUserSettings,
 } from "@/server/workspace/facade";
 
 function saved<T>(work: () => Promise<T>) {
@@ -111,4 +113,8 @@ export async function updateLumaGuestAction(input: UpdateLumaGuest) {
 
 export async function sendLumaBlastAction(input: SendLumaBlast) {
   return saved(() => sendLumaBlast(input));
+}
+
+export async function updateUserSettingsAction(input: UserSettings) {
+  return updateUserSettings(input);
 }

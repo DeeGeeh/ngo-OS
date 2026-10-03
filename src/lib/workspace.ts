@@ -59,12 +59,24 @@ const titleSchema = z.string().trim().min(1).max(160);
 const assigneesSchema = z.array(idSchema).max(20);
 const dueDateSchema = z.iso.date().nullable();
 
+export const userSettingsSchema = z.object({
+  firstName: z.string().trim().min(1).max(100),
+  lastName: z.string().trim().max(100),
+  email: z.union([z.email().max(254), z.literal("")]),
+  telegramHandle: z
+    .string()
+    .trim()
+    .regex(/^$|^@[a-zA-Z][a-zA-Z0-9_]{4,31}$/, "Enter a Telegram handle like @username."),
+});
+export type UserSettings = z.infer<typeof userSettingsSchema>;
+
 export const memberSchema = z.object({
   id: idSchema,
   name: z.string(),
   role: z.string(),
   skills: z.array(z.string()),
   avatar: z.string().max(200).default(""),
+  settings: userSettingsSchema.optional(),
 });
 export const subtaskSchema = z.object({
   id: idSchema,
@@ -107,6 +119,9 @@ export const messageSchema = z.object({
   id: idSchema,
   conversation: conversationSchema,
   authorId: idSchema,
+  authorName: z.string().optional(),
+  source: z.enum(["workspace", "telegram"]).optional(),
+  externalId: z.string().max(200).optional(),
   text: z.string(),
   createdAt: z.iso.datetime(),
 });
@@ -152,6 +167,13 @@ export const sendMessageSchema = z.object({
   conversation: conversationSchema,
   text: z.string().trim().min(1).max(4000),
 });
+export const appendTelegramMessageSchema = z.object({
+  externalId: z.string().min(1).max(200),
+  authorId: idSchema,
+  authorName: z.string().max(200).optional(),
+  text: z.string().trim().min(1).max(4096),
+  createdAt: z.iso.datetime(),
+});
 
 export type Member = z.infer<typeof memberSchema>;
 export type Subtask = z.infer<typeof subtaskSchema>;
@@ -171,5 +193,6 @@ export type UpdateTask = z.infer<typeof updateTaskSchema>;
 export type CreateProject = z.input<typeof createProjectSchema>;
 export type UpdateProject = z.infer<typeof updateProjectSchema>;
 export type SendMessage = z.infer<typeof sendMessageSchema>;
+export type AppendTelegramMessage = z.infer<typeof appendTelegramMessageSchema>;
 
 export const workspaceQueryKey = ["workspace"];
