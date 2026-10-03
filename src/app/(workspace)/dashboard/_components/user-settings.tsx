@@ -1,7 +1,8 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Check, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
+import Image from "next/image";
 import { useCallback, useState, type FormEvent } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
@@ -16,14 +17,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from "@/components/ui/field";
+import { Field, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { Separator } from "@/components/ui/separator";
@@ -48,7 +42,7 @@ export function UserSettingsDialog({ settings }: { settings: UserSettings }) {
           <DialogTitle>User settings</DialogTitle>
           <DialogDescription>Your profile and connected accounts.</DialogDescription>
         </DialogHeader>
-        <UserSettingsForm settings={settings} onSaved={close} />
+        <UserSettingsForm key={JSON.stringify(settings)} settings={settings} onSaved={close} />
       </DialogContent>
     </Dialog>
   );
@@ -59,13 +53,31 @@ function MockConnection({ provider }: { provider: "Claude" | "ChatGPT" }) {
   const toggle = useCallback(() => setConnected((value) => !value), []);
 
   return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-sm font-medium">{provider}</span>
-      <Button type="button" variant="outline" size="sm" onClick={toggle} aria-pressed={connected}>
-        {connected && <Check data-icon="inline-start" />}
-        {connected ? `Disconnect ${provider}` : `Connect ${provider}`}
-      </Button>
-    </div>
+    <Button type="button" variant="outline" size="sm" onClick={toggle} aria-pressed={connected}>
+      <span data-icon="inline-start" aria-hidden="true">
+        {provider === "Claude" ? (
+          <Image src="/brands/claude.svg" alt="" width={16} height={16} />
+        ) : (
+          <>
+            <Image
+              src="/brands/chatgpt.svg"
+              alt=""
+              width={16}
+              height={16}
+              className="dark:hidden"
+            />
+            <Image
+              src="/brands/chatgpt-white.svg"
+              alt=""
+              width={16}
+              height={16}
+              className="hidden dark:block"
+            />
+          </>
+        )}
+      </span>
+      {connected ? `Disconnect ${provider}` : `Connect ${provider}`}
+    </Button>
   );
 }
 
@@ -156,9 +168,10 @@ function UserSettingsForm({ settings, onSaved }: { settings: UserSettings; onSav
       <Separator />
       <FieldSet>
         <FieldLegend variant="label">AI connections</FieldLegend>
-        <FieldDescription>Demo only. No account access is requested.</FieldDescription>
-        <MockConnection provider="Claude" />
-        <MockConnection provider="ChatGPT" />
+        <div className="flex justify-center gap-3">
+          <MockConnection provider="Claude" />
+          <MockConnection provider="ChatGPT" />
+        </div>
       </FieldSet>
       {save.error && (
         <Alert variant="destructive">
