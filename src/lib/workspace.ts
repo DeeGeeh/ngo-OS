@@ -114,6 +114,9 @@ export const messageSchema = z.object({
   id: idSchema,
   conversation: conversationSchema,
   authorId: idSchema,
+  authorName: z.string().optional(),
+  source: z.enum(["workspace", "telegram"]).optional(),
+  externalId: z.string().max(200).optional(),
   text: z.string(),
   createdAt: z.iso.datetime(),
 });
@@ -159,6 +162,13 @@ export const sendMessageSchema = z.object({
   conversation: conversationSchema,
   text: z.string().trim().min(1).max(4000),
 });
+export const appendTelegramMessageSchema = z.object({
+  externalId: z.string().min(1).max(200),
+  authorId: idSchema,
+  authorName: z.string().max(200).optional(),
+  text: z.string().trim().min(1).max(4096),
+  createdAt: z.iso.datetime(),
+});
 
 export type Member = z.infer<typeof memberSchema>;
 export type Subtask = z.infer<typeof subtaskSchema>;
@@ -178,5 +188,6 @@ export type UpdateTask = z.infer<typeof updateTaskSchema>;
 export type CreateProject = z.input<typeof createProjectSchema>;
 export type UpdateProject = z.infer<typeof updateProjectSchema>;
 export type SendMessage = z.infer<typeof sendMessageSchema>;
+export type AppendTelegramMessage = z.infer<typeof appendTelegramMessageSchema>;
 
 export const workspaceQueryKey = ["workspace"];

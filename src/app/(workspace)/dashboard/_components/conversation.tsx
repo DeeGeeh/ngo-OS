@@ -96,6 +96,7 @@ function TeamMessage({ workspace, messages }: { workspace: Workspace; messages: 
   const message = index === -1 ? undefined : messages[index];
   const previous = index > 0 ? messages[index - 1] : undefined;
   const author = workspace.members.find((member) => member.id === message?.authorId);
+  const authorName = message?.authorName ?? author?.name ?? "Team member";
   const startsDay = Boolean(
     message && (!previous || dayKey(previous.createdAt) !== dayKey(message.createdAt)),
   );
@@ -123,17 +124,17 @@ function TeamMessage({ workspace, messages }: { workspace: Workspace; messages: 
         ) : (
           <Avatar>
             <AvatarFallback>
-              {author?.name
+              {authorName
                 .split(" ")
                 .map((name) => name[0])
-                .join("") ?? "?"}
+                .join("")}
             </AvatarFallback>
           </Avatar>
         )}
         <div className="min-w-0 flex-1">
           {!grouped && (
             <div className="mb-1 flex items-baseline gap-2">
-              <span className="text-sm font-semibold">{author?.name ?? "Team member"}</span>
+              <span className="text-sm font-semibold">{authorName}</span>
               {message && (
                 <time
                   className="text-xs text-muted-foreground tabular-nums"

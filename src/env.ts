@@ -21,6 +21,15 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().min(1).optional(),
     RESEND_FROM_EMAIL: z.email().optional(),
     GOOGLE_CALENDAR_ICS_URL: z.url().optional(),
+    TELEGRAM_API_ID: z.coerce.number().int().positive().optional(),
+    TELEGRAM_API_HASH: z.string().min(1).optional(),
+    TELEGRAM_BOT_TOKEN: z.string().min(1).optional(),
+    TELEGRAM_WEBHOOK_SECRET: z.string().min(1).optional(),
+    TELEGRAM_MAIN_CHAT_ID: z.string().min(1).optional(),
+    TELEGRAM_SESSION_ENCRYPTION_KEY: z
+      .string()
+      .regex(/^[a-f0-9]{64}$/i)
+      .optional(),
   },
   client: {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1).optional(),
@@ -41,6 +50,12 @@ export const env = createEnv({
     RESEND_API_KEY: process.env.RESEND_API_KEY,
     RESEND_FROM_EMAIL: process.env.RESEND_FROM_EMAIL,
     GOOGLE_CALENDAR_ICS_URL: process.env.GOOGLE_CALENDAR_ICS_URL,
+    TELEGRAM_API_ID: process.env.TELEGRAM_API_ID,
+    TELEGRAM_API_HASH: process.env.TELEGRAM_API_HASH,
+    TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    TELEGRAM_WEBHOOK_SECRET: process.env.TELEGRAM_WEBHOOK_SECRET,
+    TELEGRAM_MAIN_CHAT_ID: process.env.TELEGRAM_MAIN_CHAT_ID,
+    TELEGRAM_SESSION_ENCRYPTION_KEY: process.env.TELEGRAM_SESSION_ENCRYPTION_KEY,
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
   },
   emptyStringAsUndefined: true,

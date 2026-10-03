@@ -5,6 +5,7 @@ import { randomUUID } from "node:crypto";
 import {
   createProjectSchema,
   createTaskSchema,
+  appendTelegramMessageSchema,
   sendMessageSchema,
   updateProjectSchema,
   updateTaskSchema,
@@ -12,6 +13,7 @@ import {
   type UserSettings,
   type CreateProject,
   type CreateTask,
+  type AppendTelegramMessage,
   type Message,
   type Project,
   type SendMessage,
@@ -149,6 +151,7 @@ export async function sendMessage(input: SendMessage): Promise<Message> {
       ...data,
       id: randomUUID(),
       authorId: workspace.currentMemberId,
+      source: "workspace" as const,
       createdAt: new Date().toISOString(),
     };
     workspace.messages.push(message);
@@ -164,5 +167,29 @@ export async function updateUserSettings(input: UserSettings) {
     member.settings = settings;
     member.name = [settings.firstName, settings.lastName].filter(Boolean).join(" ");
     return member;
+  });
+}
+
+export async function appendTelegramMessage(input: AppendTelegramMessage): Promise<Message | null> {
+  const data = appendTelegramMessageSchema.parse(input);
+  return withWorkspace((workspace) => {
+    const existing = workspace.messages.find(
+      (message) => message.source === "telegram" && message.externalId === data.externalId,
+    );
+    if (existing) return existing;
+    const channel = workspace.channels.find((item) => item.kind === "general");
+    if (!channel) throw new Error("General channel does not exist.");
+    const message = {
+      id: randomUUID(),
+      conversation: { kind: "channel" as const, id: channel.id },
+      authorId: data.authorId,
+      authorName: data.authorName,
+      source: "telegram" as const,
+      externalId: data.externalId,
+      text: data.text,
+      createdAt: data.createdAt,
+    };
+    workspace.messages.push(message);
+    return message;
   });
 }
