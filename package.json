@@ -16,7 +16,7 @@
     "lint:suppressions": "! git grep --untracked -nE '(oxlint|eslint)-(disable|enable)|@ts-(ignore|expect-error|nocheck)' -- '*.ts' '*.tsx' '*.js' '*.mjs' '*.cjs' ':!.agents'",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "check": "pnpm lint && pnpm lint:suppressions && pnpm format:check && pnpm typecheck && pnpm test:integration",
+    "check": "pnpm typecheck && pnpm lint && pnpm lint:suppressions && pnpm format:check && pnpm test:integration",
     "test:integration": "tsx --conditions=react-server --test tests/integration/*.test.ts",
     "workflow": "workflow",
     "ui": "shadcn",
