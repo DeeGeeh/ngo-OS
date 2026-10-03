@@ -8,10 +8,12 @@ import {
   Moon,
   PanelRight,
   Plus,
+  Sparkles,
   Users,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useTheme } from "next-themes";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useState } from "react";
 
 import { Alert, AlertTitle } from "@/components/ui/alert";
@@ -25,10 +27,13 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Sidebar, SidebarBody } from "@/components/ui/sidebar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useIsMobile } from "@/hooks/use-mobile";
+import type { AssistantThread } from "@/lib/assistant";
 import { workspaceQueryKey, type Workspace, type WorkStatus } from "@/lib/workspace";
 
 import { getWorkspaceAction } from "../actions";
-import { AssistantPanel, AssistantProvider } from "./assistant-panel";
+import { AgentPage } from "./agent-page";
+import { AssistantPanel } from "./assistant-panel";
+import { AssistantProvider } from "./assistant-runtime";
 import { Conversation } from "./conversation";
 import { ProjectDetail } from "./project-detail";
 import { WorkBoard } from "./work-board";
@@ -39,19 +44,40 @@ type View =
   | { kind: "board" }
   | { kind: "project"; id: string }
   | { kind: "chat" }
-  | { kind: "people" };
+  | { kind: "people" }
+  | { kind: "agent" };
 type Creation = { kind: "task" | "project"; status: WorkStatus; projectId?: string };
-const initialView: View = { kind: "board" };
+const boardView: View = { kind: "board" };
+const chatView: View = { kind: "chat" };
+const peopleView: View = { kind: "people" };
+const agentView: View = { kind: "agent" };
 const enter = { opacity: 0 };
 const visible = { opacity: 1 };
 
-export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace }) {
+export function WorkspaceApp({
+  initialWorkspace,
+  initialThreads,
+}: {
+  initialWorkspace: Workspace;
+  initialThreads: AssistantThread[];
+}) {
   const { data: workspace, error } = useQuery({
     queryKey: workspaceQueryKey,
     queryFn: getWorkspaceAction,
     initialData: initialWorkspace,
   });
-  const [view, setView] = useState<View>(initialView);
+  const [workspaceView, setView] = useState<View>(boardView);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const screenName = searchParams.get("view");
+  const view =
+    screenName === "agent"
+      ? agentView
+      : screenName === "chat"
+        ? chatView
+        : screenName === "people"
+          ? peopleView
+          : workspaceView;
   const [taskId, setTaskId] = useState<string | null>(null);
   const [creation, setCreation] = useState<Creation | null>(null);
   const [assistantOpen, setAssistantOpen] = useState(false);
@@ -62,7 +88,14 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
     view.kind === "project" ? workspace.projects.find((item) => item.id === view.id) : undefined;
   const currentMember = workspace.members.find((member) => member.id === workspace.currentMemberId);
   const screen = view.kind === "project" ? "board" : view.kind;
-  const title = screen === "board" ? "Workspace" : screen === "chat" ? "Chat" : "People";
+  const title =
+    screen === "board"
+      ? "Workspace"
+      : screen === "chat"
+        ? "Chat"
+        : screen === "agent"
+          ? "Agent"
+          : "People";
   const conversation = useMemo(
     () => (task ? { kind: "task" as const, id: task.id } : undefined),
     [task],
@@ -79,7 +112,7 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
     [],
   );
   const closeCreation = useCallback(() => setCreation(null), []);
-  const returnToBoard = useCallback(() => setView(initialView), []);
+  const returnToBoard = useCallback(() => setView(boardView), []);
   const closeTask = useCallback(() => setTaskId(null), []);
   const taskOpenChanged = useCallback((open: boolean) => {
     if (!open) setTaskId(null);
@@ -87,10 +120,18 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
   const creationOpenChanged = useCallback((open: boolean) => {
     if (!open) setCreation(null);
   }, []);
-  const switchScreen = useCallback((values: string[]) => {
-    const value = values[0];
-    if (value === "board" || value === "chat" || value === "people") setView({ kind: value });
-  }, []);
+  const switchScreen = useCallback(
+    (values: string[]) => {
+      const value = values[0];
+      if (value === "board" || value === "chat" || value === "people" || value === "agent") {
+        setView(boardView);
+        const params = new URLSearchParams(searchParams.toString());
+        params.set("view", value);
+        window.history.pushState(null, "", `${pathname}?${params.toString()}`);
+      }
+    },
+    [pathname, searchParams],
+  );
   const switchCreationKind = useCallback(
     (values: string[]) => {
       const value = values[0];
@@ -109,7 +150,7 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
   const selectedKind = useMemo(() => (creation ? [creation.kind] : []), [creation]);
 
   return (
-    <AssistantProvider>
+    <AssistantProvider initialThreads={initialThreads}>
       <Sidebar animate={false}>
         <div className="flex h-dvh flex-col overflow-hidden bg-background md:flex-row">
           <div className="shrink-0 md:border-r">
@@ -137,6 +178,10 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
                       <Users data-icon="inline-start" />
                       People
                     </ToggleGroupItem>
+                    <ToggleGroupItem value="agent" className="justify-start">
+                      <Sparkles data-icon="inline-start" />
+                      Agent
+                    </ToggleGroupItem>
                   </ToggleGroup>
                 </nav>
                 <div className="mt-auto flex items-center gap-3 px-2 pb-3">
@@ -162,19 +207,23 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
                 >
                   <Moon />
                 </Button>
-                <Button
-                  variant={assistantOpen ? "secondary" : "ghost"}
-                  size="icon"
-                  aria-label={assistantOpen ? "Hide assistant" : "Show assistant"}
-                  aria-pressed={assistantOpen}
-                  onClick={toggleAssistant}
-                >
-                  <PanelRight />
-                </Button>
-                <Button onClick={createNew} aria-label="New task or project">
-                  <Plus data-icon="inline-start" />
-                  <span className="hidden sm:inline">New</span>
-                </Button>
+                {screen !== "agent" && (
+                  <Button
+                    variant={assistantOpen ? "secondary" : "ghost"}
+                    size="icon"
+                    aria-label={assistantOpen ? "Hide assistant" : "Show assistant"}
+                    aria-pressed={assistantOpen}
+                    onClick={toggleAssistant}
+                  >
+                    <PanelRight />
+                  </Button>
+                )}
+                {screen !== "agent" && (
+                  <Button onClick={createNew} aria-label="New task or project">
+                    <Plus data-icon="inline-start" />
+                    <span className="hidden sm:inline">New</span>
+                  </Button>
+                )}
               </div>
             </header>
             {error && (
@@ -208,6 +257,7 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
                     />
                   )}
                   {view.kind === "chat" && <WorkspaceChat workspace={workspace} />}
+                  {view.kind === "agent" && <AgentPage />}
                   {view.kind === "people" && (
                     <div className="grid gap-5 p-6 sm:grid-cols-2 lg:p-8 xl:grid-cols-3">
                       {workspace.members.map((member) => (
@@ -253,7 +303,7 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
                   )}
                 </motion.main>
               </ResizablePanel>
-              {assistantOpen && !isMobile && (
+              {assistantOpen && !isMobile && screen !== "agent" && (
                 <>
                   <ResizableHandle withHandle />
                   <ResizablePanel id="assistant" defaultSize="28%" minSize="280px" maxSize="50%">
@@ -266,7 +316,10 @@ export function WorkspaceApp({ initialWorkspace }: { initialWorkspace: Workspace
             </ResizablePanelGroup>
           </div>
         </div>
-        <Sheet open={isMobile && assistantOpen} onOpenChange={setAssistantOpen}>
+        <Sheet
+          open={isMobile && assistantOpen && screen !== "agent"}
+          onOpenChange={setAssistantOpen}
+        >
           <SheetContent side="right" className="w-full!" showCloseButton={false}>
             <SheetHeader className="sr-only">
               <SheetTitle>Assistant</SheetTitle>
