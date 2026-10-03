@@ -1,13 +1,13 @@
 "use client";
 
-import { AssistantChatTransport, useAISDKError, useChatRuntime } from "@assistant-ui/ai-sdk";
+import { useAISDKError } from "@assistant-ui/ai-sdk";
 import {
   ActionBarPrimitive,
-  AssistantRuntimeProvider,
   AuiIf,
   BranchPickerPrimitive,
   ComposerPrimitive,
   MessagePrimitive,
+  SuggestionPrimitive,
   ThreadListPrimitive,
   ThreadPrimitive,
   type AssistantState,
@@ -30,13 +30,14 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { useEffect, type ReactNode } from "react";
+import { useEffect } from "react";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { workspaceQueryKey } from "@/lib/workspace";
 
-const transport = new AssistantChatTransport({ api: "/api/assistant" });
+import { useAssistantPersistenceError } from "./assistant-runtime";
+
 const toolLabels: Record<string, string> = {
   readWorkspace: "Read workspace",
   createTask: "Create task",
@@ -45,7 +46,8 @@ const toolLabels: Record<string, string> = {
   updateProject: "Update project",
 };
 
-const isEmpty = (state: AssistantState) => state.thread.isEmpty;
+const isEmpty = (state: AssistantState) => state.thread.isEmpty && !state.thread.isLoading;
+const isLoading = (state: AssistantState) => state.thread.isLoading;
 const isRunning = (state: AssistantState) => state.thread.isRunning;
 const isIdle = (state: AssistantState) => !state.thread.isRunning;
 
@@ -170,67 +172,87 @@ function EditComposer() {
 
 const messages = { UserMessage, AssistantMessage, EditComposer };
 
-function AssistantThread({ onClose }: { onClose?: () => void }) {
+export function AssistantThread({
+  onClose,
+  wide = false,
+}: {
+  onClose?: () => void;
+  wide?: boolean;
+}) {
   const error = useAISDKError();
+  const persistenceError = useAssistantPersistenceError();
   return (
     <ThreadPrimitive.Root className="flex h-full min-h-0 flex-col bg-background">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b px-5">
-        <h2 className="flex items-center gap-2 font-semibold">
-          <Sparkles className="size-4 text-primary" />
-          Assistant
-        </h2>
-        <div className="flex items-center gap-1">
-          <ThreadListPrimitive.New
-            className={buttonVariants({ variant: "ghost", size: "icon" })}
-            aria-label="New conversation"
-          >
-            <Plus />
-          </ThreadListPrimitive.New>
-          {onClose && (
-            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close assistant">
-              <X />
-            </Button>
-          )}
-        </div>
-      </header>
-      <ThreadPrimitive.Viewport className="min-h-0 flex-1 overflow-y-auto px-5 py-6">
-        <AuiIf condition={isEmpty}>
-          <div className="flex min-h-52 flex-col justify-center gap-4">
-            <h3 className="text-xl font-semibold tracking-tight">What needs doing?</h3>
-            <div className="flex flex-col items-start gap-2">
-              <ThreadPrimitive.Suggestion
-                prompt="What should we focus on this week?"
-                send
-                className={buttonVariants({ variant: "outline" })}
-              >
-                Plan this week
-              </ThreadPrimitive.Suggestion>
-              <ThreadPrimitive.Suggestion
-                prompt="Review the workspace and suggest who should own the unassigned tasks."
-                send
-                className={buttonVariants({ variant: "outline" })}
-              >
-                Find task owners
-              </ThreadPrimitive.Suggestion>
-            </div>
+      {!wide && (
+        <header className="flex h-16 shrink-0 items-center justify-between border-b px-5">
+          <h2 className="flex items-center gap-2 font-semibold">
+            <Sparkles className="size-4 text-primary" />
+            Assistant
+          </h2>
+          <div className="flex items-center gap-1">
+            <ThreadListPrimitive.New
+              className={buttonVariants({ variant: "ghost", size: "icon" })}
+              aria-label="New conversation"
+            >
+              <Plus />
+            </ThreadListPrimitive.New>
+            {onClose && (
+              <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close assistant">
+                <X />
+              </Button>
+            )}
           </div>
-        </AuiIf>
-        <ThreadPrimitive.Messages components={messages} />
-        <AuiIf condition={isRunning}>
-          <p className="text-sm text-muted-foreground">Working...</p>
-        </AuiIf>
-        <ThreadPrimitive.ScrollToBottom
-          className={buttonVariants({
-            variant: "outline",
-            size: "icon-sm",
-            className: "sticky bottom-0 mx-auto flex disabled:hidden",
-          })}
-          aria-label="Scroll to latest message"
-        >
-          <ArrowDown />
-        </ThreadPrimitive.ScrollToBottom>
+        </header>
+      )}
+      <ThreadPrimitive.Viewport className="min-h-0 flex-1 overflow-y-auto px-5 py-6">
+        <div className={wide ? "mx-auto w-full max-w-3xl" : "w-full"}>
+          <AuiIf condition={isLoading}>
+            <p className="text-sm text-muted-foreground">Loading conversation...</p>
+          </AuiIf>
+          <AuiIf condition={isEmpty}>
+            <div className="flex min-h-52 flex-col justify-center gap-4">
+              <h3 className="text-xl font-semibold tracking-tight">What needs doing?</h3>
+              <div className="grid gap-2">
+                <ThreadPrimitive.Suggestions>
+                  {() => (
+                    <SuggestionPrimitive.Trigger send asChild>
+                      <Button variant="outline" className="w-full justify-start">
+                        <SuggestionPrimitive.Title />
+                      </Button>
+                    </SuggestionPrimitive.Trigger>
+                  )}
+                </ThreadPrimitive.Suggestions>
+              </div>
+            </div>
+          </AuiIf>
+          <ThreadPrimitive.Messages components={messages} />
+          <AuiIf condition={isRunning}>
+            <p className="text-sm text-muted-foreground">Working...</p>
+          </AuiIf>
+          <ThreadPrimitive.ScrollToBottom
+            className={buttonVariants({
+              variant: "outline",
+              size: "icon-sm",
+              className: "sticky bottom-0 mx-auto flex disabled:hidden",
+            })}
+            aria-label="Scroll to latest message"
+          >
+            <ArrowDown />
+          </ThreadPrimitive.ScrollToBottom>
+        </div>
       </ThreadPrimitive.Viewport>
-      <div className="flex shrink-0 flex-col gap-3 p-4">
+      <div
+        className={
+          wide
+            ? "mx-auto flex w-full max-w-3xl shrink-0 flex-col gap-3 p-4"
+            : "flex shrink-0 flex-col gap-3 p-4"
+        }
+      >
+        {persistenceError && (
+          <Alert variant="destructive">
+            <AlertDescription>{persistenceError}</AlertDescription>
+          </Alert>
+        )}
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error.message}</AlertDescription>
@@ -264,17 +286,6 @@ function AssistantThread({ onClose }: { onClose?: () => void }) {
       </div>
     </ThreadPrimitive.Root>
   );
-}
-
-export function AssistantProvider({ children }: { children: ReactNode }) {
-  const queryClient = useQueryClient();
-  const runtime = useChatRuntime({
-    transport,
-    onFinish: () => {
-      void queryClient.invalidateQueries({ queryKey: workspaceQueryKey });
-    },
-  });
-  return <AssistantRuntimeProvider runtime={runtime}>{children}</AssistantRuntimeProvider>;
 }
 
 export function AssistantPanel({ onClose }: { onClose?: () => void } = {}) {

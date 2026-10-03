@@ -13,6 +13,12 @@ import { z } from "zod";
 
 import { env } from "@/env";
 import {
+  assistantBranchSchema,
+  assistantIdSchema,
+  assistantMessageWriteSchema,
+  assistantThreadPatchSchema,
+} from "@/lib/assistant";
+import {
   createProjectSchema,
   createTaskSchema,
   updateProjectSchema,
@@ -26,6 +32,57 @@ import {
   updateTask,
 } from "@/server/workspace/facade";
 
+import {
+  deleteThread,
+  initializeThread,
+  listThreads,
+  readThread,
+  saveMessage,
+  selectBranch,
+  updateThread,
+} from "./store";
+
+export async function listAssistantThreads() {
+  return listThreads();
+}
+
+export async function initializeAssistantThread(id: unknown) {
+  return initializeThread(assistantIdSchema.parse(id));
+}
+
+export async function readAssistantThread(id: unknown) {
+  const history = await readThread(assistantIdSchema.parse(id));
+  if (history.messages.length === 0) return history;
+  const validated = await safeValidateUIMessages({
+    messages: history.messages.map((message) => ({ ...message.content, id: message.id })),
+    tools: workspaceTools,
+  });
+  if (!validated.success) throw new Error("The saved conversation contains invalid messages.");
+  return history;
+}
+
+export async function saveAssistantMessage(input: unknown) {
+  const parsed = assistantMessageWriteSchema.parse(input);
+  const validated = await safeValidateUIMessages({
+    messages: [{ ...parsed.message.content, id: parsed.message.id }],
+    tools: workspaceTools,
+  });
+  if (!validated.success) throw new Error("The conversation contains an invalid message.");
+  return saveMessage(parsed);
+}
+
+export async function selectAssistantBranch(input: unknown) {
+  return selectBranch(assistantBranchSchema.parse(input));
+}
+
+export async function updateAssistantThread(id: unknown, input: unknown) {
+  return updateThread(assistantIdSchema.parse(id), assistantThreadPatchSchema.parse(input));
+}
+
+export async function deleteAssistantThread(id: unknown) {
+  return deleteThread(assistantIdSchema.parse(id));
+}
+
 export const workspaceTools = {
   readWorkspace: tool({
     description:
@@ -35,7 +92,7 @@ export const workspaceTools = {
   }),
   createTask: tool({
     description:
-      "Create a task. Use existing member IDs for assigneeIds, a real project ID or null, and an ISO date or null. Defaults when unspecified are todo, empty description, no assignees, no project, and no due date.",
+      "Create a task. Use existing member IDs for assigneeIds, a real project ID or null, and an ISO date or null. Defaults when unspecified are todo, empty description, no assignees, no project, no due date, normal priority, and no tags. Priority is urgent, high, normal, or low. Tags are chosen from Outreach, Venue, Design, Speakers, Volunteers, Campus, and Board.",
     inputSchema: createTaskSchema,
     execute: (input) => createTask(input),
   }),
@@ -47,7 +104,7 @@ export const workspaceTools = {
   }),
   createProject: tool({
     description:
-      "Create a project. Use existing member IDs for assigneeIds and an ISO date or null. Defaults when unspecified are todo, empty description and location, no assignees, and no due date.",
+      "Create a project. Use existing member IDs for assigneeIds and an ISO date or null. Defaults when unspecified are todo, empty description and location, no assignees, no due date, in-person format, and no capacity. Capacity is a positive whole number or null.",
     inputSchema: createProjectSchema,
     execute: (input) => createProject(input),
   }),

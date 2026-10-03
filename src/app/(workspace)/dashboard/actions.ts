@@ -1,5 +1,15 @@
 "use server";
 
+import type { AssistantBranch, AssistantMessageWrite, AssistantThreadPatch } from "@/lib/assistant";
+import {
+  deleteAssistantThread,
+  initializeAssistantThread,
+  listAssistantThreads,
+  readAssistantThread,
+  saveAssistantMessage,
+  selectAssistantBranch,
+  updateAssistantThread,
+} from "@/server/assistant/facade";
 import type {
   CreateProject,
   CreateTask,
@@ -8,6 +18,13 @@ import type {
   UpdateTask,
 } from "@/lib/workspace";
 import {
+  addLumaGuest,
+  createLumaEvent,
+  getLumaCalendar,
+  sendLumaBlast,
+  updateLumaGuest,
+} from "@/server/luma/facade";
+import {
   createProject,
   createTask,
   getWorkspace,
@@ -15,6 +32,13 @@ import {
   updateProject,
   updateTask,
 } from "@/server/workspace/facade";
+
+function saved<T>(work: () => Promise<T>) {
+  return work().catch((error: unknown) => {
+    if (error instanceof Error && error.name !== "ZodError") throw error;
+    throw new Error("Check the details and try again.");
+  });
+}
 
 export async function getWorkspaceAction() {
   return getWorkspace();
@@ -38,4 +62,32 @@ export async function updateProjectAction(input: UpdateProject) {
 
 export async function sendMessageAction(input: SendMessage) {
   return sendMessage(input);
+}
+
+export async function listAssistantThreadsAction() {
+  return listAssistantThreads();
+}
+
+export async function initializeAssistantThreadAction(id: string) {
+  return initializeAssistantThread(id);
+}
+
+export async function readAssistantThreadAction(id: string) {
+  return readAssistantThread(id);
+}
+
+export async function saveAssistantMessageAction(input: AssistantMessageWrite) {
+  return saveAssistantMessage(input);
+}
+
+export async function selectAssistantBranchAction(input: AssistantBranch) {
+  return selectAssistantBranch(input);
+}
+
+export async function updateAssistantThreadAction(id: string, input: AssistantThreadPatch) {
+  return updateAssistantThread(id, input);
+}
+
+export async function deleteAssistantThreadAction(id: string) {
+  return deleteAssistantThread(id);
 }

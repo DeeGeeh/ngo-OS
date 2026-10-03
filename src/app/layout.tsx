@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { shadcn } from "@clerk/ui/themes";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { ThemeProvider } from "next-themes";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { env } from "@/env";
@@ -13,7 +14,11 @@ import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
-export const metadata: Metadata = { title: "NGO OS" };
+export const metadata: Metadata = {
+  title: { default: "Nest", template: "%s · Nest" },
+  description: "The operating system for non-profits.",
+  applicationName: "Nest",
+};
 
 const clerkAppearance = { theme: shadcn };
 
@@ -23,9 +28,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     env.VERCEL_URL ? `https://${env.VERCEL_URL}` : env.APP_URL,
   ).href;
   const content = (
-    <TRPCReactProvider serverUrl={serverUrl}>
-      <TooltipProvider>{children}</TooltipProvider>
-    </TRPCReactProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem={false}
+      disableTransitionOnChange
+    >
+      <TRPCReactProvider serverUrl={serverUrl}>
+        <TooltipProvider>{children}</TooltipProvider>
+      </TRPCReactProvider>
+    </ThemeProvider>
   );
 
   return (

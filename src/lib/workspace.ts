@@ -8,6 +8,47 @@ export const workStatuses = [
   { id: "done", label: "Done" },
 ] satisfies { id: WorkStatus; label: string }[];
 
+export const projectFormatSchema = z.enum(["in-person", "online"]);
+export type ProjectFormat = z.infer<typeof projectFormatSchema>;
+export const projectFormats = [
+  { id: "in-person", label: "In person" },
+  { id: "online", label: "Online" },
+] satisfies { id: ProjectFormat; label: string }[];
+const capacitySchema = z.number().int().min(1).max(10000).nullable();
+
+export const prioritySchema = z.enum(["urgent", "high", "normal", "low"]);
+export type Priority = z.infer<typeof prioritySchema>;
+export const priorityMeta = {
+  urgent: { label: "Urgent", rank: 0, color: "text-destructive", filled: true },
+  high: { label: "High", rank: 1, color: "text-destructive", filled: false },
+  normal: { label: "Normal", rank: 2, color: "text-muted-foreground", filled: false },
+  low: { label: "Low", rank: 3, color: "text-muted-foreground/70", filled: false },
+} satisfies Record<Priority, { label: string; rank: number; color: string; filled: boolean }>;
+export const priorities = [
+  { id: "urgent", label: priorityMeta.urgent.label },
+  { id: "high", label: priorityMeta.high.label },
+  { id: "normal", label: priorityMeta.normal.label },
+  { id: "low", label: priorityMeta.low.label },
+] satisfies { id: Priority; label: string }[];
+export const workTags = [
+  "Outreach",
+  "Venue",
+  "Design",
+  "Speakers",
+  "Volunteers",
+  "Campus",
+  "Board",
+] as const;
+const tagSchema = z.enum(workTags);
+const tagsSchema = z.array(tagSchema).max(6);
+const portraits: Record<string, string> = {
+  diar: "/avatars/diar.jpg",
+  aino: "/avatars/aino.jpg",
+  elias: "/avatars/elias.jpg",
+  noora: "/avatars/noora.jpg",
+  leo: "/avatars/leo.jpg",
+};
+
 const idSchema = z.string().min(1).max(100);
 const titleSchema = z.string().trim().min(1).max(160);
 const assigneesSchema = z.array(idSchema).max(20);
@@ -18,7 +59,14 @@ export const memberSchema = z.object({
   name: z.string(),
   role: z.string(),
   skills: z.array(z.string()),
+  avatar: z.string().max(200).default(""),
 });
+export const subtaskSchema = z.object({
+  id: idSchema,
+  title: titleSchema,
+  done: z.boolean().default(false),
+});
+const subtasksSchema = z.array(subtaskSchema).max(50);
 export const taskSchema = z.object({
   id: idSchema,
   title: titleSchema,
@@ -27,6 +75,9 @@ export const taskSchema = z.object({
   projectId: idSchema.nullable(),
   assigneeIds: assigneesSchema,
   dueDate: dueDateSchema,
+  priority: prioritySchema.default("normal"),
+  tags: tagsSchema.default([]),
+  subtasks: subtasksSchema.default([]),
 });
 export const projectSchema = z.object({
   id: idSchema,
@@ -36,13 +87,15 @@ export const projectSchema = z.object({
   assigneeIds: assigneesSchema,
   dueDate: dueDateSchema,
   location: z.string(),
+  capacity: capacitySchema.default(null),
+  format: projectFormatSchema.default("in-person"),
 });
 export const channelSchema = z.discriminatedUnion("kind", [
   z.object({ id: idSchema, name: z.string(), kind: z.literal("general") }),
   z.object({ id: idSchema, name: z.string(), kind: z.literal("project"), projectId: idSchema }),
 ]);
 export const conversationSchema = z.object({
-  kind: z.enum(["channel", "task"]),
+  kind: z.enum(["channel", "task", "direct"]),
   id: idSchema,
 });
 export const messageSchema = z.object({
@@ -63,26 +116,54 @@ export const workspaceSchema = z.object({
 export const createTaskSchema = taskSchema
   .omit({ id: true })
   .extend({ description: z.string().max(5000) });
-export const updateTaskSchema = createTaskSchema.partial().extend({ id: idSchema });
-export const createProjectSchema = projectSchema
-  .omit({ id: true })
-  .extend({ description: z.string().max(5000), location: z.string().max(200) });
-export const updateProjectSchema = createProjectSchema.partial().extend({ id: idSchema });
+export const updateTaskSchema = z.object({
+  id: idSchema,
+  title: titleSchema.optional(),
+  description: z.string().max(5000).optional(),
+  status: statusSchema.optional(),
+  projectId: idSchema.nullable().optional(),
+  assigneeIds: assigneesSchema.optional(),
+  dueDate: dueDateSchema.optional(),
+  priority: prioritySchema.optional(),
+  tags: tagsSchema.optional(),
+  subtasks: subtasksSchema.optional(),
+});
+export const createProjectSchema = projectSchema.omit({ id: true }).extend({
+  description: z.string().max(5000),
+  location: z.string().max(200),
+});
+export const updateProjectSchema = z.object({
+  id: idSchema,
+  title: titleSchema.optional(),
+  description: z.string().max(5000).optional(),
+  status: statusSchema.optional(),
+  assigneeIds: assigneesSchema.optional(),
+  dueDate: dueDateSchema.optional(),
+  location: z.string().max(200).optional(),
+  capacity: capacitySchema.optional(),
+  format: projectFormatSchema.optional(),
+});
 export const sendMessageSchema = z.object({
   conversation: conversationSchema,
   text: z.string().trim().min(1).max(4000),
 });
 
 export type Member = z.infer<typeof memberSchema>;
+export type Subtask = z.infer<typeof subtaskSchema>;
 export type Task = z.infer<typeof taskSchema>;
 export type Project = z.infer<typeof projectSchema>;
 export type Channel = z.infer<typeof channelSchema>;
 export type Conversation = z.infer<typeof conversationSchema>;
 export type Message = z.infer<typeof messageSchema>;
 export type Workspace = z.infer<typeof workspaceSchema>;
-export type CreateTask = z.infer<typeof createTaskSchema>;
+export type CreateTask = z.input<typeof createTaskSchema>;
+export type WorkTag = (typeof workTags)[number];
+
+export function memberPortrait(member: { id: string; avatar: string }) {
+  return member.avatar || (portraits[member.id] ?? "");
+}
 export type UpdateTask = z.infer<typeof updateTaskSchema>;
-export type CreateProject = z.infer<typeof createProjectSchema>;
+export type CreateProject = z.input<typeof createProjectSchema>;
 export type UpdateProject = z.infer<typeof updateProjectSchema>;
 export type SendMessage = z.infer<typeof sendMessageSchema>;
 
