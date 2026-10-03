@@ -38,7 +38,8 @@ const publicSheetOriginSchema = z.object({
   spreadsheetId: z.string().min(1).max(200),
   sheetId: z.number().int().nonnegative(),
   range: z.string().max(200).nullable(),
-  access: z.enum(["public", "service-account"]),
+  access: z.enum(["public", "service-account", "google-account"]),
+  connectedUserId: z.string().min(1).optional(),
 });
 
 const driveOriginSchema = z.object({
@@ -46,7 +47,8 @@ const driveOriginSchema = z.object({
   originalUrl: z.url(),
   fileId: z.string().min(1).max(200),
   resourceKey: z.string().max(200).nullable(),
-  access: z.literal("service-account"),
+  access: z.enum(["service-account", "google-account"]),
+  connectedUserId: z.string().min(1).optional(),
 });
 
 const uploadOriginSchema = z.object({
@@ -209,12 +211,12 @@ export const addSourceSchema = z.discriminatedUnion("kind", [
   z.object({
     kind: z.literal("google-sheet"),
     url: z.url(),
-    access: z.enum(["public", "service-account"]),
+    access: z.enum(["public", "service-account", "google-account"]),
   }),
   z.object({
     kind: z.literal("google-drive-csv"),
     url: z.url(),
-    access: z.literal("service-account"),
+    access: z.enum(["service-account", "google-account"]),
   }),
 ]);
 export type AddSource = z.infer<typeof addSourceSchema>;

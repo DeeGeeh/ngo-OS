@@ -2,8 +2,10 @@ import "server-only";
 
 import { createClient, type Client, type Row } from "@libsql/client";
 import { randomUUID } from "node:crypto";
+import { z } from "zod";
 
 import { env } from "@/env";
+import { getGoogleConnection } from "@/server/google/facade";
 import {
   addSourceSchema,
   dashboardDefinitionSchema,
@@ -421,6 +423,15 @@ function sourceStatus(record: StoredSource): SourceStatus {
 
 export async function addSource(input: AddSource): Promise<ReturnType<typeof sourceSummary>> {
   const data = addSourceSchema.parse(input);
+  const googleConnection =
+    data.kind !== "csv-upload" && data.access === "google-account"
+      ? await getGoogleConnection()
+      : null;
+  if (googleConnection && (googleConnection.kind !== "connected" || !googleConnection.files)) {
+    throw new Error("Connect Google Drive & Sheets before importing private sources.");
+  }
+  const connectedUserId =
+    googleConnection?.kind === "connected" ? googleConnection.userId : undefined;
   const client = await openDataClient();
   try {
     const existing =
@@ -442,12 +453,19 @@ export async function addSource(input: AddSource): Promise<ReturnType<typeof sou
       table = parseCsv(new TextDecoder().decode(new Uint8Array(await data.file.arrayBuffer())));
       name = data.file.name;
     } else if (data.kind === "google-sheet") {
-      origin = sheetOrigin(data.url, data.access);
+      origin = {
+        ...sheetOrigin(data.url, data.access),
+        ...(connectedUserId ? { connectedUserId } : {}),
+      };
       const loaded = await loadSource(origin);
       table = loaded.table;
       name = loaded.name;
     } else {
-      origin = driveOrigin(data.url);
+      origin = {
+        ...driveOrigin(data.url),
+        access: data.access,
+        ...(connectedUserId ? { connectedUserId } : {}),
+      };
       const loaded = await loadSource(origin);
       table = loaded.table;
       name = loaded.name;
@@ -617,4 +635,17 @@ export async function getDashboard(
   } finally {
     client.close();
   }
+}
+
+export async function importGoogleSource(input: unknown) {
+  const url = z.url().max(2000).parse(input);
+  const hostname = new URL(url).hostname;
+  if (hostname !== "docs.google.com" && hostname !== "drive.google.com") {
+    throw new Error("Use a Google Sheets or Google Drive file URL.");
+  }
+  return addSource({
+    kind: hostname === "docs.google.com" ? "google-sheet" : "google-drive-csv",
+    url,
+    access: "google-account",
+  });
 }

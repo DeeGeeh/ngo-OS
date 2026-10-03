@@ -9,6 +9,8 @@ import { getGoogleConnection, getUpcomingGoogleEvents } from "@/server/google/fa
 
 import { GoogleAccountMenu, GoogleConnect, RefreshCalendar } from "./_components/google-connect";
 
+import { GoogleSourceForm } from "./_components/google-source-form";
+
 export const metadata: Metadata = { title: "Google integrations | TRES" };
 const signInLink = { pathname: "/sign-in", query: { redirect_url: "/dashboard/integrations" } };
 const loading = <p className="text-muted-foreground">Loading connections…</p>;
@@ -120,7 +122,10 @@ async function Connections() {
             {filesConnected && <Badge variant="secondary">Connected</Badge>}
           </CardHeader>
           <CardContent>
-            <GoogleConnect capability="files" connected={filesConnected} />
+            <div className="flex flex-col gap-5">
+              <GoogleConnect capability="files" connected={filesConnected} />
+              {filesConnected && <GoogleSourceForm />}
+            </div>
           </CardContent>
         </Card>
       </div>

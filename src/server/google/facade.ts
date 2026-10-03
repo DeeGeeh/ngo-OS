@@ -1,6 +1,5 @@
 import "server-only";
 
-import { auth, clerkClient } from "@clerk/nextjs/server";
 import { auth as googleAuth, calendar as googleCalendar } from "googleapis/build/src/apis/calendar";
 import { cache } from "react";
 
@@ -14,12 +13,13 @@ const getGoogleAccount = cache(async () => {
   if (!env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || !env.CLERK_SECRET_KEY) {
     return { kind: "unavailable" } as const;
   }
+  const { auth, clerkClient } = await import("@clerk/nextjs/server");
   const session = await auth();
   if (!session.isAuthenticated) return { kind: "signed-out" } as const;
   const client = await clerkClient();
   const user = await client.users.getUser(session.userId);
   const account = user.externalAccounts.find(
-    (item) => item.provider === "google" && item.verification?.status === "verified",
+    (item) => item.provider === "oauth_google" && item.verification?.status === "verified",
   );
   if (!account) return { kind: "disconnected" } as const;
   return { kind: "connected", userId: session.userId, account } as const;
@@ -31,23 +31,32 @@ export async function getGoogleConnection() {
   const scopes = result.account.approvedScopes.split(/[ ,]+/);
   return {
     kind: "connected" as const,
+    userId: result.userId,
     email: result.account.emailAddress,
     calendar: hasGoogleAccess(scopes, "calendar"),
     files: hasGoogleAccess(scopes, "files"),
   };
 }
 
-export const getGoogleAccessToken = cache(async (capability: GoogleCapability) => {
-  const result = await getGoogleAccount();
-  if (result.kind !== "connected") throw new Error("Connect your Google account first.");
-  const client = await clerkClient();
-  const response = await client.users.getUserOauthAccessToken(result.userId, "google");
-  const token = response.data.find((item) => item.externalAccountId === result.account.id);
-  if (!token?.token || !hasGoogleAccess(token.scopes ?? [], capability)) {
-    throw new Error("Reconnect Google to allow access to this service.");
-  }
-  return token.token;
-});
+export const getGoogleAccessToken = cache(
+  async (capability: GoogleCapability, connectedUserId?: string) => {
+    const result = await getGoogleAccount();
+    if (result.kind !== "connected") throw new Error("Connect your Google account first.");
+    if (connectedUserId !== undefined && result.userId !== connectedUserId) {
+      throw new Error("This source must be refreshed by the Google account that imported it.");
+    }
+    const { clerkClient } = await import("@clerk/nextjs/server");
+    const client = await clerkClient();
+    const response = await client.users.getUserOauthAccessToken(result.userId, "google");
+    const token = response.data.find(
+      (item) => item.externalAccountId === (result.account.externalAccountId ?? result.account.id),
+    );
+    if (!token?.token || !hasGoogleAccess(token.scopes ?? [], capability)) {
+      throw new Error("Reconnect Google to allow access to this service.");
+    }
+    return token.token;
+  },
+);
 
 export async function getUpcomingGoogleEvents() {
   const connection = await getGoogleConnection();

@@ -1,20 +1,17 @@
 import "server-only";
 
-import { google } from "googleapis";
+import { auth as googleAuth, sheets as googleSheets } from "googleapis/build/src/apis/sheets";
+import { drive as googleDrive } from "googleapis/build/src/apis/drive";
 import Papa from "papaparse";
 import { createHash } from "node:crypto";
 import { z } from "zod";
 
 import { env } from "@/env";
+import { getGoogleAccessToken } from "@/server/google/facade";
 import { dataLimits, type Cell, type Origin, type Table, tableSchema } from "@/lib/data";
 
 const numberPattern = /^-?(?:0|[1-9]\d*)(?:\.\d+)?$/;
 const booleanPattern = /^(true|false)$/i;
-
-google.options({
-  timeout: 10_000,
-  maxContentLength: dataLimits.maxBytes,
-});
 
 export type LoadedSource = { table: Table; name: string };
 
@@ -175,16 +172,35 @@ function serviceAccount() {
   return record.data;
 }
 
+async function sourceAuth(origin: Extract<Origin, { kind: "google-sheet" | "google-drive-csv" }>) {
+  if (origin.access === "google-account") {
+    if (!origin.connectedUserId) fail("Reconnect Google and import this source again.");
+    const token = await getGoogleAccessToken("files", origin.connectedUserId);
+    const auth = new googleAuth.OAuth2();
+    auth.setCredentials({ access_token: token });
+    return auth;
+  }
+  const credentials = serviceAccount();
+  return new googleAuth.JWT({
+    email: credentials.client_email,
+    key: credentials.private_key,
+    scopes:
+      origin.kind === "google-sheet"
+        ? ["https://www.googleapis.com/auth/spreadsheets.readonly"]
+        : ["https://www.googleapis.com/auth/drive.readonly"],
+  });
+}
+
 async function loadPrivateSheet(
   origin: Extract<Origin, { kind: "google-sheet" }>,
 ): Promise<LoadedSource> {
-  const credentials = serviceAccount();
-  const auth = new google.auth.JWT({
-    email: credentials.client_email,
-    key: credentials.private_key,
-    scopes: ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+  const auth = await sourceAuth(origin);
+  const sheets = googleSheets({
+    version: "v4",
+    auth,
+    timeout: 10000,
+    maxContentLength: dataLimits.maxBytes,
   });
-  const sheets = google.sheets({ version: "v4", auth });
   const metadata = await sheets.spreadsheets.get({
     spreadsheetId: origin.spreadsheetId,
     fields: "properties.title,sheets.properties(sheetId,title)",
@@ -231,13 +247,13 @@ function parseValues(values: unknown[][]): Table {
 async function loadDriveCsv(
   origin: Extract<Origin, { kind: "google-drive-csv" }>,
 ): Promise<LoadedSource> {
-  const credentials = serviceAccount();
-  const auth = new google.auth.JWT({
-    email: credentials.client_email,
-    key: credentials.private_key,
-    scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+  const auth = await sourceAuth(origin);
+  const drive = googleDrive({
+    version: "v3",
+    auth,
+    timeout: 10000,
+    maxContentLength: dataLimits.maxBytes,
   });
-  const drive = google.drive({ version: "v3", auth });
   const metadata = await drive.files.get({
     fileId: origin.fileId,
     fields: "id,name,mimeType",
@@ -268,7 +284,7 @@ export async function loadSource(origin: Origin): Promise<LoadedSource> {
     case "csv-upload":
       fail("CSV uploads are parsed before their origin is persisted.");
     case "google-sheet":
-      if (origin.access === "service-account") return loadPrivateSheet(origin);
+      if (origin.access !== "public") return loadPrivateSheet(origin);
       {
         const { spreadsheetId, sheetId } = parseSheetUrl(origin.originalUrl);
         const response = await fetch(
@@ -295,7 +311,7 @@ export function digestTable(table: Table): string {
 
 export function sheetOrigin(
   url: string,
-  access: "public" | "service-account",
+  access: Extract<Origin, { kind: "google-sheet" }>["access"],
 ): Extract<Origin, { kind: "google-sheet" }> {
   const { spreadsheetId, sheetId } = parseSheetUrl(url);
   return { kind: "google-sheet", originalUrl: url, spreadsheetId, sheetId, range: null, access };

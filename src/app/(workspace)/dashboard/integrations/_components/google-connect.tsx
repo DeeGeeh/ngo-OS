@@ -23,7 +23,12 @@ export function GoogleConnect({
     if (!user) return;
     const account = user.externalAccounts.find((item) => item.provider === "google");
     const params = {
-      additionalScopes: googleScopes[capability],
+      additionalScopes: [
+        ...new Set([
+          ...(account?.approvedScopes.split(/[ ,]+/).filter(Boolean) ?? []),
+          ...googleScopes[capability],
+        ]),
+      ],
       redirectUrl: new URL(googleConnectionPath, window.location.origin).href,
     };
     const result = account
