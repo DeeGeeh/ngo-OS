@@ -96,6 +96,9 @@ const screenSubtitles = {
 } as const;
 type Creation = { kind: "task" | "project"; status: WorkStatus; projectId?: string };
 type Screen = keyof typeof screenTitles;
+function isScreen(value: string | null): value is Screen {
+  return value !== null && Object.hasOwn(screenTitles, value);
+}
 type NavItem = { id: Screen; label: string; icon: LucideIcon };
 const initialView: View = { kind: "board" };
 const enter = { opacity: 0 };
@@ -302,7 +305,7 @@ export function WorkspaceApp({
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const screenName = searchParams.get("view");
-  const selectedScreen = navItems.find((item) => item.id === screenName)?.id;
+  const selectedScreen = isScreen(screenName) ? screenName : undefined;
   const view =
     selectedScreen && selectedScreen !== "board" ? { kind: selectedScreen } : workspaceView;
   const [taskId, setTaskId] = useState<string | null>(null);
