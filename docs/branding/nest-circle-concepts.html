@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Nest — circle logo variations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --accent: #F2643D; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f4f4f5; color: #18181b; }
+  header { padding: 32px 40px 8px; }
+  h1 { margin: 0; font-size: 28px; letter-spacing: -0.02em; }
+  header p { margin: 6px 0 0; color: #71717a; }
+  h2 { padding: 0 40px; margin: 28px 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: #71717a; }
+  .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; padding: 0 40px; }
+  .card { border-radius: 16px; padding: 22px 18px 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .light .card { background: #fff; color: #18181b; border: 1px solid #e4e4e7; }
+  .dark { background: #09090b; padding: 24px 40px 40px; margin-top: 28px; }
+  .dark h2 { padding: 0; margin-top: 0; color: #a1a1aa; }
+  .dark .grid { padding: 0; }
+  .dark .card { background: #18181b; color: #fafafa; border: 1px solid #27272a; }
+  .card svg { width: 96px; height: 96px; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 20px; letter-spacing: -0.03em; }
+  .brand svg { width: 24px; height: 24px; }
+  .num { font-size: 12px; font-weight: 600; color: var(--accent); }
+  .name { font-weight: 600; font-size: 14px; }
+  .desc { font-size: 12px; color: #71717a; text-align: center; line-height: 1.4; }
+  .dark .desc { color: #a1a1aa; }
+</style>
+</head>
+<body>
+<header>
+  <h1>nest — circle variations</h1>
+  <p>Variations on concept 05 · people as dots, shared context in the middle</p>
+</header>
+<section class="light"><h2>Light</h2><div class="grid" id="light"></div></section>
+<section class="dark"><h2>Dark</h2><div class="grid" id="dark"></div></section>
+<script>
+const A = 'var(--accent)';
+const F = 'currentColor';
+const rad = d => d * Math.PI / 180;
+const pt = (r, deg, cx = 50, cy = 50) => [cx + r * Math.cos(rad(deg)), cy + r * Math.sin(rad(deg))];
+const dot = ([x, y], r, fill = F, extra = '') => `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r}" fill="${fill}" ${extra}/>`;
+const ring = (n, r, size, start = -90, fill = F) =>
+  Array.from({ length: n }, (_, i) => dot(pt(r, start + i * 360 / n), size, fill)).join('');
+
+const concepts = [
+  {
+    name: 'Huddle',
+    desc: 'Six members around one center, a tight hexagon. Bolder and simpler than the original.',
+    svg: () => ring(6, 30, 10) + dot([50, 50], 12, A)
+  },
+  {
+    name: 'Nested',
+    desc: 'Two rings: the core board and the wider volunteer crew, around shared context.',
+    svg: () => ring(12, 41, 4.5) + ring(6, 25, 6.5, -60) + dot([50, 50], 9, A)
+  },
+  {
+    name: 'Joining',
+    desc: 'A circle with a gap, with a new member flying in. Shows recruiting and onboarding.',
+    svg: () => Array.from({ length: 7 }, (_, i) => dot(pt(30, -15 + i * 45), 8)).join('')
+      + dot(pt(44, -60), 8, A) + dot([50, 50], 5, F, 'opacity=".35"')
+  },
+  {
+    name: 'Jev in the Ring',
+    desc: 'Eight members with one of them in the accent color: Jev, part of the team.',
+    svg: () => ring(8, 32, 8) + dot(pt(32, -90), 8, A)
+  },
+  {
+    name: 'Hub',
+    desc: 'Spokes link every member to the shared center. Shows connected context.',
+    svg: () => Array.from({ length: 8 }, (_, i) => {
+      const [x, y] = pt(34, -90 + i * 45);
+      return `<line x1="50" y1="50" x2="${x.toFixed(2)}" y2="${y.toFixed(2)}" stroke="currentColor" stroke-opacity=".3" stroke-width="3.5" stroke-linecap="round"/>`;
+    }).join('') + ring(8, 34, 7.5) + dot([50, 50], 11, A)
+  },
+  {
+    name: 'Lean In',
+    desc: 'Petal-shaped members all leaning toward the center. Looks warm and like a flower.',
+    svg: () => Array.from({ length: 8 }, (_, i) => {
+      const deg = -90 + i * 45;
+      const [x, y] = pt(31, deg);
+      return `<ellipse cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" rx="6.5" ry="11.5" fill="currentColor" transform="rotate(${deg + 90} ${x.toFixed(2)} ${y.toFixed(2)})"/>`;
+    }).join('') + dot([50, 50], 10, A)
+  },
+  {
+    name: 'Dot Nest',
+    desc: 'Dots make up a nest bowl with an egg on top. The circle idea combined with a literal nest.',
+    svg: () => Array.from({ length: 7 }, (_, i) => dot(pt(36, 0 + i * 30, 50, 44), 6.5)).join('')
+      + Array.from({ length: 4 }, (_, i) => dot(pt(22, 22.5 + i * 45, 50, 44), 5)).join('')
+      + `<ellipse cx="50" cy="40" rx="10" ry="12.5" fill="${A}"/>`
+  },
+  {
+    name: 'Momentum',
+    desc: 'Dots grow around the ring like a spinner. Shows a team gaining energy.',
+    svg: () => Array.from({ length: 10 }, (_, i) => dot(pt(34, -90 + i * 36), 2.5 + i * 0.6)).join('')
+      + dot([50, 50], 10, A)
+  },
+  {
+    name: 'Murmuration',
+    desc: 'A flock spiraling in to land at the center. Flock and nest in one mark.',
+    svg: () => Array.from({ length: 12 }, (_, i) => {
+      const t = i / 11;
+      return dot(pt(45 - t * 24, -200 + i * 33), 2.4 + t * 2.8);
+    }).join('') + dot([50, 50], 9, A)
+  },
+  {
+    name: 'Dot n',
+    desc: 'Members trace a lowercase n, with the accent dot sheltered inside. Doubles as a monogram.',
+    svg: () => [[24, 84], [24, 70], [24, 56], [24, 43], [29.5, 30.5], [40, 22.5], [52, 20], [63.5, 23.5], [72.5, 32], [76, 44], [76, 57], [76, 70], [76, 84]]
+      .map(p => dot(p, 5.2)).join('') + dot([50, 64], 9, A)
+  },
+];
+for (const target of ['light', 'dark']) {
+  const grid = document.getElementById(target);
+  concepts.forEach((c, i) => {
+    const svg = `<svg viewBox="0 0 100 100">${c.svg()}</svg>`;
+    grid.insertAdjacentHTML('beforeend', `<div class="card">
+      <span class="num">${String(i + 1).padStart(2, '0')}</span>
+      ${svg}
+      <div class="brand">${svg}<span>nest</span></div>
+      <div class="name">${c.name}</div>
+      <div class="desc">${c.desc}</div>
+    </div>`);
+  });
+}
+</script>
+</body>
+</html>
